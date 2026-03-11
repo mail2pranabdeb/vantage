@@ -1,0 +1,64 @@
+package com.pd.modules.system.infrastructure.repository;
+
+import com.pd.modules.system.domain.SysUser;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public class SysUserRepository {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    public SysUserRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    private final RowMapper<SysUser> rowMapper = (rs, rowNum) -> {
+        SysUser user = new SysUser();
+        user.setUserId(rs.getLong("user_id"));
+        user.setLoginName(rs.getString("login_name"));
+        user.setUserName(rs.getString("user_name"));
+        user.setUserType(rs.getString("user_type"));
+        user.setEmail(rs.getString("email"));
+        user.setPhonenumber(rs.getString("phonenumber"));
+        user.setSex(rs.getString("sex"));
+        user.setAvatar(rs.getString("avatar"));
+        user.setPassword(rs.getString("password"));
+        user.setSalt(rs.getString("salt"));
+        user.setStatus(rs.getString("status"));
+        user.setDelFlag(rs.getString("del_flag"));
+        user.setLoginIp(rs.getString("login_ip"));
+        java.sql.Timestamp loginDate = rs.getTimestamp("login_date");
+        if (loginDate != null)
+            user.setLoginDate(loginDate.toLocalDateTime());
+        java.sql.Timestamp pwdDate = rs.getTimestamp("pwd_update_date");
+        if (pwdDate != null)
+            user.setPwdUpdateDate(pwdDate.toLocalDateTime());
+        user.setCreateBy(rs.getString("create_by"));
+        java.sql.Timestamp createTime = rs.getTimestamp("create_time");
+        if (createTime != null)
+            user.setCreateTime(createTime.toLocalDateTime());
+        user.setUpdateBy(rs.getString("update_by"));
+        java.sql.Timestamp updateTime = rs.getTimestamp("update_time");
+        if (updateTime != null)
+            user.setUpdateTime(updateTime.toLocalDateTime());
+        user.setRemark(rs.getString("remark"));
+        return user;
+    };
+
+    public List<SysUser> findAll() {
+        return jdbcTemplate.query("SELECT * FROM sys_user WHERE del_flag = '0'", rowMapper);
+    }
+
+    public Optional<SysUser> findByLoginName(String loginName) {
+        List<SysUser> users = jdbcTemplate.query(
+                "SELECT * FROM sys_user WHERE login_name = ? AND del_flag = '0'",
+                rowMapper,
+                loginName);
+        return users.stream().findFirst();
+    }
+}
