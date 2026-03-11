@@ -3,50 +3,60 @@ package com.pd.modules.system.web;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysDictType;
-import com.pd.modules.system.domain.SysDictData;
 import com.pd.modules.system.infrastructure.repository.SysDictTypeRepository;
-import com.pd.modules.system.infrastructure.repository.SysDictDataRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/system/dict")
+@RequestMapping("/api/system/dict")
 public class SysDictController extends BaseController {
 
     private final SysDictTypeRepository dictTypeRepository;
-    private final SysDictDataRepository dictDataRepository;
 
-    public SysDictController(SysDictTypeRepository dictTypeRepository, SysDictDataRepository dictDataRepository) {
+    public SysDictController(SysDictTypeRepository dictTypeRepository) {
         this.dictTypeRepository = dictTypeRepository;
-        this.dictDataRepository = dictDataRepository;
     }
 
     @PreAuthorize("hasAuthority('system:dict:list')")
     @GetMapping("/type/list")
     public AjaxResult listType() {
-        return success("Dictionary type list retrieved");
+        return success(dictTypeRepository.findAll());
     }
 
-    @GetMapping("/data/type/{dictType}")
-    public AjaxResult dictType(@PathVariable String dictType) {
-        return success("Dictionary data retrieved");
+    @PreAuthorize("hasAuthority('system:dict:query')")
+    @GetMapping("/type/{dictId}")
+    public AjaxResult getType(@PathVariable Long dictId) {
+        SysDictType dictType = dictTypeRepository.findById(dictId);
+        return dictType != null ? success(dictType) : error("Dictionary type not found");
     }
 
     @PreAuthorize("hasAuthority('system:dict:add')")
     @PostMapping("/type")
     public AjaxResult addType(@RequestBody SysDictType dict) {
-        return success("Dictionary type added");
+        dict.setStatus(dict.getStatus() != null ? dict.getStatus() : "0");
+        dictTypeRepository.save(dict);
+        return success("Dictionary type added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:dict:edit')")
     @PutMapping("/type")
     public AjaxResult editType(@RequestBody SysDictType dict) {
-        return success("Dictionary type updated");
+        SysDictType existing = dictTypeRepository.findById(dict.getDictId());
+        if (existing == null) {
+            return error("Dictionary type not found");
+        }
+        dictTypeRepository.save(dict);
+        return success("Dictionary type updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:dict:remove')")
-    @DeleteMapping("/type/{dictIds}")
-    public AjaxResult removeType(@PathVariable Long[] dictIds) {
-        return success("Dictionary type deleted");
+    @DeleteMapping("/type/{dictId}")
+    public AjaxResult removeType(@PathVariable Long dictId) {
+        SysDictType dictType = dictTypeRepository.findById(dictId);
+        if (dictType == null) {
+            return error("Dictionary type not found");
+        }
+        dictTypeRepository.deleteById(dictId);
+        return success("Dictionary type deleted successfully");
     }
 }

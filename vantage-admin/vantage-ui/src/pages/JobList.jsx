@@ -1,12 +1,32 @@
 import { useState, useEffect } from 'react';
 import { Clock, Plus, Play, Pause, RefreshCw, Trash2, Eye, Edit } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
+import Modal from '../components/Modal';
+import FormInput from '../components/FormInput';
 
 const JobList = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [currentJob, setCurrentJob] = useState(null);
+    const [formData, setFormData] = useState({
+        jobName: '',
+        jobGroup: '',
+        invokeTarget: '',
+        cronExpression: '',
+        misfirePolicy: '3',
+        concurrent: '1',
+        status: '0'
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = () => {
+        setLoading(true);
         fetch('/api/system/job/list')
             .then(res => res.json())
             .then(data => {
@@ -19,7 +39,159 @@ const JobList = () => {
                 console.error("Failed to fetch jobs:", err);
                 setLoading(false);
             });
-    }, []);
+    };
+
+    const handleAddClick = () => {
+        setModalMode('add');
+        setCurrentJob(null);
+        setFormData({
+            jobName: '',
+            jobGroup: '',
+            invokeTarget: '',
+            cronExpression: '',
+            misfirePolicy: '3',
+            concurrent: '1',
+            status: '0'
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleEditClick = (row) => {
+        setModalMode('edit');
+        setCurrentJob(row);
+        setFormData({
+            jobName: row.jobName || '',
+            jobGroup: row.jobGroup || '',
+            invokeTarget: row.invokeTarget || '',
+            cronExpression: row.cronExpression || '',
+            misfirePolicy: String(row.misfirePolicy || '3'),
+            concurrent: String(row.concurrent || '1'),
+            status: row.status || '0'
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleViewClick = (row) => {
+        setModalMode('view');
+        setCurrentJob(row);
+        setFormData({
+            jobName: row.jobName || '',
+            jobGroup: row.jobGroup || '',
+            invokeTarget: row.invokeTarget || '',
+            cronExpression: row.cronExpression || '',
+            misfirePolicy: String(row.misfirePolicy || '3'),
+            concurrent: String(row.concurrent || '1'),
+            status: row.status || '0'
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (row) => {
+        if (window.confirm(`Are you sure you want to delete job "${row.jobName}"?`)) {
+            fetch(`/api/system/job/${row.jobId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setJobs(jobs.filter(j => j.jobId !== row.jobId));
+                } else {
+                    alert(data.msg || 'Failed to delete job');
+                }
+            })
+            .catch(err => {
+                console.error("Failed to delete job:", err);
+                alert('Failed to delete job');
+            });
+        }
+    };
+
+    const handleRunClick = (row) => {
+        if (window.confirm(`Run job "${row.jobName}" now?`)) {
+            fetch(`/api/system/job/run`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobId: row.jobId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('Job executed successfully');
+                } else {
+                    alert(data.msg || 'Failed to run job');
+                }
+            })
+            .catch(err => {
+                console.error("Failed to run job:", err);
+                alert('Failed to run job');
+            });
+        }
+    };
+
+    const handlePauseClick = (row) => {
+        const newStatus = row.status === '0' ? '1' : '0';
+        fetch(`/api/system/job/changeStatus`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobId: row.jobId, status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                fetchJobs();
+            } else {
+                alert(data.msg || 'Failed to update job status');
+            }
+        })
+        .catch(err => {
+            console.error("Failed to update job status:", err);
+            alert('Failed to update job status');
+        });
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = () => {
+        setSubmitting(true);
+        
+        const url = modalMode === 'add' 
+            ? '/api/system/job' 
+            : '/api/system/job';
+        
+        const method = modalMode === 'add' ? 'POST' : 'PUT';
+        const body = modalMode === 'add' 
+            ? { ...formData, misfirePolicy: parseInt(formData.misfirePolicy), concurrent: formData.concurrent === '1' } 
+            : { ...formData, jobId: currentJob.jobId, misfirePolicy: parseInt(formData.misfirePolicy), concurrent: formData.concurrent === '1' };
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(data => {
+            setSubmitting(false);
+            if (data.code === 200) {
+                setIsModalOpen(false);
+                fetchJobs();
+            } else {
+                alert(data.msg || `Failed to ${modalMode} job`);
+            }
+        })
+        .catch(err => {
+            setSubmitting(false);
+            console.error(`Failed to ${modalMode} job:`, err);
+            alert(`Failed to ${modalMode} job`);
+        });
+    };
 
     const columns = [
         { key: 'jobId', header: 'ID', sortable: true, align: 'center' },
@@ -74,10 +246,18 @@ const JobList = () => {
     ];
 
     const actions = [
-        { label: 'Run', icon: Play, onClick: (row) => console.log('Run:', row) },
-        { label: 'Pause', icon: Pause, onClick: (row) => console.log('Pause:', row) },
-        { label: 'Edit', icon: Edit, onClick: (row) => console.log('Edit:', row) },
-        { label: 'Delete', icon: Trash2, danger: true, onClick: (row) => console.log('Delete:', row) }
+        { label: 'Run', icon: Play, onClick: handleRunClick },
+        { label: 'Pause', icon: Pause, onClick: handlePauseClick },
+        { label: 'Edit', icon: Edit, onClick: handleEditClick },
+        { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
+    ];
+
+    const toolbarActions = [
+        {
+            label: 'Refresh',
+            icon: RefreshCw,
+            onClick: fetchJobs
+        }
     ];
 
     return (
@@ -103,14 +283,18 @@ const JobList = () => {
                         </p>
                     </div>
                 </div>
-                <button className="btn btn-primary" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontWeight: 600
-                }}>
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleAddClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600
+                    }}
+                >
                     <Plus size={18} />
                     Add Job
                 </button>
@@ -120,6 +304,7 @@ const JobList = () => {
                 data={jobs}
                 columns={columns}
                 actions={actions}
+                toolbarActions={toolbarActions}
                 loading={loading}
                 searchable={true}
                 sortable={true}
@@ -129,6 +314,138 @@ const JobList = () => {
                 pageSize={10}
                 emptyMessage="No scheduled jobs found."
             />
+
+            {/* Add/Edit Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={modalMode === 'add' ? 'Add Job' : modalMode === 'edit' ? 'Edit Job' : 'View Job'}
+                size="large"
+                footer={modalMode !== 'view' && (
+                    <>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={() => setIsModalOpen(false)}
+                            disabled={submitting}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            {submitting && (
+                                <div style={{
+                                    width: '14px',
+                                    height: '14px',
+                                    border: '2px solid white',
+                                    borderBottomColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                            )}
+                            {modalMode === 'add' ? 'Create' : 'Save'}
+                        </button>
+                    </>
+                )}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="form-row">
+                        <FormInput
+                            label="Job Name"
+                            name="jobName"
+                            value={formData.jobName}
+                            onChange={handleInputChange}
+                            placeholder="Enter job name"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                        <FormInput
+                            label="Job Group"
+                            name="jobGroup"
+                            value={formData.jobGroup}
+                            onChange={handleInputChange}
+                            placeholder="e.g., system, user"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Invoke Target</label>
+                        <FormInput
+                            name="invokeTarget"
+                            value={formData.invokeTarget}
+                            onChange={handleInputChange}
+                            placeholder="e.g., ryTask.ryMultipleParams('ry', 'test')"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                        <small className="form-help">Method to invoke for this scheduled job</small>
+                    </div>
+
+                    <div className="form-row">
+                        <FormInput
+                            label="Cron Expression"
+                            name="cronExpression"
+                            value={formData.cronExpression}
+                            onChange={handleInputChange}
+                            placeholder="e.g., 0/5 * * * * ?"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                        <div className="form-group">
+                            <label className="form-label">Status</label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="0">Running</option>
+                                <option value="1">Paused</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label className="form-label">Misfire Policy</label>
+                            <select
+                                name="misfirePolicy"
+                                value={formData.misfirePolicy}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="1">Fire Now</option>
+                                <option value="2">Do Nothing</option>
+                                <option value="3">Fire Once</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Concurrent</label>
+                            <select
+                                name="concurrent"
+                                value={formData.concurrent}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="1">Allow</option>
+                                <option value="0">Disallow</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -1,12 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Bell, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
+import Modal from '../components/Modal';
+import FormInput from '../components/FormInput';
 
 const NoticeList = () => {
     const [notices, setNotices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [currentNotice, setCurrentNotice] = useState(null);
+    const [formData, setFormData] = useState({
+        noticeTitle: '',
+        noticeType: '1',
+        noticeContent: '',
+        status: '0'
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
+        fetchNotices();
+    }, []);
+
+    const fetchNotices = () => {
+        setLoading(true);
         fetch('/api/system/notice/list')
             .then(res => res.json())
             .then(data => {
@@ -19,7 +36,107 @@ const NoticeList = () => {
                 console.error("Failed to fetch notices:", err);
                 setLoading(false);
             });
-    }, []);
+    };
+
+    const handleAddClick = () => {
+        setModalMode('add');
+        setCurrentNotice(null);
+        setFormData({
+            noticeTitle: '',
+            noticeType: '1',
+            noticeContent: '',
+            status: '0'
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleEditClick = (row) => {
+        setModalMode('edit');
+        setCurrentNotice(row);
+        setFormData({
+            noticeTitle: row.noticeTitle || '',
+            noticeType: row.noticeType || '1',
+            noticeContent: row.noticeContent || '',
+            status: row.status || '0'
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleViewClick = (row) => {
+        setModalMode('view');
+        setCurrentNotice(row);
+        setFormData({
+            noticeTitle: row.noticeTitle || '',
+            noticeType: row.noticeType || '1',
+            noticeContent: row.noticeContent || '',
+            status: row.status || '0'
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (row) => {
+        if (window.confirm(`Are you sure you want to delete notice "${row.noticeTitle}"?`)) {
+            fetch(`/api/system/notice/${row.noticeId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setNotices(notices.filter(n => n.noticeId !== row.noticeId));
+                } else {
+                    alert(data.msg || 'Failed to delete notice');
+                }
+            })
+            .catch(err => {
+                console.error("Failed to delete notice:", err);
+                alert('Failed to delete notice');
+            });
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = () => {
+        setSubmitting(true);
+        
+        const url = modalMode === 'add' 
+            ? '/api/system/notice' 
+            : '/api/system/notice';
+        
+        const method = modalMode === 'add' ? 'POST' : 'PUT';
+        const body = modalMode === 'add' 
+            ? { ...formData } 
+            : { ...formData, noticeId: currentNotice.noticeId };
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(data => {
+            setSubmitting(false);
+            if (data.code === 200) {
+                setIsModalOpen(false);
+                fetchNotices();
+            } else {
+                alert(data.msg || `Failed to ${modalMode} notice`);
+            }
+        })
+        .catch(err => {
+            setSubmitting(false);
+            console.error(`Failed to ${modalMode} notice:`, err);
+            alert(`Failed to ${modalMode} notice`);
+        });
+    };
 
     const columns = [
         { key: 'noticeId', header: 'ID', sortable: true, align: 'center' },
@@ -68,9 +185,17 @@ const NoticeList = () => {
     ];
 
     const actions = [
-        { label: 'View', icon: Eye, onClick: (row) => console.log('View:', row) },
-        { label: 'Edit', icon: Edit, onClick: (row) => console.log('Edit:', row) },
-        { label: 'Delete', icon: Trash2, danger: true, onClick: (row) => console.log('Delete:', row) }
+        { label: 'View', icon: Eye, onClick: handleViewClick },
+        { label: 'Edit', icon: Edit, onClick: handleEditClick },
+        { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
+    ];
+
+    const toolbarActions = [
+        {
+            label: 'Refresh',
+            icon: RefreshCw,
+            onClick: fetchNotices
+        }
     ];
 
     return (
@@ -96,14 +221,18 @@ const NoticeList = () => {
                         </p>
                     </div>
                 </div>
-                <button className="btn btn-primary" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontWeight: 600
-                }}>
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleAddClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600
+                    }}
+                >
                     <Plus size={18} />
                     Add Notice
                 </button>
@@ -113,6 +242,7 @@ const NoticeList = () => {
                 data={notices}
                 columns={columns}
                 actions={actions}
+                toolbarActions={toolbarActions}
                 loading={loading}
                 searchable={true}
                 sortable={true}
@@ -122,6 +252,101 @@ const NoticeList = () => {
                 pageSize={10}
                 emptyMessage="No notices found."
             />
+
+            {/* Add/Edit Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={modalMode === 'add' ? 'Add Notice' : modalMode === 'edit' ? 'Edit Notice' : 'View Notice'}
+                size="large"
+                footer={modalMode !== 'view' && (
+                    <>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={() => setIsModalOpen(false)}
+                            disabled={submitting}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            {submitting && (
+                                <div style={{
+                                    width: '14px',
+                                    height: '14px',
+                                    border: '2px solid white',
+                                    borderBottomColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                            )}
+                            {modalMode === 'add' ? 'Create' : 'Save'}
+                        </button>
+                    </>
+                )}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <FormInput
+                        label="Notice Title"
+                        name="noticeTitle"
+                        value={formData.noticeTitle}
+                        onChange={handleInputChange}
+                        placeholder="Enter notice title"
+                        required
+                        disabled={modalMode === 'view'}
+                    />
+
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label className="form-label">Type</label>
+                            <select
+                                name="noticeType"
+                                value={formData.noticeType}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="1">Notification</option>
+                                <option value="2">Announcement</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Status</label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="0">Normal</option>
+                                <option value="1">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Content</label>
+                        <textarea
+                            name="noticeContent"
+                            value={formData.noticeContent}
+                            onChange={handleInputChange}
+                            placeholder="Enter notice content"
+                            className="form-input"
+                            rows={8}
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

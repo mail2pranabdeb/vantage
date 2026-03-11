@@ -6,6 +6,7 @@ public class SysNotice {
     private String noticeType;
     private byte[] noticeContent;
     private String status;
+    private String remark;
 
     public Integer getNoticeId() {
         return noticeId;
@@ -45,5 +46,13 @@ public class SysNotice {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

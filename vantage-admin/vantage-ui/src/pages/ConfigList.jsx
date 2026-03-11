@@ -1,12 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Settings, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
+import Modal from '../components/Modal';
+import FormInput from '../components/FormInput';
 
 const ConfigList = () => {
     const [configs, setConfigs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [currentConfig, setCurrentConfig] = useState(null);
+    const [formData, setFormData] = useState({
+        configName: '',
+        configKey: '',
+        configValue: '',
+        configType: 'Y',
+        remark: ''
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
+        fetchConfigs();
+    }, []);
+
+    const fetchConfigs = () => {
+        setLoading(true);
         fetch('/api/system/config/list')
             .then(res => res.json())
             .then(data => {
@@ -19,7 +37,110 @@ const ConfigList = () => {
                 console.error("Failed to fetch configs:", err);
                 setLoading(false);
             });
-    }, []);
+    };
+
+    const handleAddClick = () => {
+        setModalMode('add');
+        setCurrentConfig(null);
+        setFormData({
+            configName: '',
+            configKey: '',
+            configValue: '',
+            configType: 'Y',
+            remark: ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleEditClick = (row) => {
+        setModalMode('edit');
+        setCurrentConfig(row);
+        setFormData({
+            configName: row.configName || '',
+            configKey: row.configKey || '',
+            configValue: row.configValue || '',
+            configType: row.configType || 'Y',
+            remark: row.remark || ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleViewClick = (row) => {
+        setModalMode('view');
+        setCurrentConfig(row);
+        setFormData({
+            configName: row.configName || '',
+            configKey: row.configKey || '',
+            configValue: row.configValue || '',
+            configType: row.configType || 'Y',
+            remark: row.remark || ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (row) => {
+        if (window.confirm(`Are you sure you want to delete config "${row.configName}"?`)) {
+            fetch(`/api/system/config/${row.configId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setConfigs(configs.filter(c => c.configId !== row.configId));
+                } else {
+                    alert(data.msg || 'Failed to delete config');
+                }
+            })
+            .catch(err => {
+                console.error("Failed to delete config:", err);
+                alert('Failed to delete config');
+            });
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = () => {
+        setSubmitting(true);
+        
+        const url = modalMode === 'add' 
+            ? '/api/system/config' 
+            : '/api/system/config';
+        
+        const method = modalMode === 'add' ? 'POST' : 'PUT';
+        const body = modalMode === 'add' 
+            ? { ...formData } 
+            : { ...formData, configId: currentConfig.configId };
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(data => {
+            setSubmitting(false);
+            if (data.code === 200) {
+                setIsModalOpen(false);
+                fetchConfigs();
+            } else {
+                alert(data.msg || `Failed to ${modalMode} config`);
+            }
+        })
+        .catch(err => {
+            setSubmitting(false);
+            console.error(`Failed to ${modalMode} config:`, err);
+            alert(`Failed to ${modalMode} config`);
+        });
+    };
 
     const columns = [
         { key: 'configId', header: 'ID', sortable: true, align: 'center' },
@@ -69,8 +190,17 @@ const ConfigList = () => {
     ];
 
     const actions = [
-        { label: 'Edit', icon: Edit, onClick: (row) => console.log('Edit:', row) },
-        { label: 'Delete', icon: Trash2, danger: true, onClick: (row) => console.log('Delete:', row) }
+        { label: 'View', icon: Eye, onClick: handleViewClick },
+        { label: 'Edit', icon: Edit, onClick: handleEditClick },
+        { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
+    ];
+
+    const toolbarActions = [
+        {
+            label: 'Refresh',
+            icon: RefreshCw,
+            onClick: fetchConfigs
+        }
     ];
 
     return (
@@ -96,14 +226,18 @@ const ConfigList = () => {
                         </p>
                     </div>
                 </div>
-                <button className="btn btn-primary" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontWeight: 600
-                }}>
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleAddClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600
+                    }}
+                >
                     <Plus size={18} />
                     Add Config
                 </button>
@@ -113,6 +247,7 @@ const ConfigList = () => {
                 data={configs}
                 columns={columns}
                 actions={actions}
+                toolbarActions={toolbarActions}
                 loading={loading}
                 searchable={true}
                 sortable={true}
@@ -122,6 +257,108 @@ const ConfigList = () => {
                 pageSize={10}
                 emptyMessage="No configurations found."
             />
+
+            {/* Add/Edit Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={modalMode === 'add' ? 'Add Config' : modalMode === 'edit' ? 'Edit Config' : 'View Config'}
+                size="medium"
+                footer={modalMode !== 'view' && (
+                    <>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={() => setIsModalOpen(false)}
+                            disabled={submitting}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            {submitting && (
+                                <div style={{
+                                    width: '14px',
+                                    height: '14px',
+                                    border: '2px solid white',
+                                    borderBottomColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                            )}
+                            {modalMode === 'add' ? 'Create' : 'Save'}
+                        </button>
+                    </>
+                )}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="form-row">
+                        <FormInput
+                            label="Config Name"
+                            name="configName"
+                            value={formData.configName}
+                            onChange={handleInputChange}
+                            placeholder="Enter config name"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                        <FormInput
+                            label="Config Key"
+                            name="configKey"
+                            value={formData.configKey}
+                            onChange={handleInputChange}
+                            placeholder="e.g., sys.user.initPassword"
+                            required
+                            disabled={modalMode === 'view' || modalMode === 'edit'}
+                        />
+                    </div>
+
+                    <div className="form-row">
+                        <FormInput
+                            label="Config Value"
+                            name="configValue"
+                            value={formData.configValue}
+                            onChange={handleInputChange}
+                            placeholder="Enter config value"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                        <div className="form-group">
+                            <label className="form-label">Is Built-in</label>
+                            <select
+                                name="configType"
+                                value={formData.configType}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="Y">Yes</option>
+                                <option value="N">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Remark</label>
+                        <textarea
+                            name="remark"
+                            value={formData.remark}
+                            onChange={handleInputChange}
+                            placeholder="Enter any remarks"
+                            className="form-input"
+                            rows={3}
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

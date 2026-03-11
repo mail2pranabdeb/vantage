@@ -6,6 +6,7 @@ public class SysConfig {
     private String configKey;
     private String configValue;
     private String configType;
+    private String remark;
 
     public Long getConfigId() {
         return configId;
@@ -45,5 +46,13 @@ public class SysConfig {
 
     public void setConfigType(String configType) {
         this.configType = configType;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

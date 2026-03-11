@@ -30,7 +30,7 @@ public class SysNoticeRepository {
         return jdbcTemplate.query("SELECT * FROM sys_notice ORDER BY create_time DESC", rowMapper);
     }
 
-    public Optional<SysNotice> findById(Long noticeId) {
+    public Optional<SysNotice> findById(Integer noticeId) {
         List<SysNotice> notices = jdbcTemplate.query(
                 "SELECT * FROM sys_notice WHERE notice_id = ?",
                 rowMapper,
@@ -39,30 +39,33 @@ public class SysNoticeRepository {
     }
 
     public int insert(SysNotice notice) {
-        String sql = "INSERT INTO sys_notice (notice_title, notice_type, notice_content, status, create_by, create_time) VALUES (?, ?, ?, ?, ?, current_timestamp)";
-        return jdbcTemplate.update(sql,
-                notice.getNoticeTitle(),
-                notice.getNoticeType(),
-                notice.getNoticeContent(),
-                notice.getStatus());
-    }
-
-    public int update(SysNotice notice) {
-        String sql = "UPDATE sys_notice SET notice_title = ?, notice_type = ?, notice_content = ?, status = ?, update_by = ?, update_time = current_timestamp WHERE notice_id = ?";
+        String sql = "INSERT INTO sys_notice (notice_title, notice_type, notice_content, status, create_by, create_time, remark) VALUES (?, ?, ?, ?, ?, current_timestamp, ?)";
         return jdbcTemplate.update(sql,
                 notice.getNoticeTitle(),
                 notice.getNoticeType(),
                 notice.getNoticeContent(),
                 notice.getStatus(),
                 "admin",
+                notice.getRemark());
+    }
+
+    public int update(SysNotice notice) {
+        String sql = "UPDATE sys_notice SET notice_title = ?, notice_type = ?, notice_content = ?, status = ?, update_by = ?, update_time = current_timestamp, remark = ? WHERE notice_id = ?";
+        return jdbcTemplate.update(sql,
+                notice.getNoticeTitle(),
+                notice.getNoticeType(),
+                notice.getNoticeContent(),
+                notice.getStatus(),
+                "admin",
+                notice.getRemark(),
                 notice.getNoticeId());
     }
 
-    public int deleteById(Long noticeId) {
+    public int deleteById(Integer noticeId) {
         return jdbcTemplate.update("DELETE FROM sys_notice WHERE notice_id = ?", noticeId);
     }
 
-    public int deleteByIds(Long[] ids) {
+    public int deleteByIds(Integer[] ids) {
         return jdbcTemplate.batchUpdate(
                 "DELETE FROM sys_notice WHERE notice_id = ?",
                 java.util.Arrays.stream(ids)

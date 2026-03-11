@@ -5,6 +5,7 @@ public class SysDictType {
     private String dictName;
     private String dictType;
     private String status;
+    private String remark;
 
     public Long getDictId() {
         return dictId;
@@ -36,5 +37,13 @@ public class SysDictType {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

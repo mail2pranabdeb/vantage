@@ -4,6 +4,8 @@ import java.util.List;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.pd.common.core.controller.BaseController;
+import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.quartz.domain.SysJob;
 import com.pd.modules.quartz.service.ISysJobService;
 
@@ -11,8 +13,8 @@ import com.pd.modules.quartz.service.ISysJobService;
  * Scheduled job controller
  */
 @RestController
-@RequestMapping("/system/job")
-public class SysJobController {
+@RequestMapping("/api/system/job")
+public class SysJobController extends BaseController {
 
     @Autowired
     private ISysJobService sysJobService;
@@ -21,71 +23,78 @@ public class SysJobController {
      * Get list of jobs
      */
     @GetMapping("/list")
-    public List<SysJob> list(SysJob job) {
-        return sysJobService.selectJobList(job);
+    public AjaxResult list(SysJob job) {
+        return success(sysJobService.selectJobList(job));
     }
 
     /**
      * Get job by ID
      */
     @GetMapping("/{jobId}")
-    public SysJob getInfo(@PathVariable Long jobId) {
-        return sysJobService.selectJobById(jobId);
+    public AjaxResult getInfo(@PathVariable Long jobId) {
+        return success(sysJobService.selectJobById(jobId));
     }
 
     /**
      * Insert job
      */
     @PostMapping
-    public int add(@RequestBody SysJob job) throws SchedulerException {
-        return sysJobService.insertJob(job);
+    public AjaxResult add(@RequestBody SysJob job) throws SchedulerException {
+        sysJobService.insertJob(job);
+        return success("Job added successfully");
     }
 
     /**
      * Update job
      */
     @PutMapping
-    public int edit(@RequestBody SysJob job) throws SchedulerException {
-        return sysJobService.updateJob(job);
+    public AjaxResult edit(@RequestBody SysJob job) throws SchedulerException {
+        sysJobService.updateJob(job);
+        return success("Job updated successfully");
     }
 
     /**
      * Delete job
      */
-    @DeleteMapping("/{jobIds}")
-    public void remove(@PathVariable Long[] jobIds) throws SchedulerException {
-        sysJobService.deleteJobByIds(jobIds);
+    @DeleteMapping("/{jobId}")
+    public AjaxResult remove(@PathVariable Long jobId) throws SchedulerException {
+        sysJobService.deleteJobByIds(new Long[]{jobId});
+        return success("Job deleted successfully");
     }
 
     /**
      * Change job status
      */
     @PutMapping("/changeStatus")
-    public int changeStatus(@RequestBody SysJob job) throws SchedulerException {
-        return sysJobService.changeStatus(job);
+    public AjaxResult changeStatus(@RequestBody SysJob job) throws SchedulerException {
+        sysJobService.changeStatus(job);
+        return success("Job status updated successfully");
     }
 
     /**
      * Run job immediately
      */
-    @PutMapping("/run")
-    public void run(@RequestBody SysJob job) throws SchedulerException {
+    @PostMapping("/run")
+    public AjaxResult run(@RequestBody SysJob job) throws SchedulerException {
         sysJobService.run(job);
+        return success("Job executed successfully");
     }
 
     /**
      * Pause job
      */
     @PutMapping("/pause")
-    public void pause(@RequestBody SysJob job) throws SchedulerException {
+    public AjaxResult pause(@RequestBody SysJob job) throws SchedulerException {
         sysJobService.pauseJob(job);
+        return success("Job paused successfully");
     }
 
     /**
      * Resume job
      */
     @PutMapping("/resume")
-    public void resume(@RequestBody SysJob job) throws SchedulerException {
+    public AjaxResult resume(@RequestBody SysJob job) throws SchedulerException {
         sysJobService.resumeJob(job);
+        return success("Job resumed successfully");
     }
 }

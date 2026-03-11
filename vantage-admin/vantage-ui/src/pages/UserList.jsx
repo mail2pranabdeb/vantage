@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, ShieldCheck, Clock, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
+import { User, Mail, Phone, ShieldCheck, Clock, Plus, Edit, Trash2, Eye, RefreshCw, X } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
+import Modal from '../components/Modal';
+import FormInput from '../components/FormInput';
 
 const formatDate = (dateValue) => {
     if (!dateValue) return 'N/A';
@@ -14,8 +16,26 @@ const formatDate = (dateValue) => {
 const UserList = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [currentUser, setCurrentUser] = useState(null);
+    const [formData, setFormData] = useState({
+        loginName: '',
+        userName: '',
+        email: '',
+        phonenumber: '',
+        sex: '0',
+        status: '0',
+        remark: ''
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = () => {
+        setLoading(true);
         fetch('/api/system/user/list')
             .then(res => res.json())
             .then(data => {
@@ -28,7 +48,116 @@ const UserList = () => {
                 console.error("Failed to fetch users:", err);
                 setLoading(false);
             });
-    }, []);
+    };
+
+    const handleAddClick = () => {
+        setModalMode('add');
+        setCurrentUser(null);
+        setFormData({
+            loginName: '',
+            userName: '',
+            email: '',
+            phonenumber: '',
+            sex: '0',
+            status: '0',
+            remark: ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleEditClick = (row) => {
+        setModalMode('edit');
+        setCurrentUser(row);
+        setFormData({
+            loginName: row.loginName || '',
+            userName: row.userName || '',
+            email: row.email || '',
+            phonenumber: row.phonenumber || '',
+            sex: row.sex || '0',
+            status: row.status || '0',
+            remark: row.remark || ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleViewClick = (row) => {
+        setModalMode('view');
+        setCurrentUser(row);
+        setFormData({
+            loginName: row.loginName || '',
+            userName: row.userName || '',
+            email: row.email || '',
+            phonenumber: row.phonenumber || '',
+            sex: row.sex || '0',
+            status: row.status || '0',
+            remark: row.remark || ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (row) => {
+        if (window.confirm(`Are you sure you want to delete user "${row.userName}"?`)) {
+            fetch(`/api/system/user/${row.userId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setUsers(users.filter(u => u.userId !== row.userId));
+                } else {
+                    alert(data.msg || 'Failed to delete user');
+                }
+            })
+            .catch(err => {
+                console.error("Failed to delete user:", err);
+                alert('Failed to delete user');
+            });
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = () => {
+        setSubmitting(true);
+        
+        const url = modalMode === 'add' 
+            ? '/api/system/user' 
+            : '/api/system/user';
+        
+        const method = modalMode === 'add' ? 'POST' : 'PUT';
+        const body = modalMode === 'add' 
+            ? { ...formData } 
+            : { ...formData, userId: currentUser.userId };
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(data => {
+            setSubmitting(false);
+            if (data.code === 200) {
+                setIsModalOpen(false);
+                fetchUsers();
+            } else {
+                alert(data.msg || `Failed to ${modalMode} user`);
+            }
+        })
+        .catch(err => {
+            setSubmitting(false);
+            console.error(`Failed to ${modalMode} user:`, err);
+            alert(`Failed to ${modalMode} user`);
+        });
+    };
 
     const columns = [
         {
@@ -100,18 +229,18 @@ const UserList = () => {
         {
             label: 'View',
             icon: Eye,
-            onClick: (row) => console.log('View:', row)
+            onClick: handleViewClick
         },
         {
             label: 'Edit',
             icon: Edit,
-            onClick: (row) => console.log('Edit:', row)
+            onClick: handleEditClick
         },
         {
             label: 'Delete',
             icon: Trash2,
             danger: true,
-            onClick: (row) => console.log('Delete:', row)
+            onClick: handleDeleteClick
         }
     ];
 
@@ -119,10 +248,7 @@ const UserList = () => {
         {
             label: 'Refresh',
             icon: RefreshCw,
-            onClick: () => {
-                setLoading(true);
-                setTimeout(() => setLoading(false), 500);
-            }
+            onClick: fetchUsers
         }
     ];
 
@@ -149,14 +275,18 @@ const UserList = () => {
                         </p>
                     </div>
                 </div>
-                <button className="btn btn-primary" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontWeight: 600
-                }}>
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleAddClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600
+                    }}
+                >
                     <Plus size={18} />
                     Add User
                 </button>
@@ -175,9 +305,134 @@ const UserList = () => {
                 pagination={true}
                 pageSize={10}
                 emptyMessage="No users found. Add your first user to get started."
-                onSelectionChange={(selected) => console.log('Selected:', selected)}
-                onRowClick={(row) => console.log('Row clicked:', row)}
             />
+
+            {/* Add/Edit Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={modalMode === 'add' ? 'Add User' : modalMode === 'edit' ? 'Edit User' : 'View User'}
+                size="medium"
+                footer={modalMode !== 'view' && (
+                    <>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={() => setIsModalOpen(false)}
+                            disabled={submitting}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            {submitting && (
+                                <div style={{
+                                    width: '14px',
+                                    height: '14px',
+                                    border: '2px solid white',
+                                    borderBottomColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                            )}
+                            {modalMode === 'add' ? 'Create' : 'Save'}
+                        </button>
+                    </>
+                )}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="form-row">
+                        <FormInput
+                            label="Login Name"
+                            name="loginName"
+                            value={formData.loginName}
+                            onChange={handleInputChange}
+                            placeholder="Enter login name"
+                            required
+                            disabled={modalMode === 'view' || modalMode === 'edit'}
+                        />
+                        <FormInput
+                            label="User Name"
+                            name="userName"
+                            value={formData.userName}
+                            onChange={handleInputChange}
+                            placeholder="Enter user name"
+                            required
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+
+                    <div className="form-row">
+                        <FormInput
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="Enter email address"
+                            disabled={modalMode === 'view'}
+                        />
+                        <FormInput
+                            label="Phone Number"
+                            name="phonenumber"
+                            value={formData.phonenumber}
+                            onChange={handleInputChange}
+                            placeholder="Enter phone number"
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label className="form-label">Gender</label>
+                            <select
+                                name="sex"
+                                value={formData.sex}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="0">Male</option>
+                                <option value="1">Female</option>
+                                <option value="2">Unknown</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Status</label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="0">Normal</option>
+                                <option value="1">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Remark</label>
+                        <textarea
+                            name="remark"
+                            value={formData.remark}
+                            onChange={handleInputChange}
+                            placeholder="Enter any remarks"
+                            className="form-input"
+                            rows={3}
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

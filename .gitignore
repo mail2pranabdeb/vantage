@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Database ###
+data/*.db
+data/*.lock.db
+data/*.trace.db
+**/data/*.db
+**/data/*.lock.db
+**/data/*.trace.db
+
+### Node ###
+**/node/
+**/node_modules/

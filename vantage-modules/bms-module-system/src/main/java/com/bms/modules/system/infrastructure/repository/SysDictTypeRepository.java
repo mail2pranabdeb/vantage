@@ -27,4 +27,37 @@ public class SysDictTypeRepository {
     public List<SysDictType> findAll() {
         return jdbcTemplate.query("SELECT * FROM sys_dict_type", rowMapper);
     }
+
+    public SysDictType findById(Long dictId) {
+        List<SysDictType> types = jdbcTemplate.query(
+                "SELECT * FROM sys_dict_type WHERE dict_id = ?",
+                rowMapper,
+                dictId);
+        return types.stream().findFirst().orElse(null);
+    }
+
+    public int save(SysDictType dictType) {
+        if (dictType.getDictId() == null) {
+            return jdbcTemplate.update(
+                    "INSERT INTO sys_dict_type (dict_name, dict_type, status, create_by, create_time, remark) VALUES (?, ?, ?, ?, current_timestamp, ?)",
+                    dictType.getDictName(),
+                    dictType.getDictType(),
+                    dictType.getStatus() != null ? dictType.getStatus() : "0",
+                    "admin",
+                    dictType.getRemark());
+        } else {
+            return jdbcTemplate.update(
+                    "UPDATE sys_dict_type SET dict_name = ?, dict_type = ?, status = ?, update_by = ?, update_time = current_timestamp, remark = ? WHERE dict_id = ?",
+                    dictType.getDictName(),
+                    dictType.getDictType(),
+                    dictType.getStatus(),
+                    "admin",
+                    dictType.getRemark(),
+                    dictType.getDictId());
+        }
+    }
+
+    public int deleteById(Long dictId) {
+        return jdbcTemplate.update("DELETE FROM sys_dict_type WHERE dict_id = ?", dictId);
+    }
 }

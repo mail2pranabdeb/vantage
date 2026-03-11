@@ -7,6 +7,9 @@ import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/system/user")
 public class SysUserController extends BaseController {
@@ -26,24 +29,60 @@ public class SysUserController extends BaseController {
     @PreAuthorize("hasAuthority('system:user:query')")
     @GetMapping(value = "/{userId}")
     public AjaxResult getInfo(@PathVariable Long userId) {
-        return success("User info retrieved");
+        Optional<SysUser> user = userRepository.findById(userId);
+        return user.map(this::success).orElseGet(() -> error("User not found"));
     }
 
     @PreAuthorize("hasAuthority('system:user:add')")
     @PostMapping
     public AjaxResult add(@RequestBody SysUser user) {
-        return success("User added");
+        // Check if login name already exists
+        Optional<SysUser> existing = userRepository.findByLoginName(user.getLoginName());
+        if (existing.isPresent()) {
+            return error("Login name already exists");
+        }
+        
+        // Set default values
+        user.setUserType("00");
+        user.setSex(user.getSex() != null ? user.getSex() : "0");
+        user.setStatus(user.getStatus() != null ? user.getStatus() : "0");
+        user.setCreateBy("admin");
+        user.setCreateTime(LocalDateTime.now());
+        user.setDelFlag("0");
+        
+        // TODO: Encode password
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            user.setPassword("123456"); // Default password
+        }
+        
+        userRepository.save(user);
+        return success("User added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:user:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysUser user) {
-        return success("User updated");
+        Optional<SysUser> existing = userRepository.findById(user.getUserId());
+        if (!existing.isPresent()) {
+            return error("User not found");
+        }
+        
+        user.setUpdateBy("admin");
+        user.setUpdateTime(LocalDateTime.now());
+        
+        userRepository.save(user);
+        return success("User updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:user:remove')")
-    @DeleteMapping("/{userIds}")
-    public AjaxResult remove(@PathVariable Long[] userIds) {
-        return success("User deleted");
+    @DeleteMapping("/{userId}")
+    public AjaxResult remove(@PathVariable Long userId) {
+        Optional<SysUser> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            return error("User not found");
+        }
+        
+        userRepository.deleteById(userId);
+        return success("User deleted successfully");
     }
 }

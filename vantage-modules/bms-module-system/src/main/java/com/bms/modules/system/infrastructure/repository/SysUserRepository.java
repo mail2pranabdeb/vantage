@@ -61,4 +61,49 @@ public class SysUserRepository {
                 loginName);
         return users.stream().findFirst();
     }
+
+    public Optional<SysUser> findById(Long userId) {
+        List<SysUser> users = jdbcTemplate.query(
+                "SELECT * FROM sys_user WHERE user_id = ? AND del_flag = '0'",
+                rowMapper,
+                userId);
+        return users.stream().findFirst();
+    }
+
+    public int save(SysUser user) {
+        if (user.getUserId() == null) {
+            return jdbcTemplate.update(
+                    "INSERT INTO sys_user (login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, del_flag, create_by, create_time, remark) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '0', ?, ?, ?)",
+                    user.getLoginName(),
+                    user.getUserName(),
+                    user.getUserType() != null ? user.getUserType() : "00",
+                    user.getEmail(),
+                    user.getPhonenumber(),
+                    user.getSex() != null ? user.getSex() : "0",
+                    user.getAvatar(),
+                    user.getPassword(),
+                    user.getSalt(),
+                    user.getStatus() != null ? user.getStatus() : "0",
+                    user.getCreateBy(),
+                    user.getCreateTime(),
+                    user.getRemark());
+        } else {
+            return jdbcTemplate.update(
+                    "UPDATE sys_user SET login_name = ?, user_name = ?, email = ?, phonenumber = ?, sex = ?, status = ?, update_by = ?, update_time = ?, remark = ? WHERE user_id = ?",
+                    user.getLoginName(),
+                    user.getUserName(),
+                    user.getEmail(),
+                    user.getPhonenumber(),
+                    user.getSex(),
+                    user.getStatus(),
+                    user.getUpdateBy(),
+                    user.getUpdateTime(),
+                    user.getRemark(),
+                    user.getUserId());
+        }
+    }
+
+    public int deleteById(Long userId) {
+        return jdbcTemplate.update("UPDATE sys_user SET del_flag = '2' WHERE user_id = ?", userId);
+    }
 }

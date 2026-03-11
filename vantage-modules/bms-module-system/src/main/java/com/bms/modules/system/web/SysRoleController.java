@@ -26,24 +26,46 @@ public class SysRoleController extends BaseController {
     @PreAuthorize("hasAuthority('system:role:query')")
     @GetMapping(value = "/{roleId}")
     public AjaxResult getInfo(@PathVariable Long roleId) {
-        return success("Role info retrieved");
+        SysRole role = roleRepository.findById(roleId);
+        return role != null ? success(role) : error("Role not found");
     }
 
     @PreAuthorize("hasAuthority('system:role:add')")
     @PostMapping
     public AjaxResult add(@RequestBody SysRole role) {
-        return success("Role added");
+        if (roleRepository.findById(role.getRoleId()) != null) {
+            return error("Role key already exists");
+        }
+        
+        role.setDataScope("1");
+        role.setStatus(role.getStatus() != null ? role.getStatus() : "0");
+        role.setDelFlag("0");
+        
+        roleRepository.save(role);
+        return success("Role added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:role:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysRole role) {
-        return success("Role updated");
+        SysRole existing = roleRepository.findById(role.getRoleId());
+        if (existing == null) {
+            return error("Role not found");
+        }
+        
+        roleRepository.save(role);
+        return success("Role updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:role:remove')")
-    @DeleteMapping("/{roleIds}")
-    public AjaxResult remove(@PathVariable Long[] roleIds) {
-        return success("Role deleted");
+    @DeleteMapping("/{roleId}")
+    public AjaxResult remove(@PathVariable Long roleId) {
+        SysRole role = roleRepository.findById(roleId);
+        if (role == null) {
+            return error("Role not found");
+        }
+        
+        roleRepository.deleteById(roleId);
+        return success("Role deleted successfully");
     }
 }

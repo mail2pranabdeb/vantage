@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/system/notice")
+@RequestMapping("/api/system/notice")
 public class SysNoticeController extends BaseController {
 
     private final SysNoticeRepository noticeRepository;
@@ -19,13 +19,13 @@ public class SysNoticeController extends BaseController {
 
     @PreAuthorize("hasAuthority('system:notice:list')")
     @GetMapping("/list")
-    public AjaxResult list(SysNotice notice) {
+    public AjaxResult list() {
         return success(noticeRepository.findAll());
     }
 
     @PreAuthorize("hasAuthority('system:notice:query')")
     @GetMapping(value = "/{noticeId}")
-    public AjaxResult getInfo(@PathVariable Long noticeId) {
+    public AjaxResult getInfo(@PathVariable Integer noticeId) {
         return noticeRepository.findById(noticeId)
                 .map(this::success)
                 .orElse(error("Notice not found"));
@@ -34,20 +34,29 @@ public class SysNoticeController extends BaseController {
     @PreAuthorize("hasAuthority('system:notice:add')")
     @PostMapping
     public AjaxResult add(@RequestBody SysNotice notice) {
+        notice.setStatus(notice.getStatus() != null ? notice.getStatus() : "0");
         noticeRepository.insert(notice);
-        return success("Notice added");
+        return success("Notice added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:notice:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysNotice notice) {
+        SysNotice existing = noticeRepository.findById(notice.getNoticeId()).orElse(null);
+        if (existing == null) {
+            return error("Notice not found");
+        }
         noticeRepository.update(notice);
-        return success("Notice updated");
+        return success("Notice updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:notice:remove')")
-    @DeleteMapping("/{noticeIds}")
-    public AjaxResult remove(@PathVariable Long[] noticeIds) {
-        return toAjax(noticeRepository.deleteByIds(noticeIds));
+    @DeleteMapping("/{noticeId}")
+    public AjaxResult remove(@PathVariable Integer noticeId) {
+        if (noticeRepository.findById(noticeId).isEmpty()) {
+            return error("Notice not found");
+        }
+        noticeRepository.deleteById(noticeId);
+        return success("Notice deleted successfully");
     }
 }

@@ -19,8 +19,6 @@ public class SysMenuController extends BaseController {
 
     @GetMapping("/tree")
     public AjaxResult getMenuTree() {
-        // In a real app, get current user ID from SecurityContext
-        // For now, assuming admin (1L) or getting from context if available
         Long userId = 1L;
         return success(menuRepository.selectMenuTreeByUserId(userId));
     }
@@ -34,24 +32,38 @@ public class SysMenuController extends BaseController {
     @PreAuthorize("hasAuthority('system:menu:query')")
     @GetMapping(value = "/{menuId}")
     public AjaxResult getInfo(@PathVariable Long menuId) {
-        return success("Menu info retrieved");
+        SysMenu menu = menuRepository.findById(menuId);
+        return menu != null ? success(menu) : error("Menu not found");
     }
 
     @PreAuthorize("hasAuthority('system:menu:add')")
     @PostMapping
     public AjaxResult add(@RequestBody SysMenu menu) {
-        return success("Menu added");
+        menu.setVisible(menu.getVisible() != null ? menu.getVisible() : "0");
+        menu.setMenuType(menu.getMenuType() != null ? menu.getMenuType() : "M");
+        menuRepository.insert(menu);
+        return success("Menu added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:menu:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysMenu menu) {
-        return success("Menu updated");
+        SysMenu existing = menuRepository.findById(menu.getMenuId());
+        if (existing == null) {
+            return error("Menu not found");
+        }
+        menuRepository.update(menu);
+        return success("Menu updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:menu:remove')")
     @DeleteMapping("/{menuId}")
     public AjaxResult remove(@PathVariable Long menuId) {
-        return success("Menu deleted");
+        SysMenu menu = menuRepository.findById(menuId);
+        if (menu == null) {
+            return error("Menu not found");
+        }
+        menuRepository.deleteById(menuId);
+        return success("Menu deleted successfully");
     }
 }

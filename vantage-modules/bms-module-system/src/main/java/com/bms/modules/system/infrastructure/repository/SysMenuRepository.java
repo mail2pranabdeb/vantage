@@ -109,4 +109,50 @@ public class SysMenuRepository {
                 .filter(p -> p != null && !p.trim().isEmpty())
                 .collect(Collectors.toSet());
     }
+
+    public SysMenu findById(Long menuId) {
+        List<SysMenu> menus = jdbcTemplate.query(
+                "SELECT * FROM sys_menu WHERE menu_id = ?",
+                rowMapper,
+                menuId);
+        return menus.stream().findFirst().orElse(null);
+    }
+
+    public int insert(SysMenu menu) {
+        String sql = "INSERT INTO sys_menu (menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, create_by, create_time) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)";
+        return jdbcTemplate.update(sql,
+                menu.getMenuName(),
+                menu.getParentId() != null ? menu.getParentId() : 0L,
+                menu.getOrderNum() != null ? menu.getOrderNum() : 0,
+                menu.getUrl(),
+                menu.getTarget(),
+                menu.getMenuType(),
+                menu.getVisible(),
+                menu.getIsRefresh() != null ? menu.getIsRefresh() : "1",
+                menu.getPerms(),
+                menu.getIcon(),
+                "admin");
+    }
+
+    public int update(SysMenu menu) {
+        String sql = "UPDATE sys_menu SET menu_name = ?, parent_id = ?, order_num = ?, url = ?, target = ?, menu_type = ?, visible = ?, is_refresh = ?, perms = ?, icon = ?, update_by = ?, update_time = current_timestamp WHERE menu_id = ?";
+        return jdbcTemplate.update(sql,
+                menu.getMenuName(),
+                menu.getParentId(),
+                menu.getOrderNum(),
+                menu.getUrl(),
+                menu.getTarget(),
+                menu.getMenuType(),
+                menu.getVisible(),
+                menu.getIsRefresh(),
+                menu.getPerms(),
+                menu.getIcon(),
+                "admin",
+                menu.getMenuId());
+    }
+
+    public int deleteById(Long menuId) {
+        return jdbcTemplate.update("DELETE FROM sys_menu WHERE menu_id = ?", menuId);
+    }
 }

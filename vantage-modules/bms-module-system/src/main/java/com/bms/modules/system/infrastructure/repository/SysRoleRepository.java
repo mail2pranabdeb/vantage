@@ -38,4 +38,37 @@ public class SysRoleRepository {
                 "WHERE ur.user_id = ? AND r.status = '0' AND r.del_flag = '0'";
         return jdbcTemplate.query(sql, rowMapper, userId);
     }
+
+    public SysRole findById(Long roleId) {
+        List<SysRole> roles = jdbcTemplate.query(
+                "SELECT * FROM sys_role WHERE role_id = ? AND del_flag = '0'",
+                rowMapper,
+                roleId);
+        return roles.stream().findFirst().orElse(null);
+    }
+
+    public int save(SysRole role) {
+        if (role.getRoleId() == null) {
+            return jdbcTemplate.update(
+                    "INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, status, del_flag) VALUES (?, ?, ?, ?, ?, '0')",
+                    role.getRoleName(),
+                    role.getRoleKey(),
+                    role.getRoleSort(),
+                    role.getDataScope() != null ? role.getDataScope() : "1",
+                    role.getStatus() != null ? role.getStatus() : "0");
+        } else {
+            return jdbcTemplate.update(
+                    "UPDATE sys_role SET role_name = ?, role_key = ?, role_sort = ?, data_scope = ?, status = ? WHERE role_id = ?",
+                    role.getRoleName(),
+                    role.getRoleKey(),
+                    role.getRoleSort(),
+                    role.getDataScope(),
+                    role.getStatus(),
+                    role.getRoleId());
+        }
+    }
+
+    public int deleteById(Long roleId) {
+        return jdbcTemplate.update("UPDATE sys_role SET del_flag = '2' WHERE role_id = ?", roleId);
+    }
 }

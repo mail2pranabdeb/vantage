@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/system/post")
+@RequestMapping("/api/system/post")
 public class SysPostController extends BaseController {
 
     private final SysPostRepository postRepository;
@@ -34,20 +34,30 @@ public class SysPostController extends BaseController {
     @PreAuthorize("hasAuthority('system:post:add')")
     @PostMapping
     public AjaxResult add(@RequestBody SysPost post) {
+        post.setPostSort(post.getPostSort() != null ? post.getPostSort() : 0);
+        post.setStatus(post.getStatus() != null ? post.getStatus() : "0");
         postRepository.insert(post);
-        return success("Post added");
+        return success("Post added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:post:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysPost post) {
+        SysPost existing = postRepository.findById(post.getPostId()).orElse(null);
+        if (existing == null) {
+            return error("Post not found");
+        }
         postRepository.update(post);
-        return success("Post updated");
+        return success("Post updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:post:remove')")
-    @DeleteMapping("/{postIds}")
-    public AjaxResult remove(@PathVariable Long[] postIds) {
-        return toAjax(postRepository.deleteByIds(postIds));
+    @DeleteMapping("/{postId}")
+    public AjaxResult remove(@PathVariable Long postId) {
+        if (postRepository.findById(postId).isEmpty()) {
+            return error("Post not found");
+        }
+        postRepository.deleteById(postId);
+        return success("Post deleted successfully");
     }
 }

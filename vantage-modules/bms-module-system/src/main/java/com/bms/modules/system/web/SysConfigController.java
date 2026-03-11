@@ -20,35 +20,43 @@ public class SysConfigController extends BaseController {
     @PreAuthorize("hasAuthority('system:config:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success("Configuration list retrieved");
-    }
-
-    @GetMapping(value = "/configKey/{configKey}")
-    public AjaxResult getConfigKey(@PathVariable String configKey) {
-        return success("Configuration key retrieved");
+        return success(configRepository.findAll());
     }
 
     @PreAuthorize("hasAuthority('system:config:query')")
     @GetMapping(value = "/{configId}")
     public AjaxResult getInfo(@PathVariable Long configId) {
-        return success("Configuration info retrieved");
+        return configRepository.findById(configId)
+                .map(this::success)
+                .orElse(error("Config not found"));
     }
 
     @PreAuthorize("hasAuthority('system:config:add')")
     @PostMapping
     public AjaxResult add(@RequestBody SysConfig config) {
-        return success("Configuration added");
+        config.setConfigType(config.getConfigType() != null ? config.getConfigType() : "Y");
+        configRepository.insert(config);
+        return success("Config added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:config:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysConfig config) {
-        return success("Configuration updated");
+        SysConfig existing = configRepository.findById(config.getConfigId()).orElse(null);
+        if (existing == null) {
+            return error("Config not found");
+        }
+        configRepository.update(config);
+        return success("Config updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:config:remove')")
-    @DeleteMapping("/{configIds}")
-    public AjaxResult remove(@PathVariable Long[] configIds) {
-        return success("Configuration deleted");
+    @DeleteMapping("/{configId}")
+    public AjaxResult remove(@PathVariable Long configId) {
+        if (configRepository.findById(configId).isEmpty()) {
+            return error("Config not found");
+        }
+        configRepository.deleteById(configId);
+        return success("Config deleted successfully");
     }
 }
