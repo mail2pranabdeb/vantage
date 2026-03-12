@@ -1,4 +1,4 @@
-package com.pd.framework.security;
+package com.pd.modules.system.security;
 
 import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysMenuRepository;
@@ -31,14 +31,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user.getUserId() == 1L) {
             permissions = Set.of(
                     "*:*:*",
-                    "system:user:list", "system:user:query", "system:user:add", "system:user:edit",
-                    "system:user:remove",
-                    "system:role:list", "system:role:query", "system:role:add", "system:role:edit",
-                    "system:role:remove",
-                    "system:menu:list", "system:menu:query", "system:menu:add", "system:menu:edit",
-                    "system:menu:remove",
-                    "system:config:list", "system:config:query", "system:config:add", "system:config:edit",
-                    "system:config:remove");
+                    "system:user:list", "system:user:query", "system:user:add", "system:user:edit", "system:user:remove",
+                    "system:role:list", "system:role:query", "system:role:add", "system:role:edit", "system:role:remove",
+                    "system:menu:list", "system:menu:query", "system:menu:add", "system:menu:edit", "system:menu:remove",
+                    "system:config:list", "system:config:query", "system:config:add", "system:config:edit", "system:config:remove");
         } else {
             permissions = menuRepository.findPermsByUserId(user.getUserId()).stream().collect(Collectors.toSet());
         }
