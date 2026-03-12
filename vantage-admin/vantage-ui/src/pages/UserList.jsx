@@ -162,9 +162,12 @@ const UserList = () => {
             if (data.code === 200) {
                 console.log('User added successfully, fetching users...');
                 setIsModalOpen(false);
-                fetchUsers().then(() => {
-                    console.log('Users refreshed');
-                });
+                // Add a small delay to ensure database transaction is committed
+                setTimeout(() => {
+                    fetchUsers().then(() => {
+                        console.log('Users refreshed');
+                    });
+                }, 100);
             } else {
                 alert(data.msg || `Failed to ${modalMode} user`);
             }

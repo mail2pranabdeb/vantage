@@ -5,6 +5,7 @@ import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -35,13 +36,14 @@ public class SysUserController extends BaseController {
 
     @PreAuthorize("hasAuthority('system:user:add')")
     @PostMapping
+    @Transactional
     public AjaxResult add(@RequestBody SysUser user) {
         // Check if login name already exists
         Optional<SysUser> existing = userRepository.findByLoginName(user.getLoginName());
         if (existing.isPresent()) {
             return error("Login name already exists");
         }
-        
+
         // Set default values
         user.setUserType("00");
         user.setSex(user.getSex() != null ? user.getSex() : "0");
@@ -49,12 +51,12 @@ public class SysUserController extends BaseController {
         user.setCreateBy("admin");
         user.setCreateTime(LocalDateTime.now());
         user.setDelFlag("0");
-        
+
         // TODO: Encode password
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             user.setPassword("123456"); // Default password
         }
-        
+
         userRepository.save(user);
         return success("User added successfully");
     }
