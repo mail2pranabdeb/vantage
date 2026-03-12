@@ -24,6 +24,10 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+    open-in-view: false
   sql:
     init:
       mode: never
