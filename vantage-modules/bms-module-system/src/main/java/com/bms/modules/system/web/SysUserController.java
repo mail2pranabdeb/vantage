@@ -4,6 +4,8 @@ import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,9 @@ public class SysUserController extends BaseController {
 
     private final SysUserRepository userRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     public SysUserController(SysUserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -24,7 +29,10 @@ public class SysUserController extends BaseController {
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success(userRepository.findAllActive());
+        var users = userRepository.findAllActive();
+        System.out.println("=== Fetching users, found: " + users.size() + " users ===");
+        users.forEach(u -> System.out.println("User: " + u.getLoginName() + " - " + u.getUserName()));
+        return success(users);
     }
 
     @PreAuthorize("hasAuthority('system:user:query')")
@@ -38,9 +46,12 @@ public class SysUserController extends BaseController {
     @PostMapping
     @Transactional
     public AjaxResult add(@RequestBody SysUser user) {
+        System.out.println("=== Adding user: " + user.getLoginName() + " ===");
+        
         // Check if login name already exists
         Optional<SysUser> existing = userRepository.findByLoginName(user.getLoginName());
         if (existing.isPresent()) {
+            System.out.println("User already exists!");
             return error("Login name already exists");
         }
 
@@ -57,7 +68,13 @@ public class SysUserController extends BaseController {
             user.setPassword("123456"); // Default password
         }
 
-        userRepository.save(user);
+        var saved = userRepository.save(user);
+        System.out.println("User saved with ID: " + saved.getUserId());
+        
+        // Force flush and clear to ensure data is committed
+        entityManager.flush();
+        entityManager.clear();
+        
         return success("User added successfully");
     }
 
