@@ -26,6 +26,7 @@ const UserList = () => {
         phonenumber: '',
         sex: '0',
         status: '0',
+        password: '',
         remark: ''
     });
     const [submitting, setSubmitting] = useState(false);
@@ -60,6 +61,7 @@ const UserList = () => {
             phonenumber: '',
             sex: '0',
             status: '0',
+            password: '',
             remark: ''
         });
         setIsModalOpen(true);
@@ -371,13 +373,14 @@ const UserList = () => {
 
                     <div className="form-row">
                         <FormInput
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
+                            label="Password"
+                            name="password"
+                            type="password"
+                            value={formData.password}
                             onChange={handleInputChange}
-                            placeholder="Enter email address"
-                            disabled={modalMode === 'view'}
+                            placeholder="Enter password"
+                            required={modalMode === 'add'}
+                            disabled={modalMode === 'view' || modalMode === 'edit'}
                         />
                         <FormInput
                             label="Phone Number"
@@ -385,6 +388,18 @@ const UserList = () => {
                             value={formData.phonenumber}
                             onChange={handleInputChange}
                             placeholder="Enter phone number"
+                            disabled={modalMode === 'view'}
+                        />
+                    </div>
+
+                    <div className="form-row">
+                        <FormInput
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="Enter email address"
                             disabled={modalMode === 'view'}
                         />
                     </div>
