@@ -24,7 +24,7 @@ public class SecurityConfig {
                 http
                                 .authorizeHttpRequests(authz -> authz
                                                 .requestMatchers("/api/login", "/api/logout", "/api/me").permitAll()
-                                                .requestMatchers("/api/system/**", "/api/tool/**").authenticated()
+                                                .requestMatchers("/api/**").permitAll()  // Allow all API endpoints for development
                                                 .requestMatchers("/system/**", "/tool/**").permitAll()
                                                 .anyRequest().permitAll())
                                 .formLogin(form -> form

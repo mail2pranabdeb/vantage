@@ -127,15 +127,17 @@ const UserList = () => {
 
     const handleSubmit = () => {
         setSubmitting(true);
-        
-        const url = modalMode === 'add' 
-            ? '/api/system/user' 
+
+        const url = modalMode === 'add'
+            ? '/api/system/user'
             : '/api/system/user';
-        
+
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = modalMode === 'add' 
-            ? { ...formData } 
+        const body = modalMode === 'add'
+            ? { ...formData }
             : { ...formData, userId: currentUser.userId };
+
+        console.log('Submitting user:', body);
 
         fetch(url, {
             method,
@@ -144,8 +146,12 @@ const UserList = () => {
             },
             body: JSON.stringify(body)
         })
-        .then(res => res.json())
+        .then(res => {
+            console.log('Response status:', res.status);
+            return res.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
@@ -157,7 +163,7 @@ const UserList = () => {
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} user:`, err);
-            alert(`Failed to ${modalMode} user`);
+            alert(`Failed to ${modalMode} user: ${err.message}`);
         });
     };
 
