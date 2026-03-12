@@ -21,17 +21,17 @@ public interface ISysJobService {
     /**
      * Pause job
      */
-    int pauseJob(SysJob job) throws SchedulerException;
+    void pauseJob(SysJob job) throws SchedulerException;
 
     /**
      * Resume job
      */
-    int resumeJob(SysJob job) throws SchedulerException;
+    void resumeJob(SysJob job) throws SchedulerException;
 
     /**
      * Delete job
      */
-    int deleteJob(SysJob job) throws SchedulerException;
+    void deleteJob(SysJob job) throws SchedulerException;
 
     /**
      * Delete jobs by IDs
@@ -46,20 +46,20 @@ public interface ISysJobService {
     /**
      * Run job immediately
      */
-    boolean run(SysJob job) throws SchedulerException;
+    void run(SysJob job) throws SchedulerException;
 
     /**
      * Insert job
      */
-    int insertJob(SysJob job) throws SchedulerException;
+    void insertJob(SysJob job) throws SchedulerException;
 
     /**
      * Update job
      */
-    int updateJob(SysJob job) throws SchedulerException;
+    void updateJob(SysJob job) throws SchedulerException;
 
     /**
      * Validate cron expression
      */
-    boolean checkCronExpressionIsValid(String cronExpression);
+    boolean checkCronExpressionIsValid(SysJob job);
 }

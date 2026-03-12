@@ -1,74 +1,26 @@
 package com.pd.modules.system.infrastructure.repository;
 
 import com.pd.modules.system.domain.SysRole;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public class SysRoleRepository {
+public interface SysRoleRepository extends JpaRepository<SysRole, Long> {
 
-    private final JdbcTemplate jdbcTemplate;
+    @Query("SELECT r FROM SysRole r WHERE r.roleKey = :roleKey AND r.delFlag = '0'")
+    Optional<SysRole> findByRoleKey(@Param("roleKey") String roleKey);
 
-    public SysRoleRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    @Query("SELECT r FROM SysRole r WHERE r.delFlag = '0' ORDER BY r.roleSort ASC")
+    List<SysRole> findAllActive();
 
-    private final RowMapper<SysRole> rowMapper = (rs, rowNum) -> {
-        SysRole role = new SysRole();
-        role.setRoleId(rs.getLong("role_id"));
-        role.setRoleName(rs.getString("role_name"));
-        role.setRoleKey(rs.getString("role_key"));
-        role.setRoleSort(rs.getInt("role_sort"));
-        role.setDataScope(rs.getString("data_scope"));
-        role.setStatus(rs.getString("status"));
-        role.setDelFlag(rs.getString("del_flag"));
-        return role;
-    };
+    @Query("SELECT r FROM SysRole r WHERE r.status = :status AND r.delFlag = '0'")
+    List<SysRole> findByStatus(@Param("status") String status);
 
-    public List<SysRole> findAll() {
-        return jdbcTemplate.query("SELECT * FROM sys_role WHERE del_flag = '0'", rowMapper);
-    }
-
-    public List<SysRole> findRolesByUserId(Long userId) {
-        String sql = "SELECT r.* FROM sys_role r " +
-                "JOIN sys_user_role ur ON r.role_id = ur.role_id " +
-                "WHERE ur.user_id = ? AND r.status = '0' AND r.del_flag = '0'";
-        return jdbcTemplate.query(sql, rowMapper, userId);
-    }
-
-    public SysRole findById(Long roleId) {
-        List<SysRole> roles = jdbcTemplate.query(
-                "SELECT * FROM sys_role WHERE role_id = ? AND del_flag = '0'",
-                rowMapper,
-                roleId);
-        return roles.stream().findFirst().orElse(null);
-    }
-
-    public int save(SysRole role) {
-        if (role.getRoleId() == null) {
-            return jdbcTemplate.update(
-                    "INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, status, del_flag) VALUES (?, ?, ?, ?, ?, '0')",
-                    role.getRoleName(),
-                    role.getRoleKey(),
-                    role.getRoleSort(),
-                    role.getDataScope() != null ? role.getDataScope() : "1",
-                    role.getStatus() != null ? role.getStatus() : "0");
-        } else {
-            return jdbcTemplate.update(
-                    "UPDATE sys_role SET role_name = ?, role_key = ?, role_sort = ?, data_scope = ?, status = ? WHERE role_id = ?",
-                    role.getRoleName(),
-                    role.getRoleKey(),
-                    role.getRoleSort(),
-                    role.getDataScope(),
-                    role.getStatus(),
-                    role.getRoleId());
-        }
-    }
-
-    public int deleteById(Long roleId) {
-        return jdbcTemplate.update("UPDATE sys_role SET del_flag = '2' WHERE role_id = ?", roleId);
-    }
+    @Query("SELECT r FROM SysRole r JOIN SysUserRole ur ON r.roleId = ur.roleId WHERE ur.userId = :userId AND r.status = '0' AND r.delFlag = '0'")
+    List<SysRole> findRolesByUserId(@Param("userId") Long userId);
 }

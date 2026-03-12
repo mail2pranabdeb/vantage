@@ -7,6 +7,9 @@ import com.pd.modules.system.infrastructure.repository.SysConfigRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/system/config")
 public class SysConfigController extends BaseController {
@@ -20,7 +23,7 @@ public class SysConfigController extends BaseController {
     @PreAuthorize("hasAuthority('system:config:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success(configRepository.findAll());
+        return success(configRepository.findAllActive());
     }
 
     @PreAuthorize("hasAuthority('system:config:query')")
@@ -35,25 +38,29 @@ public class SysConfigController extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody SysConfig config) {
         config.setConfigType(config.getConfigType() != null ? config.getConfigType() : "Y");
-        configRepository.insert(config);
+        config.setCreateBy("admin");
+        config.setCreateTime(LocalDateTime.now());
+        configRepository.save(config);
         return success("Config added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:config:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysConfig config) {
-        SysConfig existing = configRepository.findById(config.getConfigId()).orElse(null);
-        if (existing == null) {
+        Optional<SysConfig> existing = configRepository.findById(config.getConfigId());
+        if (!existing.isPresent()) {
             return error("Config not found");
         }
-        configRepository.update(config);
+        config.setUpdateBy("admin");
+        config.setUpdateTime(LocalDateTime.now());
+        configRepository.save(config);
         return success("Config updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:config:remove')")
     @DeleteMapping("/{configId}")
     public AjaxResult remove(@PathVariable Long configId) {
-        if (configRepository.findById(configId).isEmpty()) {
+        if (!configRepository.findById(configId).isPresent()) {
             return error("Config not found");
         }
         configRepository.deleteById(configId);

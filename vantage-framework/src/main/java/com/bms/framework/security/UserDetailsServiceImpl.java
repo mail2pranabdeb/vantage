@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -39,7 +40,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     "system:config:list", "system:config:query", "system:config:add", "system:config:edit",
                     "system:config:remove");
         } else {
-            permissions = menuRepository.findPermsByUserId(user.getUserId());
+            permissions = menuRepository.findPermsByUserId(user.getUserId()).stream().collect(Collectors.toSet());
         }
         return new LoginUser(user, permissions);
     }

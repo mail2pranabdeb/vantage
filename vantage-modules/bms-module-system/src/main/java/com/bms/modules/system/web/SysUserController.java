@@ -23,7 +23,7 @@ public class SysUserController extends BaseController {
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success(userRepository.findAll());
+        return success(userRepository.findAllActive());
     }
 
     @PreAuthorize("hasAuthority('system:user:query')")
@@ -82,7 +82,12 @@ public class SysUserController extends BaseController {
             return error("User not found");
         }
         
-        userRepository.deleteById(userId);
+        // Soft delete
+        user.get().setDelFlag("2");
+        user.get().setUpdateTime(LocalDateTime.now());
+        user.get().setUpdateBy("admin");
+        userRepository.save(user.get());
+        
         return success("User deleted successfully");
     }
 }

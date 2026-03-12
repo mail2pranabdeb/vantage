@@ -1,55 +1,72 @@
 package com.pd.modules.quartz.domain;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * Scheduled job entity - sys_job
  */
+@Entity
+@Table(name = "sys_job")
 public class SysJob implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** Task ID */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "job_id")
     private Long jobId;
 
     /** Task name */
+    @Column(name = "job_name", length = 64)
     private String jobName;
 
     /** Task group name */
+    @Column(name = "job_group", length = 64)
     private String jobGroup;
 
     /** Invoke target string */
+    @Column(name = "invoke_target", length = 500, nullable = false)
     private String invokeTarget;
 
     /** Cron expression */
+    @Column(name = "cron_expression", length = 255)
     private String cronExpression;
 
     /** Misfire policy */
+    @Column(name = "misfire_policy", length = 20)
     private String misfirePolicy = "3";
 
-    /** Concurrent execution (0 allow, 1 deny) */
-    private String concurrent;
+    /** Concurrent execution (true allow, false deny) */
+    @Column(name = "concurrent", length = 1)
+    private String concurrent = "1";
 
     /** Task status (0 normal, 1 paused) */
-    private String status;
+    @Column(name = "status", length = 1)
+    private String status = "0";
 
     /** Create by */
+    @Column(name = "create_by", length = 64)
     private String createBy;
 
     /** Create time */
+    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     /** Update by */
+    @Column(name = "update_by", length = 64)
     private String updateBy;
 
     /** Update time */
+    @Column(name = "update_time")
     private LocalDateTime updateTime;
 
     /** Remark */
+    @Column(name = "remark", length = 500)
     private String remark;
 
     // Getters and Setters
-
     public Long getJobId() {
         return jobId;
     }

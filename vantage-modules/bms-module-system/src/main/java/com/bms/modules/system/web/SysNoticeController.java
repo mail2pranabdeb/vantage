@@ -7,6 +7,9 @@ import com.pd.modules.system.infrastructure.repository.SysNoticeRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/system/notice")
 public class SysNoticeController extends BaseController {
@@ -20,7 +23,7 @@ public class SysNoticeController extends BaseController {
     @PreAuthorize("hasAuthority('system:notice:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success(noticeRepository.findAll());
+        return success(noticeRepository.findAllActive());
     }
 
     @PreAuthorize("hasAuthority('system:notice:query')")
@@ -35,25 +38,29 @@ public class SysNoticeController extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody SysNotice notice) {
         notice.setStatus(notice.getStatus() != null ? notice.getStatus() : "0");
-        noticeRepository.insert(notice);
+        notice.setCreateBy("admin");
+        notice.setCreateTime(LocalDateTime.now());
+        noticeRepository.save(notice);
         return success("Notice added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:notice:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysNotice notice) {
-        SysNotice existing = noticeRepository.findById(notice.getNoticeId()).orElse(null);
-        if (existing == null) {
+        Optional<SysNotice> existing = noticeRepository.findById(notice.getNoticeId());
+        if (!existing.isPresent()) {
             return error("Notice not found");
         }
-        noticeRepository.update(notice);
+        notice.setUpdateBy("admin");
+        notice.setUpdateTime(LocalDateTime.now());
+        noticeRepository.save(notice);
         return success("Notice updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:notice:remove')")
     @DeleteMapping("/{noticeId}")
     public AjaxResult remove(@PathVariable Integer noticeId) {
-        if (noticeRepository.findById(noticeId).isEmpty()) {
+        if (!noticeRepository.findById(noticeId).isPresent()) {
             return error("Notice not found");
         }
         noticeRepository.deleteById(noticeId);

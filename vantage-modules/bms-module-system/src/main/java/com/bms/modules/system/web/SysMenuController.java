@@ -7,6 +7,10 @@ import com.pd.modules.system.infrastructure.repository.SysMenuRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/system/menu")
 public class SysMenuController extends BaseController {
@@ -20,20 +24,21 @@ public class SysMenuController extends BaseController {
     @GetMapping("/tree")
     public AjaxResult getMenuTree() {
         Long userId = 1L;
-        return success(menuRepository.selectMenuTreeByUserId(userId));
+        List<SysMenu> menus = menuRepository.findMenuTreeByUserId(userId);
+        return success(buildMenuTree(menus, 0L));
     }
 
     @PreAuthorize("hasAuthority('system:menu:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success(menuRepository.findAll());
+        return success(menuRepository.findAllActive());
     }
 
     @PreAuthorize("hasAuthority('system:menu:query')")
     @GetMapping(value = "/{menuId}")
     public AjaxResult getInfo(@PathVariable Long menuId) {
-        SysMenu menu = menuRepository.findById(menuId);
-        return menu != null ? success(menu) : error("Menu not found");
+        Optional<SysMenu> menu = menuRepository.findById(menuId);
+        return menu.map(this::success).orElse(error("Menu not found"));
     }
 
     @PreAuthorize("hasAuthority('system:menu:add')")
@@ -41,29 +46,50 @@ public class SysMenuController extends BaseController {
     public AjaxResult add(@RequestBody SysMenu menu) {
         menu.setVisible(menu.getVisible() != null ? menu.getVisible() : "0");
         menu.setMenuType(menu.getMenuType() != null ? menu.getMenuType() : "M");
-        menuRepository.insert(menu);
+        menu.setStatus("0");
+        menu.setCreateBy("admin");
+        menu.setCreateTime(LocalDateTime.now());
+        if (menu.getParentId() == null) {
+            menu.setParentId(0L);
+        }
+        if (menu.getOrderNum() == null) {
+            menu.setOrderNum(0);
+        }
+        menuRepository.save(menu);
         return success("Menu added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:menu:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysMenu menu) {
-        SysMenu existing = menuRepository.findById(menu.getMenuId());
-        if (existing == null) {
+        Optional<SysMenu> existing = menuRepository.findById(menu.getMenuId());
+        if (!existing.isPresent()) {
             return error("Menu not found");
         }
-        menuRepository.update(menu);
+        menu.setUpdateBy("admin");
+        menu.setUpdateTime(LocalDateTime.now());
+        menuRepository.save(menu);
         return success("Menu updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:menu:remove')")
     @DeleteMapping("/{menuId}")
     public AjaxResult remove(@PathVariable Long menuId) {
-        SysMenu menu = menuRepository.findById(menuId);
-        if (menu == null) {
+        if (!menuRepository.findById(menuId).isPresent()) {
             return error("Menu not found");
         }
         menuRepository.deleteById(menuId);
         return success("Menu deleted successfully");
+    }
+
+    private List<SysMenu> buildMenuTree(List<SysMenu> menus, Long parentId) {
+        for (SysMenu menu : menus) {
+            if (menu.getParentId().equals(parentId)) {
+                menu.setChildren(buildMenuTree(menus, menu.getMenuId()));
+            }
+        }
+        return menus.stream()
+                .filter(m -> m.getParentId().equals(parentId))
+                .toList();
     }
 }

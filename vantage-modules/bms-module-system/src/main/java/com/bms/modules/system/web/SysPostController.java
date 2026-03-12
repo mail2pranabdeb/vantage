@@ -7,6 +7,9 @@ import com.pd.modules.system.infrastructure.repository.SysPostRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/system/post")
 public class SysPostController extends BaseController {
@@ -20,7 +23,7 @@ public class SysPostController extends BaseController {
     @PreAuthorize("hasAuthority('system:post:list')")
     @GetMapping("/list")
     public AjaxResult list() {
-        return success(postRepository.findAll());
+        return success(postRepository.findAllActive());
     }
 
     @PreAuthorize("hasAuthority('system:post:query')")
@@ -36,25 +39,29 @@ public class SysPostController extends BaseController {
     public AjaxResult add(@RequestBody SysPost post) {
         post.setPostSort(post.getPostSort() != null ? post.getPostSort() : 0);
         post.setStatus(post.getStatus() != null ? post.getStatus() : "0");
-        postRepository.insert(post);
+        post.setCreateBy("admin");
+        post.setCreateTime(LocalDateTime.now());
+        postRepository.save(post);
         return success("Post added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:post:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysPost post) {
-        SysPost existing = postRepository.findById(post.getPostId()).orElse(null);
-        if (existing == null) {
+        Optional<SysPost> existing = postRepository.findById(post.getPostId());
+        if (!existing.isPresent()) {
             return error("Post not found");
         }
-        postRepository.update(post);
+        post.setUpdateBy("admin");
+        post.setUpdateTime(LocalDateTime.now());
+        postRepository.save(post);
         return success("Post updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:post:remove')")
     @DeleteMapping("/{postId}")
     public AjaxResult remove(@PathVariable Long postId) {
-        if (postRepository.findById(postId).isEmpty()) {
+        if (!postRepository.findById(postId).isPresent()) {
             return error("Post not found");
         }
         postRepository.deleteById(postId);

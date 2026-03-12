@@ -25,7 +25,7 @@ public class SysJobServiceImpl implements ISysJobService {
 
     @Override
     public List<SysJob> selectJobList(SysJob job) {
-        return jobRepository.findByCondition(job.getJobName(), job.getJobGroup(), job.getStatus());
+        return jobRepository.findAllActive();
     }
 
     @Override
@@ -34,108 +34,100 @@ public class SysJobServiceImpl implements ISysJobService {
     }
 
     @Override
-    public int pauseJob(SysJob job) throws SchedulerException {
+    public void pauseJob(SysJob job) throws SchedulerException {
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
         job.setStatus("1");
-        int rows = jobRepository.update(job);
-        if (rows > 0) {
-            scheduler.pauseJob(ScheduleUtils.getJobKey(jobId, jobGroup));
-        }
-        return rows;
+        jobRepository.save(job);
+        scheduler.pauseJob(ScheduleUtils.getJobKey(jobId, jobGroup));
     }
 
     @Override
-    public int resumeJob(SysJob job) throws SchedulerException {
+    public void resumeJob(SysJob job) throws SchedulerException {
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
         job.setStatus("0");
-        int rows = jobRepository.update(job);
-        if (rows > 0) {
-            scheduler.resumeJob(ScheduleUtils.getJobKey(jobId, jobGroup));
-        }
-        return rows;
+        jobRepository.save(job);
+        scheduler.resumeJob(ScheduleUtils.getJobKey(jobId, jobGroup));
     }
 
     @Override
-    public int deleteJob(SysJob job) throws SchedulerException {
-        Long jobId = job.getJobId();
-        String jobGroup = job.getJobGroup();
-        int rows = jobRepository.deleteById(jobId);
-        if (rows > 0) {
-            scheduler.deleteJob(ScheduleUtils.getJobKey(jobId, jobGroup));
-        }
-        return rows;
-    }
-
-    @Override
-    public void deleteJobByIds(Long[] ids) throws SchedulerException {
-        for (Long jobId : ids) {
+    public void deleteJobByIds(Long[] jobIds) throws SchedulerException {
+        for (Long jobId : jobIds) {
             SysJob job = jobRepository.findById(jobId).orElse(null);
             if (job != null) {
-                deleteJob(job);
+                scheduler.deleteJob(ScheduleUtils.getJobKey(jobId, job.getJobGroup()));
+                jobRepository.deleteById(jobId);
             }
         }
     }
 
     @Override
+    public void deleteJob(SysJob job) throws SchedulerException {
+        deleteJobByIds(new Long[]{job.getJobId()});
+    }
+
+    @Override
     public int changeStatus(SysJob job) throws SchedulerException {
-        Long jobId = job.getJobId();
-        String jobGroup = job.getJobGroup();
         String status = job.getStatus();
-        
-        if ("0".equals(status)) {
-            resumeJob(job);
-        } else if ("1".equals(status)) {
-            pauseJob(job);
-        }
-        return jobRepository.update(job);
-    }
-
-    @Override
-    public boolean run(SysJob job) throws SchedulerException {
-        Long jobId = job.getJobId();
-        String jobGroup = job.getJobGroup();
-        SysJob sysJob = selectJobById(jobId);
+        SysJob sysJob = jobRepository.findById(job.getJobId()).orElse(null);
         if (sysJob == null) {
-            return false;
+            return 0;
         }
-        scheduler.triggerJob(ScheduleUtils.getJobKey(jobId, jobGroup));
-        return true;
+        if ("1".equals(status)) {
+            pauseJob(sysJob);
+        } else if ("0".equals(status)) {
+            resumeJob(sysJob);
+        }
+        return 1;
     }
 
     @Override
-    public int insertJob(SysJob job) throws SchedulerException {
-        int rows = jobRepository.insert(job);
-        if (rows > 0) {
+    public void run(SysJob job) throws SchedulerException {
+        Long jobId = job.getJobId();
+        SysJob sysJob = jobRepository.findById(jobId).orElse(null);
+        if (sysJob == null) {
+            return;
+        }
+        String jobGroup = sysJob.getJobGroup();
+        scheduler.triggerJob(ScheduleUtils.getJobKey(jobId, jobGroup));
+    }
+
+    @Override
+    public void insertJob(SysJob job) throws SchedulerException {
+        job.setCreateTime(java.time.LocalDateTime.now());
+        job.setCreateBy("admin");
+        jobRepository.save(job);
+        
+        // Check if cron expression is valid
+        if (CronUtils.isValid(job.getCronExpression())) {
             ScheduleUtils.createScheduleJob(scheduler, job);
         }
-        return rows;
     }
 
     @Override
-    public int updateJob(SysJob job) throws SchedulerException {
-        Long jobId = job.getJobId();
-        String jobGroup = job.getJobGroup();
-        scheduler.pauseJob(ScheduleUtils.getJobKey(jobId, jobGroup));
-        ScheduleUtils.createScheduleJob(scheduler, job);
-        return jobRepository.update(job);
+    public void updateJob(SysJob job) throws SchedulerException {
+        SysJob existingJob = jobRepository.findById(job.getJobId()).orElse(null);
+        if (existingJob == null) {
+            return;
+        }
+        
+        job.setUpdateTime(java.time.LocalDateTime.now());
+        job.setUpdateBy("admin");
+        
+        // Delete old scheduler job
+        scheduler.deleteJob(ScheduleUtils.getJobKey(existingJob.getJobId(), existingJob.getJobGroup()));
+        
+        jobRepository.save(job);
+        
+        // Create new scheduler job
+        if (CronUtils.isValid(job.getCronExpression())) {
+            ScheduleUtils.createScheduleJob(scheduler, job);
+        }
     }
 
     @Override
-    public boolean checkCronExpressionIsValid(String cronExpression) {
-        return CronUtils.isValid(cronExpression);
-    }
-
-    private Long[] parseIds(String ids) {
-        if (ids == null || ids.isEmpty()) {
-            return new Long[0];
-        }
-        String[] idArr = ids.split(",");
-        Long[] result = new Long[idArr.length];
-        for (int i = 0; i < idArr.length; i++) {
-            result[i] = Long.parseLong(idArr[i]);
-        }
-        return result;
+    public boolean checkCronExpressionIsValid(SysJob job) {
+        return CronUtils.isValid(job.getCronExpression());
     }
 }

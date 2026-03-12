@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.quartz.domain.SysJob;
-import com.pd.modules.quartz.service.ISysJobService;
+import com.pd.modules.quartz.infrastructure.repository.SysJobRepository;
 
 /**
  * Scheduled job controller
@@ -17,14 +17,17 @@ import com.pd.modules.quartz.service.ISysJobService;
 public class SysJobController extends BaseController {
 
     @Autowired
-    private ISysJobService sysJobService;
+    private SysJobRepository jobRepository;
+
+    @Autowired
+    private com.pd.modules.quartz.service.ISysJobService sysJobService;
 
     /**
      * Get list of jobs
      */
     @GetMapping("/list")
     public AjaxResult list(SysJob job) {
-        return success(sysJobService.selectJobList(job));
+        return success(jobRepository.findAllActive());
     }
 
     /**
@@ -32,7 +35,9 @@ public class SysJobController extends BaseController {
      */
     @GetMapping("/{jobId}")
     public AjaxResult getInfo(@PathVariable Long jobId) {
-        return success(sysJobService.selectJobById(jobId));
+        return jobRepository.findById(jobId)
+                .map(this::success)
+                .orElse(error("Job not found"));
     }
 
     /**
