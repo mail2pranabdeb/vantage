@@ -37,10 +37,16 @@ const UserList = () => {
 
     const fetchUsers = () => {
         setLoading(true);
-        fetch('/api/system/user/list')
-            .then(res => res.json())
+        console.log('Fetching users...');
+        return fetch('/api/system/user/list')
+            .then(res => {
+                console.log('Fetch users response status:', res.status);
+                return res.json();
+            })
             .then(data => {
+                console.log('Fetch users response data:', data);
                 if (data.code === 200) {
+                    console.log('Users data:', data.data);
                     setUsers(data.data || []);
                 }
                 setLoading(false);
@@ -154,8 +160,11 @@ const UserList = () => {
             console.log('Response data:', data);
             setSubmitting(false);
             if (data.code === 200) {
+                console.log('User added successfully, fetching users...');
                 setIsModalOpen(false);
-                fetchUsers();
+                fetchUsers().then(() => {
+                    console.log('Users refreshed');
+                });
             } else {
                 alert(data.msg || `Failed to ${modalMode} user`);
             }
