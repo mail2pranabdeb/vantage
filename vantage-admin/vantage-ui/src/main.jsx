@@ -16,6 +16,7 @@ import NoticeList from './pages/NoticeList.jsx'
 import JobList from './pages/JobList.jsx'
 import JobLogList from './pages/JobLogList.jsx'
 import GenList from './pages/GenList.jsx'
+import Chat from './pages/Chat.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -41,6 +42,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="system/jobLog" element={<JobLogList />} />
           {/* Generator Module */}
           <Route path="tool/gen" element={<GenList />} />
+          {/* AI Chat */}
+          <Route path="chat" element={<Chat />} />
         </Route>
       </Routes>
     </BrowserRouter>

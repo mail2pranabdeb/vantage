@@ -2,6 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
+import FloatingChat from './components/FloatingChat'
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -44,6 +45,7 @@ function App() {
           <Outlet />
         </div>
       </div>
+      <FloatingChat />
     </div>
   )
 }

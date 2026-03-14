@@ -4,7 +4,7 @@
 insert into sys_user (user_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, del_flag, login_ip, login_date, pwd_update_date, create_by, create_time, update_by, update_time, remark)
 values(1, 'admin', 'Admin', '00', 'admin@bms.vip', '15888888888', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Administrator');
 insert into sys_user (user_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, del_flag, login_ip, login_date, pwd_update_date, create_by, create_time, update_by, update_time, remark)
-values(2, 'ry',    'bms', '00', 'ry@qq.com',  '15666666666', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Tester');
+values(2, 'prihan',    'Prihan', '00', 'prihan@qq.com',  '15666666666', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Tester');
 
 insert into sys_role (role_id, role_name, role_key, role_sort, data_scope, status, del_flag, create_by, create_time, update_by, update_time, remark)
 values(1, 'Super Admin', 'admin',  1, '1', '0', '0', 'admin', current_timestamp, '', null, 'Super Administrator');
