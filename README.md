@@ -135,11 +135,43 @@ Schema and initial data are loaded from:
 
 | Module | Description |
 |--------|-------------|
-| `vantage-common` | Shared utilities, constants, and base classes |
+| `vantage-common` | Shared utilities, constants, base classes, and domain events |
 | `vantage-framework` | Core framework: security, web config, interceptors |
-| `vantage-module-system` | User management, roles, permissions, menus |
+| `vantage-module-system` | User management, roles, permissions, menus, **login records**, **operation logs** |
 | `vantage-module-quartz` | Scheduled job management |
 | `vantage-module-generator` | Code generation for entities and CRUD |
+
+## Features
+
+### Authentication & Authorization
+- ✅ Login/Logout with JWT-style sessions
+- ✅ Role-based access control (RBAC)
+- ✅ Permission-based method security
+- ✅ **Login success/failure recording** (sys_logininfor)
+
+### Operation Logging
+- ✅ **Automatic operation logging** via AOP
+- ✅ Records all REST API calls
+- ✅ Tracks: user, IP, browser, OS, execution time, request/response
+- ✅ Query and filter operations (sys_oper_log)
+
+### System Management
+- ✅ User management (CRUD)
+- ✅ Role management
+- ✅ Menu management
+- ✅ Config management
+- ✅ Dict management
+
+### Job Scheduling
+- ✅ Quartz-based job scheduling
+- ✅ Cron expression support
+- ✅ Job execution logging
+
+### Code Generation
+- ✅ Entity generation
+- ✅ Repository generation
+- ✅ Service layer generation
+- ✅ Controller generation
 
 ## License
 

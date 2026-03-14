@@ -223,3 +223,13 @@ insert into sys_role_menu (role_id, menu_id) values (2, 106);
 insert into sys_role_menu (role_id, menu_id) values (2, 1060);
 insert into sys_role_menu (role_id, menu_id) values (2, 107);
 insert into sys_role_menu (role_id, menu_id) values (2, 1070);
+
+-- ==================== SAMPLE LOGIN RECORDS ====================
+MERGE INTO sys_logininfor KEY (info_id) VALUES (1, 'admin', '0', '127.0.0.1', 'Internal IP', 'Chrome', 'Windows', 'Login success', current_timestamp);
+MERGE INTO sys_logininfor KEY (info_id) VALUES (2, 'admin', '0', '192.168.1.100', 'Internal IP', 'Firefox', 'Windows', 'Login success', current_timestamp);
+MERGE INTO sys_logininfor KEY (info_id) VALUES (3, 'prihan', '1', '10.0.0.50', 'Internal IP', 'Safari', 'Mac', 'Invalid password', current_timestamp);
+
+-- ==================== SAMPLE OPERATION LOGS ====================
+MERGE INTO sys_oper_log KEY (oper_id) VALUES (1, 'User Management', 1, 'com.pd.modules.system.web.SysUserController.add()', 'POST', 0, 'admin', '', '/api/system/user', '127.0.0.1', 'Internal IP', '{"loginName":"test","userName":"Test User"}', '{"code":200,"msg":"Success"}', 0, '', current_timestamp, 150);
+MERGE INTO sys_oper_log KEY (oper_id) VALUES (2, 'Role Management', 2, 'com.pd.modules.system.web.SysRoleController.edit()', 'PUT', 0, 'admin', '', '/api/system/role', '127.0.0.1', 'Internal IP', '{"roleId":1,"roleName":"Super Admin"}', '{"code":200,"msg":"Success"}', 0, '', current_timestamp, 89);
+MERGE INTO sys_oper_log KEY (oper_id) VALUES (3, 'Menu Management', 3, 'com.pd.modules.system.web.SysMenuController.remove()', 'DELETE', 0, 'admin', '', '/api/system/menu/5', '127.0.0.1', 'Internal IP', '', '{"code":200,"msg":"Success"}', 0, '', current_timestamp, 45);

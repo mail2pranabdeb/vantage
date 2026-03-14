@@ -7,7 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * Repository for SysOperLog entity
+ */
 @Repository
 public class SysOperLogRepository {
 
@@ -46,29 +50,11 @@ public class SysOperLogRepository {
         return jdbcTemplate.query("SELECT * FROM sys_oper_log ORDER BY oper_time DESC", rowMapper);
     }
 
-    public List<SysOperLog> findByCondition(String title, String operName, Integer businessType, Integer status) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM sys_oper_log WHERE 1=1");
-        List<Object> params = new java.util.ArrayList<>();
-        
-        if (title != null && !title.isEmpty()) {
-            sql.append(" AND title LIKE ?");
-            params.add("%" + title + "%");
-        }
-        if (operName != null && !operName.isEmpty()) {
-            sql.append(" AND oper_name LIKE ?");
-            params.add("%" + operName + "%");
-        }
-        if (businessType != null) {
-            sql.append(" AND business_type = ?");
-            params.add(businessType);
-        }
-        if (status != null) {
-            sql.append(" AND status = ?");
-            params.add(status);
-        }
-        
-        sql.append(" ORDER BY oper_time DESC");
-        return jdbcTemplate.query(sql.toString(), rowMapper, params.toArray());
+    public Optional<SysOperLog> findById(Long operId) {
+        List<SysOperLog> list = jdbcTemplate.query(
+                "SELECT * FROM sys_oper_log WHERE oper_id = ?",
+                rowMapper, operId);
+        return list.stream().findFirst();
     }
 
     public int insert(SysOperLog log) {
@@ -88,20 +74,48 @@ public class SysOperLogRepository {
                 log.getJsonResult(),
                 log.getStatus(),
                 log.getErrorMsg(),
-                log.getOperTime() != null ? Timestamp.valueOf(log.getOperTime()) : null,
+                Timestamp.valueOf(log.getOperTime()),
                 log.getCostTime());
     }
 
-    public int deleteByIds(Long[] ids) {
+    public int deleteById(Long operId) {
+        return jdbcTemplate.update("DELETE FROM sys_oper_log WHERE oper_id = ?", operId);
+    }
+
+    public int deleteByIds(Long[] operIds) {
         return jdbcTemplate.batchUpdate(
                 "DELETE FROM sys_oper_log WHERE oper_id = ?",
-                java.util.Arrays.stream(ids)
+                java.util.Arrays.stream(operIds)
                         .map(id -> new Object[]{id})
-                        .toList())
-                .length;
+                        .toList()).length;
     }
 
     public int clean() {
-        return jdbcTemplate.update("TRUNCATE TABLE sys_oper_log");
+        return jdbcTemplate.update("DELETE FROM sys_oper_log");
+    }
+
+    public List<SysOperLog> findByCondition(String title, String operName, Integer businessType, Integer status) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM sys_oper_log WHERE 1=1");
+        java.util.List<Object> params = new java.util.ArrayList<>();
+
+        if (title != null && !title.isEmpty()) {
+            sql.append(" AND title LIKE ?");
+            params.add("%" + title + "%");
+        }
+        if (operName != null && !operName.isEmpty()) {
+            sql.append(" AND oper_name LIKE ?");
+            params.add("%" + operName + "%");
+        }
+        if (businessType != null) {
+            sql.append(" AND business_type = ?");
+            params.add(businessType);
+        }
+        if (status != null) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        sql.append(" ORDER BY oper_time DESC");
+        return jdbcTemplate.query(sql.toString(), params.toArray(), rowMapper);
     }
 }

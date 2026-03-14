@@ -7,7 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * Repository for SysLogininfor entity
+ */
 @Repository
 public class SysLogininforRepository {
 
@@ -38,25 +42,11 @@ public class SysLogininforRepository {
         return jdbcTemplate.query("SELECT * FROM sys_logininfor ORDER BY login_time DESC", rowMapper);
     }
 
-    public List<SysLogininfor> findByCondition(String loginName, String status, String ipaddr) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM sys_logininfor WHERE 1=1");
-        List<Object> params = new java.util.ArrayList<>();
-        
-        if (loginName != null && !loginName.isEmpty()) {
-            sql.append(" AND login_name LIKE ?");
-            params.add("%" + loginName + "%");
-        }
-        if (status != null && !status.isEmpty()) {
-            sql.append(" AND status = ?");
-            params.add(status);
-        }
-        if (ipaddr != null && !ipaddr.isEmpty()) {
-            sql.append(" AND ipaddr LIKE ?");
-            params.add("%" + ipaddr + "%");
-        }
-        
-        sql.append(" ORDER BY login_time DESC");
-        return jdbcTemplate.query(sql.toString(), rowMapper, params.toArray());
+    public Optional<SysLogininfor> findById(Long infoId) {
+        List<SysLogininfor> list = jdbcTemplate.query(
+                "SELECT * FROM sys_logininfor WHERE info_id = ?",
+                rowMapper, infoId);
+        return list.stream().findFirst();
     }
 
     public int insert(SysLogininfor info) {
@@ -69,19 +59,43 @@ public class SysLogininforRepository {
                 info.getBrowser(),
                 info.getOs(),
                 info.getMsg(),
-                info.getLoginTime() != null ? Timestamp.valueOf(info.getLoginTime()) : null);
+                Timestamp.valueOf(info.getLoginTime()));
     }
 
-    public int deleteByIds(Long[] ids) {
+    public int deleteById(Long infoId) {
+        return jdbcTemplate.update("DELETE FROM sys_logininfor WHERE info_id = ?", infoId);
+    }
+
+    public int deleteByIds(Long[] infoIds) {
         return jdbcTemplate.batchUpdate(
                 "DELETE FROM sys_logininfor WHERE info_id = ?",
-                java.util.Arrays.stream(ids)
+                java.util.Arrays.stream(infoIds)
                         .map(id -> new Object[]{id})
-                        .toList())
-                .length;
+                        .toList()).length;
     }
 
     public int clean() {
-        return jdbcTemplate.update("TRUNCATE TABLE sys_logininfor");
+        return jdbcTemplate.update("DELETE FROM sys_logininfor");
+    }
+
+    public List<SysLogininfor> findByCondition(String loginName, String status, String ipaddr) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM sys_logininfor WHERE 1=1");
+        java.util.List<Object> params = new java.util.ArrayList<>();
+
+        if (loginName != null && !loginName.isEmpty()) {
+            sql.append(" AND login_name LIKE ?");
+            params.add("%" + loginName + "%");
+        }
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+        if (ipaddr != null && !ipaddr.isEmpty()) {
+            sql.append(" AND ipaddr LIKE ?");
+            params.add("%" + ipaddr + "%");
+        }
+
+        sql.append(" ORDER BY login_time DESC");
+        return jdbcTemplate.query(sql.toString(), params.toArray(), rowMapper);
     }
 }
