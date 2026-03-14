@@ -258,30 +258,31 @@ const NoticeList = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add Notice' : modalMode === 'edit' ? 'Edit Notice' : 'View Notice'}
-                size="large"
+                size="small"
+                compact={true}
                 footer={modalMode !== 'view' && (
                     <>
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
                         >
                             Cancel
                         </button>
-                        <button 
-                            className="btn btn-primary" 
+                        <button
+                            className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px'
+                                gap: '6px'
                             }}
                         >
                             {submitting && (
                                 <div style={{
-                                    width: '14px',
-                                    height: '14px',
+                                    width: '12px',
+                                    height: '12px',
                                     border: '2px solid white',
                                     borderBottomColor: 'transparent',
                                     borderRadius: '50%',
@@ -293,7 +294,7 @@ const NoticeList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <FormInput
                         label="Notice Title"
                         name="noticeTitle"

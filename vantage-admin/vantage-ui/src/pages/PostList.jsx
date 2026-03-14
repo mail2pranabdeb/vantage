@@ -248,30 +248,31 @@ const PostList = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add Post' : modalMode === 'edit' ? 'Edit Post' : 'View Post'}
-                size="medium"
+                size="small"
+                compact={true}
                 footer={modalMode !== 'view' && (
                     <>
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
                         >
                             Cancel
                         </button>
-                        <button 
-                            className="btn btn-primary" 
+                        <button
+                            className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px'
+                                gap: '6px'
                             }}
                         >
                             {submitting && (
                                 <div style={{
-                                    width: '14px',
-                                    height: '14px',
+                                    width: '12px',
+                                    height: '12px',
                                     border: '2px solid white',
                                     borderBottomColor: 'transparent',
                                     borderRadius: '50%',
@@ -283,7 +284,7 @@ const PostList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="form-row">
                         <FormInput
                             label="Post Code"
