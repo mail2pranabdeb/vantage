@@ -2,57 +2,46 @@ package com.pd.modules.system.web;
 
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
+import com.pd.modules.system.api.SystemUserService;
 import com.pd.modules.system.domain.SysUser;
-import com.pd.modules.system.infrastructure.repository.SysUserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+ * Controller for user management.
+ * Uses SystemUserService API for all operations.
+ */
 @RestController
 @RequestMapping("/api/system/user")
 public class SysUserController extends BaseController {
 
-    private final SysUserRepository userRepository;
+    private final SystemUserService userService;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public SysUserController(SysUserRepository userRepository) {
-        this.userRepository = userRepository;
+    public SysUserController(SystemUserService userService) {
+        this.userService = userService;
     }
 
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/list")
-    @Transactional(readOnly = true)
     public AjaxResult list() {
-        var users = userRepository.findAllActive();
-        System.out.println("=== Fetching users, found: " + users.size() + " users ===");
-        users.forEach(u -> System.out.println("User: " + u.getLoginName() + " - " + u.getUserName()));
+        var users = userService.findAllActive();
         return success(users);
     }
 
     @PreAuthorize("hasAuthority('system:user:query')")
     @GetMapping(value = "/{userId}")
     public AjaxResult getInfo(@PathVariable Long userId) {
-        Optional<SysUser> user = userRepository.findById(userId);
+        Optional<SysUser> user = userService.findById(userId);
         return user.map(this::success).orElseGet(() -> error("User not found"));
     }
 
     @PreAuthorize("hasAuthority('system:user:add')")
     @PostMapping
-    @Transactional
     public AjaxResult add(@RequestBody SysUser user) {
-        System.out.println("=== Adding user: " + user.getLoginName() + " ===");
-        
         // Check if login name already exists
-        Optional<SysUser> existing = userRepository.findByLoginName(user.getLoginName());
-        if (existing.isPresent()) {
-            System.out.println("User already exists!");
+        if (userService.existsByLoginName(user.getLoginName())) {
             return error("Login name already exists");
         }
 
@@ -61,52 +50,35 @@ public class SysUserController extends BaseController {
         user.setSex(user.getSex() != null ? user.getSex() : "0");
         user.setStatus(user.getStatus() != null ? user.getStatus() : "0");
         user.setCreateBy("admin");
-        user.setDelFlag("0");
 
-        // Password will be set by Hibernate @CreationTimestamp for createTime
+        // Set default password if not provided
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            user.setPassword("123456"); // Default password
+            user.setPassword("123456");
         }
 
-        var saved = userRepository.save(user);
-        System.out.println("User saved with ID: " + saved.getUserId());
-        
-        // Force flush and clear to ensure data is committed
-        entityManager.flush();
-        entityManager.clear();
-        
+        userService.createUser(user);
         return success("User added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:user:edit')")
     @PutMapping
     public AjaxResult edit(@RequestBody SysUser user) {
-        Optional<SysUser> existing = userRepository.findById(user.getUserId());
+        Optional<SysUser> existing = userService.findById(user.getUserId());
         if (!existing.isPresent()) {
             return error("User not found");
         }
-        
+
         user.setUpdateBy("admin");
-        user.setUpdateTime(LocalDateTime.now());
-        
-        userRepository.save(user);
+        userService.updateUser(user);
         return success("User updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:user:remove')")
     @DeleteMapping("/{userId}")
     public AjaxResult remove(@PathVariable Long userId) {
-        Optional<SysUser> user = userRepository.findById(userId);
-        if (!user.isPresent()) {
+        if (!userService.deleteUser(userId)) {
             return error("User not found");
         }
-        
-        // Soft delete
-        user.get().setDelFlag("2");
-        user.get().setUpdateTime(LocalDateTime.now());
-        user.get().setUpdateBy("admin");
-        userRepository.save(user.get());
-        
         return success("User deleted successfully");
     }
 }
