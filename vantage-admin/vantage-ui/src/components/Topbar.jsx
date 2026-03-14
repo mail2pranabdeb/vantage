@@ -46,7 +46,7 @@ const Topbar = () => {
 
     return (
         <header className="topbar" style={{ margin: '8px 12px 0', borderRadius: '6px', borderBottom: 'none', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>
+            <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)' }}>
                 Welcome to <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Vantage Admin</span>
             </h3>
 
@@ -54,7 +54,7 @@ const Topbar = () => {
                 {/* Theme Picker */}
                 <div className="theme-picker" ref={pickerRef}>
                     <button onClick={() => setThemeOpen(!themeOpen)} style={iconBtn} title="Change theme">
-                        <PaletteIcon size={15} />
+                        <PaletteIcon size={14} />
                     </button>
                     {themeOpen && (
                         <div className="theme-picker-menu animate-fade-in">
@@ -71,13 +71,13 @@ const Topbar = () => {
                 </div>
 
                 <button style={iconBtn} title="Notifications">
-                    <BellIcon size={15} />
+                    <BellIcon size={14} />
                 </button>
 
                 <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 4px' }} />
 
-                <button onClick={handleLogout} style={{ ...iconBtn, color: '#ef4444', gap: '4px', fontSize: '12px' }} title="Logout">
-                    <LogOutIcon size={14} /> <span>Logout</span>
+                <button onClick={handleLogout} style={{ ...iconBtn, color: '#ef4444', gap: '4px', fontSize: '11px' }} title="Logout">
+                    <LogOutIcon size={13} /> <span>Logout</span>
                 </button>
             </div>
         </header>

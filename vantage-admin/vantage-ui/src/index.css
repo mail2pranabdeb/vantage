@@ -840,7 +840,7 @@ body {
     }
 }
 
-.modal-sm { width: 100%; max-width: 400px; }
+.modal-sm { width: 100%; max-width: 450px; }
 .modal-md { width: 100%; max-width: 500px; }
 .modal-lg { width: 100%; max-width: 700px; }
 .modal-xl { width: 100%; max-width: 900px; }

@@ -270,39 +270,40 @@ const UserList = () => {
     return (
         <div className="page-container">
             <div className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white'
                     }}>
-                        <User size={20} />
+                        <User size={16} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>User Management</h2>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Manage system users and their permissions
+                        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>User Management</h2>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                            Manage system users
                         </p>
                     </div>
                 </div>
-                <button 
-                    className="btn btn-primary" 
+                <button
+                    className="btn btn-primary"
                     onClick={handleAddClick}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontWeight: 600
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        fontSize: '13px'
                     }}
                 >
-                    <Plus size={18} />
+                    <Plus size={16} />
                     Add User
                 </button>
             </div>
@@ -327,30 +328,31 @@ const UserList = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add User' : modalMode === 'edit' ? 'Edit User' : 'View User'}
-                size="medium"
+                size="small"
                 footer={modalMode !== 'view' && (
                     <>
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
                         >
                             Cancel
                         </button>
-                        <button 
-                            className="btn btn-primary" 
+                        <button
+                            className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px'
+                                gap: '6px',
+                                padding: '8px 16px'
                             }}
                         >
                             {submitting && (
                                 <div style={{
-                                    width: '14px',
-                                    height: '14px',
+                                    width: '12px',
+                                    height: '12px',
                                     border: '2px solid white',
                                     borderBottomColor: 'transparent',
                                     borderRadius: '50%',
@@ -362,8 +364,8 @@ const UserList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div className="form-row">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className="form-row" style={{ gap: '10px' }}>
                         <FormInput
                             label="Login Name"
                             name="loginName"
@@ -384,7 +386,7 @@ const UserList = () => {
                         />
                     </div>
 
-                    <div className="form-row">
+                    <div className="form-row" style={{ gap: '10px' }}>
                         <FormInput
                             label="Password"
                             name="password"
@@ -405,7 +407,7 @@ const UserList = () => {
                         />
                     </div>
 
-                    <div className="form-row">
+                    <div className="form-row" style={{ gap: '10px' }}>
                         <FormInput
                             label="Email"
                             name="email"
@@ -415,103 +417,105 @@ const UserList = () => {
                             placeholder="Enter email address"
                             disabled={modalMode === 'view'}
                         />
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label className="form-label">Gender</label>
+                        <div className="form-group" style={{ marginBottom: '0' }}>
+                            <label className="form-label" style={{ fontSize: '12px' }}>Gender</label>
                             <select
                                 name="sex"
                                 value={formData.sex}
                                 onChange={handleInputChange}
                                 className="form-input"
                                 disabled={modalMode === 'view'}
+                                style={{ padding: '8px 10px', fontSize: '13px' }}
                             >
                                 <option value="0">Male</option>
                                 <option value="1">Female</option>
                                 <option value="2">Unknown</option>
                             </select>
                         </div>
-                        <div className="form-group">
-                            <label className="form-label">Status</label>
+                    </div>
+
+                    <div className="form-row" style={{ gap: '10px' }}>
+                        <div className="form-group" style={{ marginBottom: '0' }}>
+                            <label className="form-label" style={{ fontSize: '12px' }}>Status</label>
                             <select
                                 name="status"
                                 value={formData.status}
                                 onChange={handleInputChange}
                                 className="form-input"
                                 disabled={modalMode === 'view'}
+                                style={{ padding: '8px 10px', fontSize: '13px' }}
                             >
                                 <option value="0">Normal</option>
                                 <option value="1">Disabled</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label">Remark</label>
-                        <textarea
-                            name="remark"
-                            value={formData.remark}
-                            onChange={handleInputChange}
-                            placeholder="Enter any remarks"
-                            className="form-input"
-                            rows={3}
-                            disabled={modalMode === 'view'}
-                        />
+                        <div className="form-group" style={{ marginBottom: '0' }}>
+                            <label className="form-label" style={{ fontSize: '12px' }}>Remark</label>
+                            <textarea
+                                name="remark"
+                                value={formData.remark}
+                                onChange={handleInputChange}
+                                placeholder="Optional"
+                                className="form-input"
+                                rows={2}
+                                disabled={modalMode === 'view'}
+                                style={{ padding: '8px 10px', fontSize: '13px', resize: 'none' }}
+                            />
+                        </div>
                     </div>
 
                     {(modalMode === 'edit' || modalMode === 'view') && currentUser && (
                         <div style={{
-                            marginTop: '16px',
-                            padding: '16px',
+                            marginTop: '8px',
+                            padding: '12px',
                             background: 'var(--bg-tertiary)',
-                            borderRadius: '8px',
+                            borderRadius: '6px',
                             border: '1px solid var(--border-color)'
                         }}>
-                            <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                            <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                 Audit Information
                             </h4>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label">Created By</label>
+                            <div className="form-row" style={{ gap: '12px' }}>
+                                <div className="form-group" style={{ marginBottom: '0' }}>
+                                    <label className="form-label" style={{ fontSize: '11px' }}>Created By</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.createBy || '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Created Time</label>
+                                <div className="form-group" style={{ marginBottom: '0' }}>
+                                    <label className="form-label" style={{ fontSize: '11px' }}>Created Time</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.createTime ? new Date(currentUser.createTime).toLocaleString() : '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
                                     />
                                 </div>
                             </div>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label">Updated By</label>
+                            <div className="form-row" style={{ gap: '12px' }}>
+                                <div className="form-group" style={{ marginBottom: '0' }}>
+                                    <label className="form-label" style={{ fontSize: '11px' }}>Updated By</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.updateBy || '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Updated Time</label>
+                                <div className="form-group" style={{ marginBottom: '0' }}>
+                                    <label className="form-label" style={{ fontSize: '11px' }}>Updated Time</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.updateTime ? new Date(currentUser.updateTime).toLocaleString() : '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
                                     />
                                 </div>
                             </div>

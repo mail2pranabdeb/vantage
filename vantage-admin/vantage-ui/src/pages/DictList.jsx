@@ -200,39 +200,40 @@ const DictList = () => {
     return (
         <div className="page-container">
             <div className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
                         background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#333'
                     }}>
-                        <Database size={20} />
+                        <Database size={16} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>Dict Management</h2>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Manage system dictionaries and lookup values
+                        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Dict Management</h2>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                            Manage dictionaries
                         </p>
                     </div>
                 </div>
-                <button 
-                    className="btn btn-primary" 
+                <button
+                    className="btn btn-primary"
                     onClick={handleAddClick}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontWeight: 600
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        fontSize: '13px'
                     }}
                 >
-                    <Plus size={18} />
+                    <Plus size={16} />
                     Add Dict
                 </button>
             </div>
