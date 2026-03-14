@@ -18,7 +18,7 @@ spring:
         web-allow-others: false
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
@@ -27,9 +27,11 @@ spring:
         cache:
           use_second_level_cache: false
           use_query_cache: false
-        scanning:
-          packages: com.pd.modules
     open-in-view: false
   sql:
     init:
-      mode: never
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+      continue-on-error: false
+      separator: ;

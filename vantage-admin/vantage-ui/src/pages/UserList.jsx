@@ -181,11 +181,6 @@ const UserList = () => {
 
     const columns = [
         {
-            key: 'userId',
-            header: 'User ID',
-            sortable: true
-        },
-        {
             key: 'loginName',
             header: 'Login Name',
             sortable: true,
@@ -464,6 +459,64 @@ const UserList = () => {
                             disabled={modalMode === 'view'}
                         />
                     </div>
+
+                    {(modalMode === 'edit' || modalMode === 'view') && currentUser && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '16px',
+                            background: 'var(--bg-tertiary)',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)'
+                        }}>
+                            <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                Audit Information
+                            </h4>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label className="form-label">Created By</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={currentUser.createBy || '-'}
+                                        disabled
+                                        style={{ cursor: 'not-allowed' }}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Created Time</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={currentUser.createTime ? new Date(currentUser.createTime).toLocaleString() : '-'}
+                                        disabled
+                                        style={{ cursor: 'not-allowed' }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label className="form-label">Updated By</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={currentUser.updateBy || '-'}
+                                        disabled
+                                        style={{ cursor: 'not-allowed' }}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Updated Time</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={currentUser.updateTime ? new Date(currentUser.updateTime).toLocaleString() : '-'}
+                                        disabled
+                                        style={{ cursor: 'not-allowed' }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Modal>
         </div>

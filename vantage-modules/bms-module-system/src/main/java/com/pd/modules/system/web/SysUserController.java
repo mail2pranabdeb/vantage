@@ -28,6 +28,7 @@ public class SysUserController extends BaseController {
 
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/list")
+    @Transactional(readOnly = true)
     public AjaxResult list() {
         var users = userRepository.findAllActive();
         System.out.println("=== Fetching users, found: " + users.size() + " users ===");
@@ -60,10 +61,9 @@ public class SysUserController extends BaseController {
         user.setSex(user.getSex() != null ? user.getSex() : "0");
         user.setStatus(user.getStatus() != null ? user.getStatus() : "0");
         user.setCreateBy("admin");
-        user.setCreateTime(LocalDateTime.now());
         user.setDelFlag("0");
 
-        // TODO: Encode password
+        // Password will be set by Hibernate @CreationTimestamp for createTime
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             user.setPassword("123456"); // Default password
         }

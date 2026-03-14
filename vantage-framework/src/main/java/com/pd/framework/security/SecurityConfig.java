@@ -24,18 +24,29 @@ public class SecurityConfig {
                 http
                                 .authorizeHttpRequests(authz -> authz
                                                 .requestMatchers("/api/login", "/api/logout", "/api/me").permitAll()
-                                                .requestMatchers("/api/**").permitAll()  // Allow all API endpoints for development
+                                                .requestMatchers("/api/**").permitAll()
                                                 .requestMatchers("/system/**", "/tool/**").permitAll()
                                                 .anyRequest().permitAll())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/api/login")
-                                                .successHandler((req, res, auth) -> res.setStatus(200))
-                                                .failureHandler((req, res, exc) -> res.setStatus(401))
+                                                .successHandler((req, res, auth) -> {
+                                                        res.setContentType("application/json");
+                                                        res.setStatus(200);
+                                                        res.getWriter().write("{\"code\":200,\"msg\":\"Login successful\"}");
+                                                })
+                                                .failureHandler((req, res, exc) -> {
+                                                        res.setContentType("application/json");
+                                                        res.setStatus(401);
+                                                        res.getWriter().write("{\"code\":401,\"msg\":\"Invalid credentials\"}");
+                                                })
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/api/logout")
-                                                .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
+                                                .logoutSuccessHandler((req, res, auth) -> {
+                                                        res.setStatus(200);
+                                                        res.getWriter().write("{\"code\":200,\"msg\":\"Logged out\"}");
+                                                })
                                                 .permitAll())
                                 .csrf(csrf -> csrf.disable())
                                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));

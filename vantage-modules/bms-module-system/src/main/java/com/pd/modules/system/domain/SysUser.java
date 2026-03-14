@@ -1,14 +1,19 @@
 package com.pd.modules.system.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sys_user")
+@SequenceGenerator(name = "user_seq", sequenceName = "sys_user_seq", allocationSize = 1)
 public class SysUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @Column(name = "user_id")
     private Long userId;
 
@@ -54,16 +59,20 @@ public class SysUser {
     @Column(name = "pwd_update_date")
     private LocalDateTime pwdUpdateDate;
 
-    @Column(name = "create_by", length = 64)
+    @Column(name = "create_by", length = 64, updatable = false)
+    @CreatedBy
     private String createBy;
 
-    @Column(name = "create_time")
+    @Column(name = "create_time", updatable = false)
+    @CreationTimestamp
     private LocalDateTime createTime;
 
     @Column(name = "update_by", length = 64)
+    @LastModifiedBy
     private String updateBy;
 
     @Column(name = "update_time")
+    @UpdateTimestamp
     private LocalDateTime updateTime;
 
     @Column(name = "remark", length = 500)
