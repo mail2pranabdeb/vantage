@@ -329,13 +329,13 @@ const UserList = () => {
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add User' : modalMode === 'edit' ? 'Edit User' : 'View User'}
                 size="small"
+                compact={true}
                 footer={modalMode !== 'view' && (
                     <>
                         <button
                             className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
-                            style={{ padding: '7px 14px', fontSize: '12px' }}
                         >
                             Cancel
                         </button>
@@ -346,9 +346,7 @@ const UserList = () => {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
-                                padding: '7px 14px',
-                                fontSize: '12px'
+                                gap: '6px'
                             }}
                         >
                             {submitting && (
@@ -366,7 +364,7 @@ const UserList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="form-row" style={{ gap: '10px' }}>
                         <div className="form-group" style={{ marginBottom: 0 }}>
                             <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Login Name</label>
@@ -482,57 +480,45 @@ const UserList = () => {
                     </div>
 
                     {(modalMode === 'edit' || modalMode === 'view') && currentUser && (
-                        <div style={{
-                            marginTop: '6px',
-                            padding: '10px',
-                            background: 'var(--bg-tertiary)',
-                            borderRadius: '6px',
-                            border: '1px solid var(--border-color)'
-                        }}>
-                            <h4 style={{ margin: '0 0 8px 0', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Audit Information
-                            </h4>
-                            <div className="form-row" style={{ gap: '10px' }}>
-                                <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Created By</label>
+                        <div className="audit-section">
+                            <h4>Audit Information</h4>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label className="form-label">Created By</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.createBy || '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
-                                <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Created Time</label>
+                                <div className="form-group">
+                                    <label className="form-label">Created Time</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.createTime ? new Date(currentUser.createTime).toLocaleString() : '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
                             </div>
-                            <div className="form-row" style={{ gap: '10px' }}>
-                                <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Updated By</label>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label className="form-label">Updated By</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.updateBy || '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
-                                <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Updated Time</label>
+                                <div className="form-group">
+                                    <label className="form-label">Updated Time</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.updateTime ? new Date(currentUser.updateTime).toLocaleString() : '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
                             </div>

@@ -295,13 +295,13 @@ const RoleList = () => {
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add Role' : modalMode === 'edit' ? 'Edit Role' : 'View Role'}
                 size="small"
+                compact={true}
                 footer={modalMode !== 'view' && (
                     <>
                         <button
                             className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
-                            style={{ padding: '7px 14px', fontSize: '12px' }}
                         >
                             Cancel
                         </button>
@@ -312,9 +312,7 @@ const RoleList = () => {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
-                                padding: '7px 14px',
-                                fontSize: '12px'
+                                gap: '6px'
                             }}
                         >
                             {submitting && (
@@ -332,7 +330,7 @@ const RoleList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="form-row">
                         <FormInput
                             label="Role Name"

@@ -6,6 +6,7 @@ const Modal = ({
     title, 
     children, 
     size = 'medium',
+    compact = false,
     showCloseButton = true,
     footer
 }) => {
@@ -20,23 +21,23 @@ const Modal = ({
 
     return (
         <div className="modal-overlay" onClick={showCloseButton ? onClose : undefined}>
-            <div
-                className={`modal-content ${sizeClasses[size]}`}
+            <div 
+                className={`modal-content ${sizeClasses[size]} ${compact ? 'compact' : ''}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="modal-header" style={{ padding: '14px 18px' }}>
-                    <h3 className="modal-title" style={{ fontSize: '15px' }}>{title}</h3>
+                <div className="modal-header">
+                    <h3 className="modal-title">{title}</h3>
                     {showCloseButton && (
                         <button className="modal-close" onClick={onClose}>
-                            <X size={18} />
+                            <X size={20} />
                         </button>
                     )}
                 </div>
-                <div className="modal-body" style={{ padding: '18px' }}>
+                <div className="modal-body">
                     {children}
                 </div>
                 {footer && (
-                    <div className="modal-footer" style={{ padding: '12px 18px' }}>
+                    <div className="modal-footer">
                         {footer}
                     </div>
                 )}
