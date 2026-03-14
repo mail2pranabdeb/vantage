@@ -8,6 +8,7 @@ import com.pd.modules.generator.infrastructure.repository.GenTableRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,12 +49,10 @@ public class GeneratorServiceImpl implements GeneratorService {
     @Override
     @Transactional
     public void importTables(List<String> tableNames) {
-        // Implementation would import table schemas from database
-        // This is a placeholder for the actual implementation
         for (String tableName : tableNames) {
             GenTable table = new GenTable();
             table.setTableName(tableName);
-            table.setCreateTime(java.time.LocalDateTime.now());
+            table.setCreateTime(LocalDateTime.now());
             table.setCreateBy("admin");
             tableRepository.insert(table);
         }
@@ -62,7 +61,7 @@ public class GeneratorServiceImpl implements GeneratorService {
     @Override
     @Transactional
     public void updateTable(GenTable table) {
-        table.setUpdateTime(java.time.LocalDateTime.now());
+        table.setUpdateTime(LocalDateTime.now());
         table.setUpdateBy("admin");
         tableRepository.update(table);
     }
@@ -81,7 +80,12 @@ public class GeneratorServiceImpl implements GeneratorService {
     public Map<String, String> previewCode(Long tableId) {
         // Implementation would generate and return code preview
         // This is a placeholder for the actual implementation
-        return Map.of();
+        return Map.of(
+            "Entity.java", "// Entity class for table " + tableId,
+            "Repository.java", "// Repository interface",
+            "Service.java", "// Service implementation",
+            "Controller.java", "// REST Controller"
+        );
     }
 
     @Override

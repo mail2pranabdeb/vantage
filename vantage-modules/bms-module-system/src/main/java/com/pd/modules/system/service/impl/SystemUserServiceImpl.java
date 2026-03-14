@@ -1,10 +1,15 @@
 package com.pd.modules.system.service.impl;
 
+import com.pd.common.event.user.UserCreatedEvent;
+import com.pd.common.event.user.UserDeletedEvent;
 import com.pd.modules.system.api.SystemUserService;
 import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,9 +23,11 @@ import java.util.Optional;
 public class SystemUserServiceImpl implements SystemUserService {
 
     private final SysUserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public SystemUserServiceImpl(SysUserRepository userRepository) {
+    public SystemUserServiceImpl(SysUserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -46,7 +53,16 @@ public class SystemUserServiceImpl implements SystemUserService {
     public SysUser createUser(SysUser user) {
         user.setDelFlag("0");
         user.setCreateTime(LocalDateTime.now());
-        return userRepository.save(user);
+        SysUser savedUser = userRepository.save(user);
+        
+        // Publish event after transaction commits
+        eventPublisher.publishEvent(new UserCreatedEvent(
+            savedUser.getUserId(), 
+            savedUser.getLoginName(), 
+            savedUser.getUserName()
+        ));
+        
+        return savedUser;
     }
 
     @Override
@@ -62,9 +78,14 @@ public class SystemUserServiceImpl implements SystemUserService {
         Optional<SysUser> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             SysUser user = userOpt.get();
+            String loginName = user.getLoginName();
             user.setDelFlag("2"); // Soft delete
             user.setUpdateTime(LocalDateTime.now());
             userRepository.save(user);
+            
+            // Publish event after transaction commits
+            eventPublisher.publishEvent(new UserDeletedEvent(userId, loginName));
+            
             return true;
         }
         return false;

@@ -1,5 +1,6 @@
 package com.pd.modules.quartz.service.impl;
 
+import com.pd.common.event.job.JobCreatedEvent;
 import com.pd.modules.quartz.api.QuartzJobService;
 import com.pd.modules.quartz.domain.SysJob;
 import com.pd.modules.quartz.infrastructure.repository.SysJobRepository;
@@ -7,6 +8,7 @@ import com.pd.modules.quartz.util.CronUtils;
 import com.pd.modules.quartz.util.ScheduleUtils;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +25,12 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
     private final SysJobRepository jobRepository;
     private final Scheduler scheduler;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public QuartzJobServiceImpl(SysJobRepository jobRepository, Scheduler scheduler) {
+    public QuartzJobServiceImpl(SysJobRepository jobRepository, Scheduler scheduler, ApplicationEventPublisher eventPublisher) {
         this.jobRepository = jobRepository;
         this.scheduler = scheduler;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -47,13 +51,21 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         job.setCreateTime(LocalDateTime.now());
         job.setCreateBy("admin");
         job.setStatus("0"); // Default to active
-        jobRepository.save(job);
+        SysJob savedJob = jobRepository.save(job);
 
         // Schedule the job if cron expression is valid
         if (CronUtils.isValid(job.getCronExpression())) {
             ScheduleUtils.createScheduleJob(scheduler, job);
         }
-        return job;
+        
+        // Publish event after transaction commits
+        eventPublisher.publishEvent(new JobCreatedEvent(
+            savedJob.getJobId(),
+            savedJob.getJobName(),
+            savedJob.getJobGroup()
+        ));
+        
+        return savedJob;
     }
 
     @Override

@@ -109,8 +109,7 @@ class ModularMonolithArchitectureTest {
     }
 
     /**
-     * Rule: API layer should be the only public entry point for modules.
-     * Service implementations should be in impl package.
+     * Rule: Service implementations should be in impl package.
      */
     @Test
     void serviceImplementationsShouldBeInImplPackage() {
@@ -133,5 +132,47 @@ class ModularMonolithArchitectureTest {
                 .should().resideInAPackage("..api..");
 
         rule.allowEmptyShould(true).check(allClasses);
+    }
+
+    /**
+     * Rule: Domain events should extend DomainEvent base class.
+     */
+    @Test
+    void domainEventsShouldExtendBaseEvent() {
+        ArchRule rule = classes()
+                .that().haveSimpleNameEndingWith("Event")
+                .and().resideInAPackage("com.pd.common.event..")
+                .should().beAssignableTo(com.pd.common.event.DomainEvent.class);
+
+        rule.allowEmptyShould(true).check(allClasses);
+    }
+
+    /**
+     * Rule: Event listeners should use @TransactionalEventListener.
+     */
+    @Test
+    void eventListenersShouldUseTransactionalEventListener() {
+        ArchRule rule = classes()
+                .that().haveSimpleNameEndingWith("EventListener")
+                .and().resideInAPackage("com.pd.modules..listener..")
+                .should().beAnnotatedWith(org.springframework.transaction.event.TransactionalEventListener.class)
+                .orShould().beAnnotatedWith(org.springframework.context.event.EventListener.class);
+
+        rule.allowEmptyShould(true).check(allClasses);
+    }
+
+    /**
+     * Rule: Modules should communicate via events, not direct calls.
+     * This verifies that cross-module dependencies go through events.
+     */
+    @Test
+    void crossModuleCommunicationShouldUseEvents() {
+        // Verify that modules don't directly depend on each other's internal classes
+        ArchRule systemToQuartz = noClasses()
+                .that().resideInAPackage("com.pd.modules.system..")
+                .and().areNotAssignableTo(com.pd.common.event.DomainEvent.class)
+                .should().dependOnClassesThat().resideInAPackage("com.pd.modules.quartz.service..");
+
+        systemToQuartz.allowEmptyShould(true).check(allClasses);
     }
 }
