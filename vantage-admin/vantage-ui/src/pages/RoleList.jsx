@@ -294,30 +294,33 @@ const RoleList = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add Role' : modalMode === 'edit' ? 'Edit Role' : 'View Role'}
-                size="medium"
+                size="small"
                 footer={modalMode !== 'view' && (
                     <>
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
+                            style={{ padding: '7px 14px', fontSize: '12px' }}
                         >
                             Cancel
                         </button>
-                        <button 
-                            className="btn btn-primary" 
+                        <button
+                            className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px'
+                                gap: '6px',
+                                padding: '7px 14px',
+                                fontSize: '12px'
                             }}
                         >
                             {submitting && (
                                 <div style={{
-                                    width: '14px',
-                                    height: '14px',
+                                    width: '12px',
+                                    height: '12px',
                                     border: '2px solid white',
                                     borderBottomColor: 'transparent',
                                     borderRadius: '50%',
@@ -329,7 +332,7 @@ const RoleList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div className="form-row">
                         <FormInput
                             label="Role Name"

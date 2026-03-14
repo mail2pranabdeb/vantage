@@ -335,6 +335,7 @@ const UserList = () => {
                             className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
                             disabled={submitting}
+                            style={{ padding: '7px 14px', fontSize: '12px' }}
                         >
                             Cancel
                         </button>
@@ -346,7 +347,8 @@ const UserList = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '6px',
-                                padding: '8px 16px'
+                                padding: '7px 14px',
+                                fontSize: '12px'
                             }}
                         >
                             {submitting && (
@@ -364,68 +366,83 @@ const UserList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div className="form-row" style={{ gap: '10px' }}>
-                        <FormInput
-                            label="Login Name"
-                            name="loginName"
-                            value={formData.loginName}
-                            onChange={handleInputChange}
-                            placeholder="Enter login name"
-                            required
-                            disabled={modalMode === 'view' || modalMode === 'edit'}
-                        />
-                        <FormInput
-                            label="User Name"
-                            name="userName"
-                            value={formData.userName}
-                            onChange={handleInputChange}
-                            placeholder="Enter user name"
-                            required
-                            disabled={modalMode === 'view'}
-                        />
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Login Name</label>
+                            <FormInput
+                                name="loginName"
+                                value={formData.loginName}
+                                onChange={handleInputChange}
+                                placeholder="Enter login name"
+                                required
+                                disabled={modalMode === 'view' || modalMode === 'edit'}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
+                            />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>User Name</label>
+                            <FormInput
+                                name="userName"
+                                value={formData.userName}
+                                onChange={handleInputChange}
+                                placeholder="Enter user name"
+                                required
+                                disabled={modalMode === 'view'}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
+                            />
+                        </div>
                     </div>
 
                     <div className="form-row" style={{ gap: '10px' }}>
-                        <FormInput
-                            label="Password"
-                            name="password"
-                            type="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            placeholder="Enter password"
-                            required={modalMode === 'add'}
-                            disabled={modalMode === 'view' || modalMode === 'edit'}
-                        />
-                        <FormInput
-                            label="Phone Number"
-                            name="phonenumber"
-                            value={formData.phonenumber}
-                            onChange={handleInputChange}
-                            placeholder="Enter phone number"
-                            disabled={modalMode === 'view'}
-                        />
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Password</label>
+                            <FormInput
+                                name="password"
+                                type="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                placeholder="Enter password"
+                                required={modalMode === 'add'}
+                                disabled={modalMode === 'view' || modalMode === 'edit'}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
+                            />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Phone Number</label>
+                            <FormInput
+                                name="phonenumber"
+                                value={formData.phonenumber}
+                                onChange={handleInputChange}
+                                placeholder="Enter phone number"
+                                disabled={modalMode === 'view'}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
+                            />
+                        </div>
                     </div>
 
                     <div className="form-row" style={{ gap: '10px' }}>
-                        <FormInput
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            placeholder="Enter email address"
-                            disabled={modalMode === 'view'}
-                        />
-                        <div className="form-group" style={{ marginBottom: '0' }}>
-                            <label className="form-label" style={{ fontSize: '12px' }}>Gender</label>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Email</label>
+                            <FormInput
+                                name="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                placeholder="Enter email address"
+                                disabled={modalMode === 'view'}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
+                            />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Gender</label>
                             <select
                                 name="sex"
                                 value={formData.sex}
                                 onChange={handleInputChange}
                                 className="form-input"
                                 disabled={modalMode === 'view'}
-                                style={{ padding: '8px 10px', fontSize: '13px' }}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
                             >
                                 <option value="0">Male</option>
                                 <option value="1">Female</option>
@@ -435,22 +452,22 @@ const UserList = () => {
                     </div>
 
                     <div className="form-row" style={{ gap: '10px' }}>
-                        <div className="form-group" style={{ marginBottom: '0' }}>
-                            <label className="form-label" style={{ fontSize: '12px' }}>Status</label>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Status</label>
                             <select
                                 name="status"
                                 value={formData.status}
                                 onChange={handleInputChange}
                                 className="form-input"
                                 disabled={modalMode === 'view'}
-                                style={{ padding: '8px 10px', fontSize: '13px' }}
+                                style={{ padding: '7px 10px', fontSize: '13px' }}
                             >
                                 <option value="0">Normal</option>
                                 <option value="1">Disabled</option>
                             </select>
                         </div>
-                        <div className="form-group" style={{ marginBottom: '0' }}>
-                            <label className="form-label" style={{ fontSize: '12px' }}>Remark</label>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Remark</label>
                             <textarea
                                 name="remark"
                                 value={formData.remark}
@@ -459,63 +476,63 @@ const UserList = () => {
                                 className="form-input"
                                 rows={2}
                                 disabled={modalMode === 'view'}
-                                style={{ padding: '8px 10px', fontSize: '13px', resize: 'none' }}
+                                style={{ padding: '7px 10px', fontSize: '13px', resize: 'none' }}
                             />
                         </div>
                     </div>
 
                     {(modalMode === 'edit' || modalMode === 'view') && currentUser && (
                         <div style={{
-                            marginTop: '8px',
-                            padding: '12px',
+                            marginTop: '6px',
+                            padding: '10px',
                             background: 'var(--bg-tertiary)',
                             borderRadius: '6px',
                             border: '1px solid var(--border-color)'
                         }}>
-                            <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            <h4 style={{ margin: '0 0 8px 0', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                 Audit Information
                             </h4>
-                            <div className="form-row" style={{ gap: '12px' }}>
+                            <div className="form-row" style={{ gap: '10px' }}>
                                 <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '11px' }}>Created By</label>
+                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Created By</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.createBy || '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
                                 <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '11px' }}>Created Time</label>
+                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Created Time</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.createTime ? new Date(currentUser.createTime).toLocaleString() : '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
                             </div>
-                            <div className="form-row" style={{ gap: '12px' }}>
+                            <div className="form-row" style={{ gap: '10px' }}>
                                 <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '11px' }}>Updated By</label>
+                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Updated By</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.updateBy || '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
                                 <div className="form-group" style={{ marginBottom: '0' }}>
-                                    <label className="form-label" style={{ fontSize: '11px' }}>Updated Time</label>
+                                    <label className="form-label" style={{ fontSize: '10px', marginBottom: '3px' }}>Updated Time</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={currentUser.updateTime ? new Date(currentUser.updateTime).toLocaleString() : '-'}
                                         disabled
-                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '8px 10px' }}
+                                        style={{ cursor: 'not-allowed', fontSize: '12px', padding: '6px 8px' }}
                                     />
                                 </div>
                             </div>

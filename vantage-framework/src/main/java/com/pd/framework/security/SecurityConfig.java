@@ -25,7 +25,8 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(authz -> authz
                                                 .requestMatchers("/api/login", "/api/logout").permitAll()
                                                 .requestMatchers("/api/**").authenticated()
-                                                .requestMatchers("/system/**", "/tool/**").permitAll()
+                                                .requestMatchers("/system/**").authenticated()
+                                                .requestMatchers("/tool/**").authenticated()
                                                 .anyRequest().permitAll())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
