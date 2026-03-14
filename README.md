@@ -1,4 +1,4 @@
-# Vantage Admin Platform (BMS)
+# Vantage Admin Platform
 
 A modern business management system built with Spring Boot and React.
 
@@ -8,7 +8,7 @@ A modern business management system built with Spring Boot and React.
 - **Java 17** + **Spring Boot 4.0.3**
 - **Spring Security** - Authentication & Authorization
 - **Spring MVC** - Web Layer
-- **MyBatis** - Persistence Framework
+- **Spring Data JPA** - Persistence Framework
 - **H2 Database** - Embedded Database (file-based at `./data/bms`)
 - **Quartz** - Job Scheduling
 - **Apache Velocity** - Template Engine
@@ -22,14 +22,14 @@ A modern business management system built with Spring Boot and React.
 ## Project Structure
 
 ```
-my-project-new-master/
+vantage-master/
 ├── vantage-admin/              # Main application module
 │   ├── vantage-ui/             # React frontend
 │   └── src/main/java/          # Backend entry point
 ├── vantage-common/             # Shared utilities & common code
-├── vantage-framework/          # Core framework components
+├── vantage-framework/          # Core framework components (security, config, interceptors)
 ├── vantage-modules/            # Business modules
-│   ├── bms-module-system/      # System management module
+│   ├── bms-module-system/      # System management (users, roles, permissions)
 │   ├── bms-module-quartz/      # Job scheduling module
 │   └── bms-module-generator/   # Code generation module
 └── data/                       # H2 database files
@@ -39,6 +39,7 @@ my-project-new-master/
 
 ### Prerequisites
 - Java 17 or higher
+- Node.js 20+ (for frontend builds)
 - Maven 3.6+ (or use the included Maven wrapper)
 
 ### Build (Backend + Frontend)
@@ -55,6 +56,8 @@ mvnw.cmd clean package -pl vantage-admin -am -DskipTests
 ```
 
 This builds all backend modules and the React frontend, packaging everything into an executable JAR.
+
+**Note:** The build process automatically installs Node.js and npm, then builds the frontend. This happens during the `generate-resources` phase.
 
 ### Run
 
@@ -134,9 +137,9 @@ Schema and initial data are loaded from:
 |--------|-------------|
 | `vantage-common` | Shared utilities, constants, and base classes |
 | `vantage-framework` | Core framework: security, web config, interceptors |
-| `bms-module-system` | User management, roles, permissions, menus |
-| `bms-module-quartz` | Scheduled job management |
-| `bms-module-generator` | Code generation for entities and CRUD |
+| `vantage-module-system` | User management, roles, permissions, menus |
+| `vantage-module-quartz` | Scheduled job management |
+| `vantage-module-generator` | Code generation for entities and CRUD |
 
 ## License
 
