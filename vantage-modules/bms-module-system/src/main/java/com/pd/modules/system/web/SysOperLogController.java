@@ -1,11 +1,12 @@
 package com.pd.modules.system.web;
 
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysOperLog;
 import com.pd.modules.system.infrastructure.repository.SysOperLogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Operation log controller
@@ -21,7 +22,10 @@ public class SysOperLogController {
      * Get list of operation logs
      */
     @GetMapping("/list")
-    public AjaxResult list(String title, String operName, Integer businessType, Integer status) {
+    public AjaxResult list(@RequestParam(required = false) String title,
+                          @RequestParam(required = false) String operName,
+                          @RequestParam(required = false) Integer businessType,
+                          @RequestParam(required = false) Integer status) {
         List<SysOperLog> list = operLogRepository.findByCondition(title, operName, businessType, status);
         return AjaxResult.success(list);
     }
@@ -31,8 +35,10 @@ public class SysOperLogController {
      */
     @DeleteMapping
     public AjaxResult remove(@RequestBody Long[] operIds) {
-        int rows = operLogRepository.deleteByIds(operIds);
-        return rows > 0 ? AjaxResult.success() : AjaxResult.error();
+        for (Long id : operIds) {
+            operLogRepository.deleteById(id);
+        }
+        return AjaxResult.success();
     }
 
     /**
@@ -40,7 +46,7 @@ public class SysOperLogController {
      */
     @DeleteMapping("/clean")
     public AjaxResult clean() {
-        operLogRepository.clean();
+        operLogRepository.deleteAll();
         return AjaxResult.success();
     }
 }

@@ -1,198 +1,70 @@
 package com.pd.modules.system.domain;
 
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
  * System operation log entity - sys_oper_log
  */
+@Entity
+@Table(name = "sys_oper_log")
+@SequenceGenerator(name = "oper_log_seq", sequenceName = "sys_oper_log_seq", allocationSize = 1)
+@Data
 public class SysOperLog {
 
-    /** Operation ID */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "oper_log_seq")
+    @Column(name = "oper_id")
     private Long operId;
 
-    /** Module title */
+    @Column(name = "title", length = 50)
     private String title;
 
-    /** Business type (0 other, 1 insert, 2 update, 3 delete) */
+    @Column(name = "business_type")
     private Integer businessType;
 
-    /** Method name */
+    @Column(name = "method", length = 500)
     private String method;
 
-    /** Request method */
+    @Column(name = "request_method", length = 20)
     private String requestMethod;
 
-    /** Operator type (0 other, 1 admin, 2 mobile) */
+    @Column(name = "operator_type")
     private Integer operatorType;
 
-    /** Operator name */
+    @Column(name = "oper_name", length = 50)
     private String operName;
 
-    /** Department name */
+    @Column(name = "dept_name", length = 50)
     private String deptName;
 
-    /** Request URL */
+    @Column(name = "oper_url", length = 500)
     private String operUrl;
 
-    /** Operation IP */
+    @Column(name = "oper_ip", length = 128)
     private String operIp;
 
-    /** Operation location */
+    @Column(name = "oper_location", length = 500)
     private String operLocation;
 
-    /** Request parameters */
+    @Column(name = "oper_param", length = 4000)
     private String operParam;
 
-    /** JSON result */
+    @Column(name = "json_result", length = 8000)
     private String jsonResult;
 
-    /** Status (0 normal, 1 error) */
+    @Column(name = "status")
     private Integer status;
 
-    /** Error message */
+    @Column(name = "error_msg", length = 4000)
     private String errorMsg;
 
-    /** Operation time */
+    @Column(name = "oper_time")
+    @CreationTimestamp
     private LocalDateTime operTime;
 
-    /** Cost time in milliseconds */
+    @Column(name = "cost_time")
     private Long costTime;
-
-    // Getters and Setters
-
-    public Long getOperId() {
-        return operId;
-    }
-
-    public void setOperId(Long operId) {
-        this.operId = operId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Integer getBusinessType() {
-        return businessType;
-    }
-
-    public void setBusinessType(Integer businessType) {
-        this.businessType = businessType;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public String getRequestMethod() {
-        return requestMethod;
-    }
-
-    public void setRequestMethod(String requestMethod) {
-        this.requestMethod = requestMethod;
-    }
-
-    public Integer getOperatorType() {
-        return operatorType;
-    }
-
-    public void setOperatorType(Integer operatorType) {
-        this.operatorType = operatorType;
-    }
-
-    public String getOperName() {
-        return operName;
-    }
-
-    public void setOperName(String operName) {
-        this.operName = operName;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getOperUrl() {
-        return operUrl;
-    }
-
-    public void setOperUrl(String operUrl) {
-        this.operUrl = operUrl;
-    }
-
-    public String getOperIp() {
-        return operIp;
-    }
-
-    public void setOperIp(String operIp) {
-        this.operIp = operIp;
-    }
-
-    public String getOperLocation() {
-        return operLocation;
-    }
-
-    public void setOperLocation(String operLocation) {
-        this.operLocation = operLocation;
-    }
-
-    public String getOperParam() {
-        return operParam;
-    }
-
-    public void setOperParam(String operParam) {
-        this.operParam = operParam;
-    }
-
-    public String getJsonResult() {
-        return jsonResult;
-    }
-
-    public void setJsonResult(String jsonResult) {
-        this.jsonResult = jsonResult;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public String getErrorMsg() {
-        return errorMsg;
-    }
-
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
-    }
-
-    public LocalDateTime getOperTime() {
-        return operTime;
-    }
-
-    public void setOperTime(LocalDateTime operTime) {
-        this.operTime = operTime;
-    }
-
-    public Long getCostTime() {
-        return costTime;
-    }
-
-    public void setCostTime(Long costTime) {
-        this.costTime = costTime;
-    }
 }

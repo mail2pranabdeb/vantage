@@ -39,6 +39,7 @@ public class OperationLogAspect {
      */
     @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
     public void controllerPointcut() {
+        log.info("=== AOP Pointcut matched for RestController ===");
     }
 
     /**
@@ -47,6 +48,7 @@ public class OperationLogAspect {
     @Before("controllerPointcut()")
     public void before(JoinPoint joinPoint) {
         startTimeHolder.set(System.currentTimeMillis());
+        log.info("=== AOP BEFORE: {} ===", joinPoint.getSignature().toShortString());
     }
 
     /**
@@ -54,6 +56,7 @@ public class OperationLogAspect {
      */
     @AfterReturning(pointcut = "controllerPointcut()", returning = "result")
     public void afterReturning(JoinPoint joinPoint, Object result) {
+        log.info("=== @AfterReturning TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
         publishOperationLog(joinPoint, result, null, 0);
     }
 
@@ -62,6 +65,7 @@ public class OperationLogAspect {
      */
     @AfterThrowing(pointcut = "controllerPointcut()", throwing = "e")
     public void afterThrowing(JoinPoint joinPoint, Exception e) {
+        log.info("=== @AfterThrowing TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
         publishOperationLog(joinPoint, null, e, 1);
     }
 
@@ -69,9 +73,11 @@ public class OperationLogAspect {
      * Publish operation log event
      */
     private void publishOperationLog(JoinPoint joinPoint, Object result, Exception e, int status) {
+        log.info("=== publishOperationLog called ===");
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes == null) {
+                log.warn("=== No request attributes, skipping operation log ===");
                 return;
             }
 
@@ -83,6 +89,9 @@ public class OperationLogAspect {
             String className = joinPoint.getTarget().getClass().getName();
             String methodName = joinPoint.getSignature().getName();
             String method = className + "." + methodName + "()";
+
+            log.info("=== Building OperationLogEvent: title={}, method={}, url={} ===", 
+                extractTitle(joinPoint), method, request.getRequestURI());
 
             // Build operation log event
             OperationLogEvent event = new OperationLogEvent(
@@ -103,10 +112,12 @@ public class OperationLogAspect {
                 costTime                                          // costTime
             );
 
+            log.info("=== Publishing OperationLogEvent ===");
             eventPublisher.publishEvent(event);
+            log.info("=== OperationLogEvent published successfully ===");
 
         } catch (Exception ex) {
-            log.error("Failed to publish operation log event", ex);
+            log.error("=== Failed to publish operation log event ===", ex);
         }
     }
 

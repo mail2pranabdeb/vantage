@@ -3,9 +3,9 @@ server:
 
 spring:
   application:
-    name: bms
+    name: vantage
   datasource:
-    url: jdbc:h2:file:./data/bms;MODE=Oracle;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./data/vantage;MODE=Oracle;AUTO_SERVER=TRUE
     driverClassName: org.h2.Driver
     username: sa
     password:
@@ -16,7 +16,6 @@ spring:
       settings:
         trace: false
         web-allow-others: false
-  jpa:
     hibernate:
       ddl-auto: none
     show-sql: true
@@ -35,3 +34,37 @@ spring:
       data-locations: classpath:data.sql
       continue-on-error: false
       separator: ;
+  tracing:
+    sampling:
+      probability: 1.0  # Sample all traces (reduce in production)
+
+# Management and monitoring endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,tracing
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.pd: DEBUG
+    io.micrometer: DEBUG
+    io.micrometer.tracing: DEBUG
+    org.springframework: INFO
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{36} - %msg%n"

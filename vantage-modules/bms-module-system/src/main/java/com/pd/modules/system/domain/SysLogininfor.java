@@ -1,110 +1,46 @@
 package com.pd.modules.system.domain;
 
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
  * System login info entity - sys_logininfor
  */
+@Entity
+@Table(name = "sys_logininfor")
+@SequenceGenerator(name = "logininfor_seq", sequenceName = "sys_logininfor_seq", allocationSize = 1)
+@Data
 public class SysLogininfor {
 
-    /** ID */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "logininfor_seq")
+    @Column(name = "info_id")
     private Long infoId;
 
-    /** Login name */
+    @Column(name = "login_name", length = 50)
     private String loginName;
 
-    /** Login status (0 success, 1 failure) */
+    @Column(name = "status", length = 1)
     private String status;
 
-    /** IP address */
+    @Column(name = "ipaddr", length = 128)
     private String ipaddr;
 
-    /** Login location */
+    @Column(name = "login_location", length = 255)
     private String loginLocation;
 
-    /** Browser type */
+    @Column(name = "browser", length = 50)
     private String browser;
 
-    /** Operating system */
+    @Column(name = "os", length = 50)
     private String os;
 
-    /** Message */
+    @Column(name = "msg", length = 255)
     private String msg;
 
-    /** Login time */
+    @Column(name = "login_time")
+    @CreationTimestamp
     private LocalDateTime loginTime;
-
-    // Getters and Setters
-
-    public Long getInfoId() {
-        return infoId;
-    }
-
-    public void setInfoId(Long infoId) {
-        this.infoId = infoId;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getIpaddr() {
-        return ipaddr;
-    }
-
-    public void setIpaddr(String ipaddr) {
-        this.ipaddr = ipaddr;
-    }
-
-    public String getLoginLocation() {
-        return loginLocation;
-    }
-
-    public void setLoginLocation(String loginLocation) {
-        this.loginLocation = loginLocation;
-    }
-
-    public String getBrowser() {
-        return browser;
-    }
-
-    public void setBrowser(String browser) {
-        this.browser = browser;
-    }
-
-    public String getOs() {
-        return os;
-    }
-
-    public void setOs(String os) {
-        this.os = os;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public LocalDateTime getLoginTime() {
-        return loginTime;
-    }
-
-    public void setLoginTime(LocalDateTime loginTime) {
-        this.loginTime = loginTime;
-    }
 }

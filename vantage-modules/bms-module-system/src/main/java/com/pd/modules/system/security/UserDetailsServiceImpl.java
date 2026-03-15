@@ -36,6 +36,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("=== loadUserByUsername called for: {} ===", username);
         try {
             SysUser user = userRepository.findByLoginName(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
@@ -58,16 +59,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                         "system:config:list", "system:config:query", "system:config:add", "system:config:edit", "system:config:remove");
             }
             
+            log.info("=== User {} authenticated successfully, publishing LoginSuccessEvent ===", username);
             // Publish login success event
             publishLoginSuccess(user);
             
             return new LoginUser(user, permissions);
             
         } catch (UsernameNotFoundException e) {
+            log.info("=== User {} not found, publishing LoginFailureEvent ===", username);
             // Publish login failure event
             publishLoginFailure(username, e.getMessage());
             throw e;
         } catch (Exception e) {
+            log.info("=== Authentication failed for {}: {}, publishing LoginFailureEvent ===", username, e.getMessage());
             // Publish login failure event
             publishLoginFailure(username, e.getMessage());
             throw new UsernameNotFoundException("Authentication failed: " + e.getMessage());
@@ -78,16 +82,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      * Publish login success event
      */
     private void publishLoginSuccess(SysUser user) {
+        log.info("=== publishLoginSuccess called for user: {} ===", user.getLoginName());
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
-            eventPublisher.publishEvent(new LoginSuccessEvent(
+            LoginSuccessEvent event = new LoginSuccessEvent(
                 user.getLoginName(),
                 getClientIp(request),
                 "",  // location (can be added with IP geolocation service)
                 request.getHeader("User-Agent"),
                 getOS(request.getHeader("User-Agent"))
-            ));
+            );
+            log.info("=== Publishing LoginSuccessEvent: user={}, ip={} ===", event.getLoginName(), event.getIpAddress());
+            eventPublisher.publishEvent(event);
+            log.info("=== LoginSuccessEvent published ===");
+        } else {
+            log.warn("=== No request attributes available, cannot publish LoginSuccessEvent ===");
         }
     }
 
@@ -95,17 +105,23 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      * Publish login failure event
      */
     private void publishLoginFailure(String username, String message) {
+        log.info("=== publishLoginFailure called for user: {} ===", username);
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
-            eventPublisher.publishEvent(new LoginFailureEvent(
+            LoginFailureEvent event = new LoginFailureEvent(
                 username,
                 getClientIp(request),
                 "",  // location
                 request.getHeader("User-Agent"),
                 getOS(request.getHeader("User-Agent")),
                 message
-            ));
+            );
+            log.info("=== Publishing LoginFailureEvent: user={}, ip={}, msg={} ===", event.getLoginName(), event.getIpAddress(), event.getMessage());
+            eventPublisher.publishEvent(event);
+            log.info("=== LoginFailureEvent published ===");
+        } else {
+            log.warn("=== No request attributes available, cannot publish LoginFailureEvent ===");
         }
     }
 
