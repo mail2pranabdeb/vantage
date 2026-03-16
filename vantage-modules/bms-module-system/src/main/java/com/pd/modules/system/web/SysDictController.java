@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysDictType;
@@ -34,6 +36,7 @@ public class SysDictController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:dict:add')")
+    @Log(title = "Dictionary Management", businessType = BusinessType.INSERT)
     @PostMapping("/type")
     public AjaxResult addType(@RequestBody SysDictType dict) {
         dict.setStatus(dict.getStatus() != null ? dict.getStatus() : "0");
@@ -44,6 +47,7 @@ public class SysDictController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:dict:edit')")
+    @Log(title = "Dictionary Management", businessType = BusinessType.UPDATE)
     @PutMapping("/type")
     public AjaxResult editType(@RequestBody SysDictType dict) {
         Optional<SysDictType> existing = dictTypeRepository.findById(dict.getDictId());
@@ -57,6 +61,7 @@ public class SysDictController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:dict:remove')")
+    @Log(title = "Dictionary Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/type/{dictId}")
     public AjaxResult removeType(@PathVariable Long dictId) {
         if (!dictTypeRepository.findById(dictId).isPresent()) {

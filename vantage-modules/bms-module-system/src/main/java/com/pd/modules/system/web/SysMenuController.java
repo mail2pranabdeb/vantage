@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysMenu;
@@ -42,6 +44,7 @@ public class SysMenuController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:menu:add')")
+    @Log(title = "Menu Management", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysMenu menu) {
         menu.setVisible(menu.getVisible() != null ? menu.getVisible() : "0");
@@ -60,6 +63,7 @@ public class SysMenuController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:menu:edit')")
+    @Log(title = "Menu Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysMenu menu) {
         Optional<SysMenu> existing = menuRepository.findById(menu.getMenuId());
@@ -73,6 +77,7 @@ public class SysMenuController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:menu:remove')")
+    @Log(title = "Menu Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/{menuId}")
     public AjaxResult remove(@PathVariable Long menuId) {
         if (!menuRepository.findById(menuId).isPresent()) {

@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysPost;
@@ -35,6 +37,7 @@ public class SysPostController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:post:add')")
+    @Log(title = "Post Management", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysPost post) {
         post.setPostSort(post.getPostSort() != null ? post.getPostSort() : 0);
@@ -46,6 +49,7 @@ public class SysPostController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:post:edit')")
+    @Log(title = "Post Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysPost post) {
         Optional<SysPost> existing = postRepository.findById(post.getPostId());
@@ -59,6 +63,7 @@ public class SysPostController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:post:remove')")
+    @Log(title = "Post Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/{postId}")
     public AjaxResult remove(@PathVariable Long postId) {
         if (!postRepository.findById(postId).isPresent()) {

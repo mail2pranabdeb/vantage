@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysNotice;
@@ -35,6 +37,7 @@ public class SysNoticeController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:notice:add')")
+    @Log(title = "Notice Management", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysNotice notice) {
         notice.setStatus(notice.getStatus() != null ? notice.getStatus() : "0");
@@ -45,6 +48,7 @@ public class SysNoticeController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:notice:edit')")
+    @Log(title = "Notice Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysNotice notice) {
         Optional<SysNotice> existing = noticeRepository.findById(notice.getNoticeId());
@@ -58,6 +62,7 @@ public class SysNoticeController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:notice:remove')")
+    @Log(title = "Notice Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/{noticeId}")
     public AjaxResult remove(@PathVariable Integer noticeId) {
         if (!noticeRepository.findById(noticeId).isPresent()) {

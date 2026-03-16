@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysConfig;
@@ -35,6 +37,7 @@ public class SysConfigController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:config:add')")
+    @Log(title = "Config Management", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysConfig config) {
         config.setConfigType(config.getConfigType() != null ? config.getConfigType() : "Y");
@@ -45,6 +48,7 @@ public class SysConfigController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:config:edit')")
+    @Log(title = "Config Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysConfig config) {
         Optional<SysConfig> existing = configRepository.findById(config.getConfigId());
@@ -58,6 +62,7 @@ public class SysConfigController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:config:remove')")
+    @Log(title = "Config Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/{configId}")
     public AjaxResult remove(@PathVariable Long configId) {
         if (!configRepository.findById(configId).isPresent()) {

@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysRole;
@@ -34,46 +36,49 @@ public class SysRoleController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:role:add')")
+    @Log(title = "Role Management", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysRole role) {
         Optional<SysRole> existing = roleRepository.findByRoleKey(role.getRoleKey());
         if (existing.isPresent()) {
             return error("Role key already exists");
         }
-        
+
         role.setDataScope("1");
         role.setStatus(role.getStatus() != null ? role.getStatus() : "0");
         role.setDelFlag("0");
         role.setCreateBy("admin");
         role.setCreateTime(LocalDateTime.now());
-        
+
         roleRepository.save(role);
         return success("Role added successfully");
     }
 
     @PreAuthorize("hasAuthority('system:role:edit')")
+    @Log(title = "Role Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysRole role) {
         Optional<SysRole> existing = roleRepository.findById(role.getRoleId());
         if (!existing.isPresent()) {
             return error("Role not found");
         }
-        
+
         role.setUpdateBy("admin");
         role.setUpdateTime(LocalDateTime.now());
-        
+
         roleRepository.save(role);
         return success("Role updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:role:remove')")
+    @Log(title = "Role Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/{roleId}")
     public AjaxResult remove(@PathVariable Long roleId) {
         Optional<SysRole> role = roleRepository.findById(roleId);
         if (!role.isPresent()) {
             return error("Role not found");
         }
-        
+
         // Soft delete
         role.get().setDelFlag("2");
         role.get().setUpdateTime(LocalDateTime.now());

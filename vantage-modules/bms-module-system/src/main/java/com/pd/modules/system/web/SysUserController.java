@@ -1,5 +1,7 @@
 package com.pd.modules.system.web;
 
+import com.pd.common.annotation.Log;
+import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.api.SystemUserService;
@@ -38,6 +40,7 @@ public class SysUserController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:user:add')")
+    @Log(title = "User Management", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysUser user) {
         // Check if login name already exists
@@ -61,6 +64,7 @@ public class SysUserController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:user:edit')")
+    @Log(title = "User Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysUser user) {
         Optional<SysUser> existing = userService.findById(user.getUserId());
@@ -74,6 +78,7 @@ public class SysUserController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('system:user:remove')")
+    @Log(title = "User Management", businessType = BusinessType.DELETE)
     @DeleteMapping("/{userId}")
     public AjaxResult remove(@PathVariable Long userId) {
         if (!userService.deleteUser(userId)) {
