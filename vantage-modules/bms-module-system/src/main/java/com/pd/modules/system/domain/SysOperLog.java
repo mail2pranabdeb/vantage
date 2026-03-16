@@ -49,16 +49,16 @@ public class SysOperLog {
     @Column(name = "oper_location", length = 500)
     private String operLocation;
 
-    @Column(name = "oper_param", length = 4000)
+    @Column(name = "oper_param", length = 8000)
     private String operParam;
 
-    @Column(name = "json_result", length = 8000)
+    @Column(name = "json_result", length = 16000)
     private String jsonResult;
 
     @Column(name = "status")
     private Integer status;
 
-    @Column(name = "error_msg", length = 4000)
+    @Column(name = "error_msg", length = 8000)
     private String errorMsg;
 
     @Column(name = "oper_time")

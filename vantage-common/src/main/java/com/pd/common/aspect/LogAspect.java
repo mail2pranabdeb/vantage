@@ -43,6 +43,14 @@ public class LogAspect {
      */
     @Before("@annotation(logAnnotation)")
     public void before(JoinPoint joinPoint, Log logAnnotation) {
+        // Skip GET requests
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            String method = attributes.getRequest().getMethod();
+            if ("GET".equalsIgnoreCase(method)) {
+                return; // Don't log GET requests
+            }
+        }
         startTimeHolder.set(System.currentTimeMillis());
         log.debug("Starting logged method: {}", joinPoint.getSignature().toShortString());
     }
@@ -52,7 +60,9 @@ public class LogAspect {
      */
     @AfterReturning(pointcut = "@annotation(logAnnotation)", returning = "result")
     public void afterReturning(JoinPoint joinPoint, Log logAnnotation, Object result) {
-        publishOperationLog(joinPoint, logAnnotation, result, null, 0);
+        if (!isGetRequest()) {
+            publishOperationLog(joinPoint, logAnnotation, result, null, 0);
+        }
     }
 
     /**
@@ -60,9 +70,21 @@ public class LogAspect {
      */
     @AfterThrowing(pointcut = "@annotation(logAnnotation)", throwing = "e")
     public void afterThrowing(JoinPoint joinPoint, Log logAnnotation, Exception e) {
-        if (logAnnotation.isLogError()) {
+        if (!isGetRequest() && logAnnotation.isLogError()) {
             publishOperationLog(joinPoint, logAnnotation, null, e, 1);
         }
+    }
+
+    /**
+     * Check if current request is GET
+     */
+    private boolean isGetRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            String method = attributes.getRequest().getMethod();
+            return "GET".equalsIgnoreCase(method);
+        }
+        return false;
     }
 
     /**

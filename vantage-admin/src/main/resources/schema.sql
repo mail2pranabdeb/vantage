@@ -181,10 +181,10 @@ create table sys_oper_log (
   oper_url        varchar(500)    default '',
   oper_ip         varchar(128)    default '',
   oper_location   varchar(500)    default '',
-  oper_param      varchar(4000)   default '',
-  json_result     varchar(8000)   default '',
+  oper_param      varchar(8000)   default '',
+  json_result     varchar(16000)  default '',
   status          int             default 0,
-  error_msg       varchar(4000)   default '',
+  error_msg       varchar(8000)   default '',
   oper_time       timestamp       default current_timestamp,
   cost_time       bigint          default 0,
   primary key (oper_id)
