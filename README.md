@@ -257,12 +257,6 @@ javac -cp "path/to/spring-security-crypto.jar" HashGen.java
 java -cp ".;path/to/spring-security-crypto.jar" HashGen
 ```
 
-### delete_bms.bat (Windows)
-Legacy script for cleaning up old BMS package references.
-
-### fix-schema.bat (Windows)
-Fixes schema.sql by replacing `varvarchar` typos with `varchar`.
-
 ## License
 
 MIT License
