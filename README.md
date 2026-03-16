@@ -1,6 +1,6 @@
 # Vantage Admin Platform
 
-A modern business management system built with Spring Boot and React.
+A modern, modular business management system built with Spring Boot and React.
 
 ## Tech Stack
 
@@ -9,10 +9,11 @@ A modern business management system built with Spring Boot and React.
 - **Spring Security** - Authentication & Authorization
 - **Spring MVC** - Web Layer
 - **Spring Data JPA** - Persistence Framework
-- **H2 Database** - Embedded Database (file-based at `./data/bms`)
+- **H2 Database** - Embedded Database (file-based at `./data/vantage`)
 - **Quartz** - Job Scheduling
-- **Apache Velocity** - Template Engine
+- **Apache Velocity** - Template Engine (code generation)
 - **Caffeine** - Local Caching
+- **Micrometer** - Metrics & Observability (Prometheus, Tracing)
 
 ### Frontend
 - **React 19** + **Vite**
@@ -27,12 +28,13 @@ vantage-master/
 │   ├── vantage-ui/             # React frontend
 │   └── src/main/java/          # Backend entry point
 ├── vantage-common/             # Shared utilities & common code
-├── vantage-framework/          # Core framework components (security, config, interceptors)
+├── vantage-framework/          # Core framework components (security, config, cache)
 ├── vantage-modules/            # Business modules
 │   ├── bms-module-system/      # System management (users, roles, permissions)
 │   ├── bms-module-quartz/      # Job scheduling module
 │   └── bms-module-generator/   # Code generation module
-└── data/                       # H2 database files
+├── data/                       # H2 database files
+└── logs/                       # Application logs
 ```
 
 ## Quick Start
@@ -57,7 +59,7 @@ mvnw.cmd clean package -pl vantage-admin -am -DskipTests
 
 This builds all backend modules and the React frontend, packaging everything into an executable JAR.
 
-**Note:** The build process automatically installs Node.js and npm, then builds the frontend. This happens during the `generate-resources` phase.
+**Note:** The build process automatically installs Node.js and npm, then builds the frontend. This happens during the `generate-resources` phase via the `frontend-maven-plugin`.
 
 ### Run
 
@@ -82,9 +84,12 @@ java -jar vantage-admin\target\vantage-admin-0.0.1-SNAPSHOT.jar
 |---------|-----|
 | Application | http://localhost:8081 |
 | H2 Console | http://localhost:8081/h2-console |
+| Actuator Health | http://localhost:8081/actuator/health |
+| Actuator Metrics | http://localhost:8081/actuator/metrics |
+| Actuator Prometheus | http://localhost:8081/actuator/prometheus |
 
 **H2 Console Login:**
-- JDBC URL: `jdbc:h2:file:./data/bms`
+- JDBC URL: `jdbc:h2:file:./data/vantage`
 - Username: `sa`
 - Password: *(leave blank)*
 
@@ -120,40 +125,66 @@ npm run build
 Edit [`vantage-admin/src/main/resources/application.yml`](vantage-admin/src/main/resources/application.yml) to customize:
 
 - Server port (default: 8081)
-- Database connection
+- Database connection (H2 file-based with Oracle compatibility mode)
 - Logging levels
+- Actuator endpoints
+- Tracing sampling
 
 ## Database
 
-The application uses H2 database in file mode with Oracle compatibility. Data persists in `./data/bms.db`.
+The application uses H2 database in file mode with Oracle compatibility. Data persists in `./data/vantage.mv.db`.
 
 Schema and initial data are loaded from:
-- `classpath:schema.sql`
-- `classpath:data.sql`
+- `classpath:schema.sql` - Database schema (17 tables including Quartz scheduler tables)
+- `classpath:data.sql` - Initial seed data
+
+### Database Tables
+
+| Table | Description |
+|-------|-------------|
+| `sys_user` | User accounts |
+| `sys_role` | Roles |
+| `sys_menu` | Menus & permissions |
+| `sys_user_role` | User-Role mapping |
+| `sys_role_menu` | Role-Menu mapping |
+| `sys_user_post` | User-Post mapping |
+| `sys_post` | Job positions |
+| `sys_dict_type` | Dictionary types |
+| `sys_dict_data` | Dictionary data |
+| `sys_config` | System configuration |
+| `sys_logininfor` | Login audit logs |
+| `sys_oper_log` | Operation audit logs |
+| `sys_notice` | System notices |
+| `sys_job` | Quartz scheduled jobs |
+| `sys_job_log` | Job execution logs |
+| `gen_table` | Code generation table metadata |
+| `gen_table_column` | Code generation column metadata |
+| `QRTZ_*` | Quartz scheduler tables (10 tables) |
 
 ## Modules
 
 | Module | Description |
 |--------|-------------|
-| `vantage-common` | Shared utilities, constants, base classes, and domain events |
-| `vantage-framework` | Core framework: security, web config, interceptors |
-| `vantage-module-system` | User management, roles, permissions, menus, **login records**, **operation logs** |
-| `vantage-module-quartz` | Scheduled job management |
-| `vantage-module-generator` | Code generation for entities and CRUD |
+| `vantage-common` | Shared utilities, base controllers, domain events, annotations, exception handling |
+| `vantage-framework` | Core framework: security config, cache config, Quartz config, login user context |
+| `vantage-module-system` | User/role/menu management, login records, operation logs, config, dict, posts, notices |
+| `vantage-module-quartz` | Scheduled job management with Quartz integration |
+| `vantage-module-generator` | Code generation for entities, repositories, services, and controllers |
 
 ## Features
 
 ### Authentication & Authorization
-- ✅ Login/Logout with JWT-style sessions
+- ✅ Login/Logout with session-based authentication
 - ✅ Role-based access control (RBAC)
 - ✅ Permission-based method security
-- ✅ **Login success/failure recording** (sys_logininfor)
+- ✅ Login success/failure recording (`sys_logininfor`)
+- ✅ BCrypt password hashing (use `HashGen.java` to generate hashes)
 
 ### Operation Logging
-- ✅ **Automatic operation logging** via AOP
+- ✅ Automatic operation logging via AOP (`@Log` annotation)
 - ✅ Records all REST API calls
 - ✅ Tracks: user, IP, browser, OS, execution time, request/response
-- ✅ Query and filter operations (sys_oper_log)
+- ✅ Query and filter operations (`sys_oper_log`)
 
 ### System Management
 - ✅ User management (CRUD)
@@ -161,17 +192,76 @@ Schema and initial data are loaded from:
 - ✅ Menu management
 - ✅ Config management
 - ✅ Dict management
+- ✅ Post management
+- ✅ Notice management
 
 ### Job Scheduling
 - ✅ Quartz-based job scheduling
 - ✅ Cron expression support
 - ✅ Job execution logging
+- ✅ Multiple misfire policies
+- ✅ Concurrent execution control
 
 ### Code Generation
-- ✅ Entity generation
+- ✅ Entity generation (JPA entities)
 - ✅ Repository generation
 - ✅ Service layer generation
 - ✅ Controller generation
+- ✅ Supports CRUD and tree templates
+
+### Observability
+- ✅ Spring Actuator endpoints (health, info, metrics)
+- ✅ Prometheus metrics export
+- ✅ Distributed tracing (Micrometer Tracing)
+- ✅ Structured logging with trace/span IDs
+
+### Additional Features
+- ✅ Real-time chat interface (WebSocket-based)
+- ✅ Dashboard with metrics overview
+- ✅ Responsive UI with sidebar navigation
+
+## API Endpoints
+
+### Authentication
+- `POST /login` - User login
+- `POST /logout` - User logout
+
+### System
+- `GET/POST/PUT/DELETE /system/users` - User management
+- `GET/POST/PUT/DELETE /system/roles` - Role management
+- `GET/POST/PUT/DELETE /system/menus` - Menu management
+- `GET/POST/PUT/DELETE /system/posts` - Post management
+- `GET/POST/PUT/DELETE /system/dicts` - Dictionary management
+- `GET/POST/PUT/DELETE /system/configs` - Config management
+- `GET/POST/PUT/DELETE /system/notices` - Notice management
+- `GET /system/logininfor` - Login records
+- `GET /system/operlog` - Operation logs
+
+### Jobs
+- `GET/POST/PUT/DELETE /quartz/jobs` - Job management
+- `GET /quartz/logs` - Job execution logs
+
+### Generator
+- `GET /generator/list` - List tables for generation
+- `POST /generator/code` - Generate code
+
+## Utility Scripts
+
+### HashGen.java
+Generate BCrypt password hashes:
+```bash
+# Compile
+javac -cp "path/to/spring-security-crypto.jar" HashGen.java
+
+# Run
+java -cp ".;path/to/spring-security-crypto.jar" HashGen
+```
+
+### delete_bms.bat (Windows)
+Legacy script for cleaning up old BMS package references.
+
+### fix-schema.bat (Windows)
+Fixes schema.sql by replacing `varvarchar` typos with `varchar`.
 
 ## License
 
