@@ -257,6 +257,59 @@ javac -cp "path/to/spring-security-crypto.jar" HashGen.java
 java -cp ".;path/to/spring-security-crypto.jar" HashGen
 ```
 
+## AI Chat Assistant
+
+The application includes an AI-powered chat assistant with RAG (Retrieval-Augmented Generation).
+
+### Prerequisites
+
+1. **Install Ollama**: Download from [ollama.ai](https://ollama.ai)
+
+2. **Pull a language model** (choose based on your RAM):
+   ```bash
+   # For 8-16GB RAM (Recommended)
+   ollama pull phi3              # 3.8B model, ~4GB RAM, fastest
+   
+   # For 16GB RAM (Good balance)
+   ollama pull mistral           # 7B model, ~6-8GB RAM, good quality
+   
+   # For 16-32GB RAM (High quality)
+   ollama pull llama3            # 8B model, ~8-10GB RAM, very good
+   
+   # For 32GB+ RAM (Best quality)
+   ollama pull llama3:70b        # 70B model, ~40GB RAM, excellent
+   ```
+
+3. **Enable AI in configuration** (`application.yml`):
+   ```yaml
+   ai:
+     enabled: true
+     chat-model: phi3  # Match the model you pulled
+   ```
+
+4. **Restart the application**
+
+### Model Comparison
+
+| Model | Parameters | RAM Required | Speed | Quality | Best For |
+|-------|-----------|--------------|-------|---------|----------|
+| Phi-3 | 3.8B | 4GB | ⚡⚡⚡ Fast | Good | Laptops, limited RAM |
+| Mistral | 7B | 6-8GB | ⚡⚡ Medium | Very Good | Most users |
+| Llama 3 | 8B | 8-10GB | ⚡⚡ Medium | Very Good | Good balance |
+| Llama 3 | 70B | 40GB+ | 🐌 Slow | Excellent | Servers only |
+
+### Features
+
+- **Natural Language Chat**: Ask questions about system features
+- **Tool Integration**: Create users, roles, manage system via chat
+- **RAG Knowledge Base**: 10 pre-loaded system documentation articles
+- **Conversation Memory**: Remembers context across multiple messages
+- **Fallback Mode**: Works without AI (rule-based responses)
+
+### Access
+
+Navigate to **Chat** in the admin panel to use the AI assistant.
+
 ## License
 
 MIT License
