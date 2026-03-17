@@ -128,7 +128,7 @@ const Chat = () => {
                 const assistantMessage = {
                     id: messages.length + 2,
                     role: 'assistant',
-                    content: chatData.response || 'I received your message.',
+                    content: chatData.response || 'I received your message. How can I help you?',
                     timestamp: new Date().toISOString()
                 };
                 setMessages(prev => [...prev, assistantMessage]);
@@ -378,10 +378,10 @@ const Chat = () => {
             )}
 
             <div className="glass-panel" style={{
-                marginTop: '12px',
+                marginTop: '20px',
                 display: 'flex',
                 flexDirection: 'column',
-                height: 'calc(100vh - 180px)',
+                height: 'calc(100vh - 200px)',
                 borderRadius: '12px',
                 overflow: 'hidden'
             }}>
@@ -389,7 +389,8 @@ const Chat = () => {
                 <div style={{
                     flex: 1,
                     overflowY: 'auto',
-                    padding: '20px',
+                    padding: '20px 20px 20px 20px',
+                    paddingTop: '30px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '16px'
