@@ -267,17 +267,14 @@ The application includes an AI-powered chat assistant with RAG (Retrieval-Augmen
 
 2. **Pull a language model** (choose based on your RAM):
    ```bash
-   # For 8-16GB RAM (Recommended)
-   ollama pull phi3              # 3.8B model, ~4GB RAM, fastest
+   # For 8-16GB RAM (BEST - Only 637MB!)
+   ollama pull tinyllama       # 1.1B model, ~637MB RAM, very fast
    
-   # For 16GB RAM (Good balance)
-   ollama pull mistral           # 7B model, ~6-8GB RAM, good quality
-   
-   # For 16-32GB RAM (High quality)
-   ollama pull llama3            # 8B model, ~8-10GB RAM, very good
+   # For 16-32GB RAM (Good quality)
+   ollama pull mistral         # 7B model, ~4-6GB RAM, good quality
    
    # For 32GB+ RAM (Best quality)
-   ollama pull llama3:70b        # 70B model, ~40GB RAM, excellent
+   ollama pull llama3          # 8B model, ~8GB RAM, very good
    ```
 
 3. **Enable AI in configuration** (`application.yml`):
@@ -293,10 +290,9 @@ The application includes an AI-powered chat assistant with RAG (Retrieval-Augmen
 
 | Model | Parameters | RAM Required | Speed | Quality | Best For |
 |-------|-----------|--------------|-------|---------|----------|
-| Phi-3 | 3.8B | 4GB | ⚡⚡⚡ Fast | Good | Laptops, limited RAM |
-| Mistral | 7B | 6-8GB | ⚡⚡ Medium | Very Good | Most users |
-| Llama 3 | 8B | 8-10GB | ⚡⚡ Medium | Very Good | Good balance |
-| Llama 3 | 70B | 40GB+ | 🐌 Slow | Excellent | Servers only |
+| TinyLlama | 1.1B | 637MB | ⚡⚡⚡ Very Fast | Good | Laptops, 8-16GB RAM |
+| Mistral | 7B | 4-6GB | ⚡⚡ Fast | Very Good | 16-32GB RAM |
+| Llama 3 | 8B | 8GB | ⚡ Medium | Very Good | 32GB+ RAM |
 
 ### Features
 
