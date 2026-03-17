@@ -411,6 +411,7 @@ create table QRTZ_SIMPROP_TRIGGERS (
 );
 
 -- AI Knowledge Base Table
+drop table if exists ai_knowledge;
 drop sequence if exists ai_knowledge_seq;
 create sequence ai_knowledge_seq start with 100 increment by 1;
 create table ai_knowledge (
