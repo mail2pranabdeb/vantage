@@ -2,20 +2,30 @@ package com.pd.modules.system.web;
 
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
+import com.pd.framework.ai.service.AiChatService;
+import com.pd.framework.ai.service.KnowledgeBaseService;
+import com.pd.modules.system.security.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Chat controller with MCP tool integration
+ * Chat controller with AI and MCP tool integration
  */
 @RestController
 @RequestMapping("/api")
 public class ChatController extends BaseController {
 
+    @Autowired(required = false)
+    private AiChatService aiChatService;
+
+    @Autowired(required = false)
+    private KnowledgeBaseService knowledgeBaseService;
+
     /**
-     * Chat endpoint with tool calling support
+     * Chat endpoint with AI-powered responses and tool calling
      */
     @PostMapping("/chat")
     public AjaxResult chat(@RequestBody Map<String, Object> request) {
@@ -23,82 +33,91 @@ public class ChatController extends BaseController {
         List<Map<String, Object>> conversationHistory = (List<Map<String, Object>>) request.getOrDefault("conversationHistory", new ArrayList<>());
         List<Map<String, Object>> toolResults = (List<Map<String, Object>>) request.getOrDefault("toolResults", null);
 
-        // Simple rule-based response for demo
-        Map<String, Object> response = processMessage(message, toolResults);
-
-        return success(response);
-    }
-
-    /**
-     * Process message and determine if tools need to be called
-     */
-    private Map<String, Object> processMessage(String message, List<Map<String, Object>> toolResults) {
-        Map<String, Object> result = new HashMap<>();
-        String lowerMessage = message.toLowerCase();
+        // Get current user
+        String username = getCurrentUsername();
 
         // If we have tool results, provide final response
         if (toolResults != null && !toolResults.isEmpty()) {
-            StringBuilder response = new StringBuilder("I've completed the following actions:\n\n");
-            for (Map<String, Object> toolResult : toolResults) {
-                String toolName = (String) toolResult.get("name");
-                Map<String, Object> toolData = (Map<String, Object>) toolResult.get("result");
-                boolean success = toolData != null && Boolean.TRUE.equals(toolData.get("success"));
-
-                if (success) {
-                    response.append("✅ ").append(formatToolName(toolName)).append(" - Success\n");
-                    
-                    // Add data summary for list operations
-                    if (toolName.equals("listUsers") || toolName.equals("listRoles")) {
-                        Map<String, Object> data = (Map<String, Object>) toolData.get("data");
-                        if (data != null && data.containsKey("data")) {
-                            List<?> items = (List<?>) data.get("data");
-                            if (items != null && !items.isEmpty()) {
-                                response.append("   Found ").append(items.size()).append(" ").append(toolName.replace("list", "").toLowerCase()).append("\n");
-                                
-                                // Show first few items
-                                int showCount = Math.min(5, items.size());
-                                for (int i = 0; i < showCount; i++) {
-                                    Map<String, Object> item = (Map<String, Object>) items.get(i);
-                                    if (toolName.equals("listUsers")) {
-                                        String userName = (String) item.get("userName");
-                                        String loginName = (String) item.get("loginName");
-                                        response.append("   • ").append(userName).append(" (").append(loginName).append(")\n");
-                                    } else if (toolName.equals("listRoles")) {
-                                        String roleName = (String) item.get("roleName");
-                                        String roleKey = (String) item.get("roleKey");
-                                        response.append("   • ").append(roleName).append(" (").append(roleKey).append(")\n");
-                                    }
-                                }
-                                
-                                if (items.size() > showCount) {
-                                    response.append("   ... and ").append(items.size() - showCount).append(" more\n");
-                                }
-                            } else {
-                                response.append("   No ").append(toolName.replace("list", "").toLowerCase()).append(" found\n");
-                            }
-                        }
-                    }
-                } else {
-                    response.append("❌ ").append(formatToolName(toolName)).append(" - Failed\n");
-                    if (toolData != null && toolData.containsKey("error")) {
-                        response.append("   Error: ").append(toolData.get("error")).append("\n");
-                    }
-                }
-            }
-            response.append("\nIs there anything else you'd like me to help with?");
-            result.put("response", response.toString());
-            return result;
+            Map<String, Object> response = buildToolResponse(toolResults);
+            return success(response);
         }
 
-        // Determine which tools to call based on message
-        List<Map<String, Object>> toolCalls = new ArrayList<>();
+        // Check if AI is available
+        if (aiChatService != null && aiChatService.isEnabled()) {
+            // Use AI for intelligent response
+            try {
+                String aiResponse = aiChatService.chat(message, username);
+                
+                // Check if AI response indicates tool usage
+                List<Map<String, Object>> toolCalls = extractToolCalls(aiResponse, message);
+                
+                if (!toolCalls.isEmpty()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("toolCalls", toolCalls);
+                    result.put("response", null);
+                    return success(result);
+                } else {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("response", aiResponse);
+                    result.put("toolCalls", null);
+                    return success(result);
+                }
+            } catch (Exception e) {
+                // Fallback to rule-based if AI fails
+                return success(processMessageFallback(message, null));
+            }
+        }
 
+        // Fallback to rule-based processing
+        return success(processMessageFallback(message, null));
+    }
+
+    /**
+     * Get AI status
+     */
+    @GetMapping("/chat/status")
+    public AjaxResult chatStatus() {
+        Map<String, Object> status = new HashMap<>();
+        status.put("enabled", aiChatService != null && aiChatService.isEnabled());
+        status.put("knowledgeCount", knowledgeBaseService != null ? knowledgeBaseService.getStats().total() : 0);
+        return success(status);
+    }
+
+    /**
+     * Refresh knowledge base
+     */
+    @PostMapping("/chat/knowledge/refresh")
+    public AjaxResult refreshKnowledge() {
+        if (knowledgeBaseService != null && aiChatService != null) {
+            knowledgeBaseService.initializeKnowledgeBase();
+            return success("Knowledge base refreshed");
+        }
+        return error("Knowledge service not available");
+    }
+
+    /**
+     * Get knowledge statistics
+     */
+    @GetMapping("/chat/knowledge/stats")
+    public AjaxResult knowledgeStats() {
+        if (knowledgeBaseService != null) {
+            return success(knowledgeBaseService.getStats());
+        }
+        return success(Collections.emptyMap());
+    }
+
+    /**
+     * Extract tool calls from AI response or message intent
+     */
+    private List<Map<String, Object>> extractToolCalls(String aiResponse, String originalMessage) {
+        List<Map<String, Object>> toolCalls = new ArrayList<>();
+        String lowerMessage = originalMessage.toLowerCase();
+
+        // Simple intent detection based on keywords
         if (lowerMessage.contains("create") && lowerMessage.contains("user")) {
-            // Extract user details from message
             Map<String, Object> toolCall = new HashMap<>();
             toolCall.put("name", "createUser");
-            Map<String, Object> args = extractUserDetails(message);
-            toolCall.put("arguments", args);
+            toolCall.put("arguments", extractUserDetails(originalMessage));
             toolCalls.add(toolCall);
         } else if (lowerMessage.contains("list") && lowerMessage.contains("user")) {
             Map<String, Object> toolCall = new HashMap<>();
@@ -113,26 +132,99 @@ public class ChatController extends BaseController {
         } else if (lowerMessage.contains("create") && lowerMessage.contains("role")) {
             Map<String, Object> toolCall = new HashMap<>();
             toolCall.put("name", "createRole");
-            Map<String, Object> args = extractRoleDetails(message);
-            toolCall.put("arguments", args);
+            toolCall.put("arguments", extractRoleDetails(originalMessage));
             toolCalls.add(toolCall);
         } else if (lowerMessage.contains("delete") && lowerMessage.contains("user")) {
             Map<String, Object> toolCall = new HashMap<>();
             toolCall.put("name", "deleteUser");
-            Map<String, Object> args = extractUserId(message);
-            toolCall.put("arguments", args);
+            toolCall.put("arguments", extractUserId(originalMessage));
             toolCalls.add(toolCall);
         }
 
-        if (!toolCalls.isEmpty()) {
-            result.put("toolCalls", toolCalls);
-            result.put("response", null);
-        } else {
-            // Default response
-            result.put("response", getGeneralResponse(message));
-            result.put("toolCalls", null);
+        return toolCalls;
+    }
+
+    /**
+     * Fallback message processing when AI is unavailable
+     */
+    private Map<String, Object> processMessageFallback(String message, List<Map<String, Object>> toolResults) {
+        // If we have tool results, provide final response
+        if (toolResults != null && !toolResults.isEmpty()) {
+            return buildToolResponse(toolResults);
         }
 
+        // Determine which tools to call based on message
+        List<Map<String, Object>> toolCalls = extractToolCalls(null, message);
+
+        if (!toolCalls.isEmpty()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("toolCalls", toolCalls);
+            result.put("response", null);
+            return result;
+        } else {
+            // Default response
+            Map<String, Object> result = new HashMap<>();
+            result.put("response", getGeneralResponse(message));
+            result.put("toolCalls", null);
+            return result;
+        }
+    }
+
+    /**
+     * Build response from tool execution results
+     */
+    private Map<String, Object> buildToolResponse(List<Map<String, Object>> toolResults) {
+        Map<String, Object> result = new HashMap<>();
+        StringBuilder response = new StringBuilder("I've completed the following actions:\n\n");
+        
+        for (Map<String, Object> toolResult : toolResults) {
+            String toolName = (String) toolResult.get("name");
+            Map<String, Object> toolData = (Map<String, Object>) toolResult.get("result");
+            boolean success = toolData != null && Boolean.TRUE.equals(toolData.get("success"));
+
+            if (success) {
+                response.append("✅ ").append(formatToolName(toolName)).append(" - Success\n");
+
+                // Add data summary for list operations
+                if (toolName.equals("listUsers") || toolName.equals("listRoles")) {
+                    Map<String, Object> data = (Map<String, Object>) toolData.get("data");
+                    if (data != null && data.containsKey("data")) {
+                        List<?> items = (List<?>) data.get("data");
+                        if (items != null && !items.isEmpty()) {
+                            response.append("   Found ").append(items.size()).append(" ").append(toolName.replace("list", "").toLowerCase()).append("\n");
+
+                            // Show first few items
+                            int showCount = Math.min(5, items.size());
+                            for (int i = 0; i < showCount; i++) {
+                                Map<String, Object> item = (Map<String, Object>) items.get(i);
+                                if (toolName.equals("listUsers")) {
+                                    String userName = (String) item.get("userName");
+                                    String loginName = (String) item.get("loginName");
+                                    response.append("   • ").append(userName).append(" (").append(loginName).append(")\n");
+                                } else if (toolName.equals("listRoles")) {
+                                    String roleName = (String) item.get("roleName");
+                                    String roleKey = (String) item.get("roleKey");
+                                    response.append("   • ").append(roleName).append(" (").append(roleKey).append(")\n");
+                                }
+                            }
+
+                            if (items.size() > showCount) {
+                                response.append("   ... and ").append(items.size() - showCount).append(" more\n");
+                            }
+                        } else {
+                            response.append("   No ").append(toolName.replace("list", "").toLowerCase()).append(" found\n");
+                        }
+                    }
+                }
+            } else {
+                response.append("❌ ").append(formatToolName(toolName)).append(" - Failed\n");
+                if (toolData != null && toolData.containsKey("error")) {
+                    response.append("   Error: ").append(toolData.get("error")).append("\n");
+                }
+            }
+        }
+        response.append("\nIs there anything else you'd like me to help with?");
+        result.put("response", response.toString());
         return result;
     }
 
@@ -142,7 +234,7 @@ public class ChatController extends BaseController {
     @SuppressWarnings("unchecked")
     private Map<String, Object> extractUserDetails(String message) {
         Map<String, Object> details = new HashMap<>();
-        
+
         // Generate login name from timestamp
         String baseLoginName = "user_" + System.currentTimeMillis() % 10000;
         details.put("loginName", baseLoginName);
@@ -160,21 +252,21 @@ public class ChatController extends BaseController {
             if (message.toLowerCase().contains(keyword)) {
                 int keywordIndex = message.toLowerCase().indexOf(keyword);
                 String afterKeyword = message.substring(keywordIndex + keyword.length()).trim();
-                
+
                 // Get words until we hit a stop word or end
                 String[] stopWords = {"and", "with", "for", "to", "the", "a", "an", "in", "at", "on"};
                 String[] words = afterKeyword.split("\\s+");
                 StringBuilder name = new StringBuilder();
-                
+
                 for (String word : words) {
                     String cleanWord = word.replaceAll("[^a-zA-Z]", "");
                     if (cleanWord.isEmpty()) continue;
                     if (isStopWord(cleanWord.toLowerCase(), stopWords)) break;
-                    
+
                     if (name.length() > 0) name.append(" ");
                     name.append(capitalize(cleanWord));
                 }
-                
+
                 if (name.length() > 0) {
                     details.put("userName", name.toString());
                     // Generate login name from user name
@@ -238,7 +330,7 @@ public class ChatController extends BaseController {
      */
     private Map<String, Object> extractUserId(String message) {
         Map<String, Object> details = new HashMap<>();
-        
+
         // Try to find number in message
         String[] words = message.split("\\s+");
         for (String word : words) {
@@ -247,7 +339,7 @@ public class ChatController extends BaseController {
                 return details;
             }
         }
-        
+
         details.put("userId", 1); // Default
         return details;
     }
@@ -264,7 +356,7 @@ public class ChatController extends BaseController {
      */
     private String getGeneralResponse(String message) {
         String lowerMessage = message.toLowerCase();
-        
+
         if (lowerMessage.contains("hello") || lowerMessage.contains("hi")) {
             return "Hello! I'm your Vantage Admin assistant. I can help you:\n\n" +
                    "• Create and manage users\n" +
@@ -300,5 +392,20 @@ public class ChatController extends BaseController {
     private String capitalize(String str) {
         if (str == null || str.isEmpty()) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
+
+    /**
+     * Get current username from security context
+     */
+    private String getCurrentUsername() {
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (principal instanceof LoginUser loginUser) {
+                return loginUser.getUsername();
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+        return "anonymous";
     }
 }

@@ -409,3 +409,23 @@ create table QRTZ_SIMPROP_TRIGGERS (
   primary key (sched_name, trigger_name, trigger_group),
   foreign key (sched_name, trigger_name, trigger_group) references QRTZ_TRIGGERS(sched_name, trigger_name, trigger_group)
 );
+
+-- AI Knowledge Base Table
+drop sequence if exists ai_knowledge_seq;
+create sequence ai_knowledge_seq start with 100 increment by 1;
+create table ai_knowledge (
+  knowledge_id    bigint          not null,
+  title           varchar(200)    not null,
+  content         clob            not null,
+  category        varchar(50)     default '',
+  keywords        varchar(500)    default '',
+  status          varchar(1)      default '1',
+  create_by       varchar(64)     default '',
+  create_time     timestamp       default current_timestamp,
+  update_by       varchar(64)     default '',
+  update_time     timestamp       null,
+  remark          varchar(500)    default null,
+  primary key (knowledge_id)
+);
+create index ai_knowledge_category_idx on ai_knowledge (category);
+create index ai_knowledge_status_idx on ai_knowledge (status);

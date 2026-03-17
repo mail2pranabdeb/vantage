@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Wrench, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { Send, Bot, User, Wrench, CheckCircle, XCircle, Loader, Sparkles, RefreshCw, Database } from 'lucide-react';
 
 const Chat = () => {
     const [messages, setMessages] = useState([
@@ -13,7 +13,40 @@ const Chat = () => {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [toolCalls, setToolCalls] = useState([]);
+    const [aiStatus, setAiStatus] = useState({ enabled: false, knowledgeCount: 0 });
+    const [showKnowledge, setShowKnowledge] = useState(false);
     const messagesEndRef = useRef(null);
+
+    // Fetch AI status on mount
+    useEffect(() => {
+        fetchAiStatus();
+    }, []);
+
+    const fetchAiStatus = async () => {
+        try {
+            const response = await fetch('/api/chat/status');
+            const data = await response.json();
+            if (data.code === 200) {
+                setAiStatus(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch AI status:', error);
+        }
+    };
+
+    const handleRefreshKnowledge = async () => {
+        try {
+            const response = await fetch('/api/chat/knowledge/refresh', { method: 'POST' });
+            const data = await response.json();
+            if (data.code === 200) {
+                alert('Knowledge base refreshed successfully!');
+                fetchAiStatus();
+            }
+        } catch (error) {
+            console.error('Failed to refresh knowledge:', error);
+            alert('Failed to refresh knowledge base');
+        }
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -191,13 +224,158 @@ const Chat = () => {
                         <Bot size={16} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>AI Assistant</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>AI Assistant</h2>
+                            {aiStatus.enabled ? (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    color: '#10b981',
+                                    fontSize: '10px',
+                                    fontWeight: 600
+                                }}>
+                                    <Sparkles size={10} />
+                                    AI Enhanced
+                                </span>
+                            ) : (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    background: 'rgba(107, 114, 128, 0.1)',
+                                    color: '#6b7280',
+                                    fontSize: '10px',
+                                    fontWeight: 600
+                                }}>
+                                    Rule-based Mode
+                                </span>
+                            )}
+                        </div>
                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                            Chat with MCP tool integration
+                            {aiStatus.enabled 
+                                ? `Knowledge base: ${aiStatus.knowledgeCount} documents • RAG enabled`
+                                : 'Chat with MCP tool integration'}
                         </p>
                     </div>
                 </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                        onClick={handleRefreshKnowledge}
+                        title="Refresh Knowledge Base"
+                        style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                    >
+                        <RefreshCw size={12} />
+                        Refresh KB
+                    </button>
+                    <button
+                        onClick={() => setShowKnowledge(!showKnowledge)}
+                        title="View Knowledge Base Stats"
+                        style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            background: showKnowledge ? 'var(--primary-color)' : 'var(--bg-secondary)',
+                            color: showKnowledge ? 'white' : 'var(--text-primary)',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                    >
+                        <Database size={12} />
+                        Knowledge Base
+                    </button>
+                </div>
             </div>
+
+            {/* Knowledge Base Stats Panel */}
+            {showKnowledge && (
+                <div className="glass-panel" style={{
+                    marginTop: '12px',
+                    padding: '16px',
+                    borderRadius: '12px'
+                }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>
+                        Knowledge Base Statistics
+                    </h3>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                        gap: '12px'
+                    }}>
+                        <div style={{
+                            padding: '12px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '8px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--primary-color)' }}>
+                                {aiStatus.knowledgeCount}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                Total Documents
+                            </div>
+                        </div>
+                        <div style={{
+                            padding: '12px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '8px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '24px', fontWeight: 700, color: '#10b981' }}>
+                                {aiStatus.enabled ? 'Active' : 'Inactive'}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                AI Status
+                            </div>
+                        </div>
+                        <div style={{
+                            padding: '12px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '8px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b' }}>
+                                RAG
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                Retrieval Mode
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{
+                        marginTop: '12px',
+                        padding: '10px',
+                        background: 'var(--bg-tertiary)',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        color: 'var(--text-muted)'
+                    }}>
+                        <strong>Knowledge Categories:</strong> User Management, Role Management, Menu Management, 
+                        Config Management, Dict Management, Job Scheduling, Code Generation, Operation Logging, Login Monitoring
+                    </div>
+                </div>
+            )}
 
             <div className="glass-panel" style={{
                 marginTop: '12px',

@@ -38,6 +38,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+		<langchain4j.version>0.35.0</langchain4j.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
