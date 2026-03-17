@@ -72,9 +72,9 @@ logging:
 
 # AI Configuration
 ai:
-  enabled: false  # Set to true when Ollama is running
+  enabled: true  # AI is enabled - Ollama with Phi-3 model
   ollama-base-url: http://localhost:11434
-  chat-model: phi3  # Recommended for 16GB RAM: phi3, mistral, llama3 (8B), gemma:7b
+  chat-model: phi3  # Phi-3 Mini: optimized for 16GB RAM
   temperature: 0.7
   max-tokens: 1024
   rag-enabled: true
