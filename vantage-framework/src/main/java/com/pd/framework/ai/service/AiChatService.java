@@ -65,7 +65,8 @@ public class AiChatService {
                 .baseUrl(props.getOllamaBaseUrl())
                 .modelName(props.getChatModel())
                 .temperature(props.getTemperature())
-                .maxRetries(2)
+                .maxRetries(1)
+                .timeout(java.time.Duration.ofSeconds(props.getTimeout()))
                 .build();
     }
 

@@ -4,7 +4,23 @@ import { MessageSquare, X, Send, Bot, User, Wrench, CheckCircle, XCircle, Loader
 const FloatingChat = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState(() => {
-        // Load from session storage
+        // Check for existing session - clear chat for new session
+        const sessionId = sessionStorage.getItem('chatSessionId');
+        const currentSessionId = Date.now().toString();
+        sessionStorage.setItem('chatSessionId', currentSessionId);
+        
+        // If it's a new session (no previous session ID or different session), clear history
+        if (!sessionId || sessionId !== currentSessionId) {
+            sessionStorage.removeItem('chatHistory');
+            return [{
+                id: 1,
+                role: 'assistant',
+                content: 'Hello! I\'m your Vantage Admin assistant. I can help you manage users, roles, menus, and other system configurations. What would you like to do today?',
+                timestamp: new Date().toISOString()
+            }];
+        }
+        
+        // Load from session storage for existing session
         const saved = sessionStorage.getItem('chatHistory');
         if (saved) {
             try {
@@ -24,6 +40,7 @@ const FloatingChat = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [toolCalls, setToolCalls] = useState([]);
     const [isServerDown, setIsServerDown] = useState(false);
+    const [loadingStartTime, setLoadingStartTime] = useState(null);
     const messagesEndRef = useRef(null);
 
     // Save to session storage whenever messages change
@@ -40,6 +57,19 @@ const FloatingChat = () => {
             scrollToBottom();
         }
     }, [messages, isOpen]);
+
+    // Update loading time every second
+    useEffect(() => {
+        let interval;
+        if (isLoading) {
+            setLoadingStartTime(Date.now());
+            interval = setInterval(() => {
+                // Force re-render to update time display
+                setLoadingStartTime(prev => prev);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isLoading]);
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
@@ -110,7 +140,7 @@ const FloatingChat = () => {
                 const assistantMessage = {
                     id: messages.length + 2,
                     role: 'assistant',
-                    content: chatData.response || 'I received your message.',
+                    content: chatData.response || 'How can I help you with the Vantage Admin system?',
                     timestamp: new Date().toISOString()
                 };
                 setMessages(prev => [...prev, assistantMessage]);
@@ -200,44 +230,18 @@ const FloatingChat = () => {
 
     return (
         <>
-            {/* Floating Button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    position: 'fixed',
-                    bottom: '24px',
-                    right: '24px',
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
-                    zIndex: 1000,
-                    transition: 'all 0.3s ease'
-                }}
-                title="AI Chat Assistant"
-            >
-                {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-            </button>
-
             {/* Chat Window */}
             {isOpen && (
                 <div style={{
                     position: 'fixed',
-                    bottom: '90px',
-                    right: '24px',
+                    bottom: '100px',
+                    right: '32px',
                     width: '400px',
-                    height: '600px',
+                    height: '450px',
                     background: 'var(--bg-secondary)',
                     borderRadius: '16px',
                     boxShadow: '0 8px 40px rgba(0, 0, 0, 0.15)',
-                    zIndex: 1000,
+                    zIndex: 999,
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
@@ -395,7 +399,10 @@ const FloatingChat = () => {
                                 fontSize: '11px'
                             }}>
                                 <Loader size={14} className="spin" />
-                                <span>Thinking...</span>
+                                <span>
+                                    Thinking... {loadingStartTime ? `${Math.floor((Date.now() - loadingStartTime) / 1000)}s` : ''}
+                                    {Math.floor((Date.now() - loadingStartTime) / 1000) > 10 ? ' (AI is warming up)' : ''}
+                                </span>
                             </div>
                         )}
 
@@ -497,6 +504,32 @@ const FloatingChat = () => {
                     </div>
                 </div>
             )}
+
+            {/* Floating Button */}
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                    position: 'fixed',
+                    bottom: '24px',
+                    right: '24px',
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
+                    zIndex: 1000,
+                    transition: 'all 0.3s ease'
+                }}
+                title="AI Chat Assistant"
+            >
+                {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
+            </button>
 
             <style>{`
                 @keyframes spin {

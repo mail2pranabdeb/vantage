@@ -128,7 +128,7 @@ const Chat = () => {
                 const assistantMessage = {
                     id: messages.length + 2,
                     role: 'assistant',
-                    content: chatData.response || 'I received your message. How can I help you?',
+                    content: chatData.response || 'How can I help you with the Vantage Admin system?',
                     timestamp: new Date().toISOString()
                 };
                 setMessages(prev => [...prev, assistantMessage]);

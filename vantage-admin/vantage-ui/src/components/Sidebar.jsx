@@ -38,19 +38,22 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             try {
                 setError(null);
                 const response = await fetch('/api/system/menu/tree');
+                
+                // Check if response is JSON (not HTML login page)
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.log('Received non-JSON response, likely login page');
+                    setLoading(false);
+                    return;
+                }
+                
                 const data = await response.json();
                 console.log('Menu API Response:', data);
-                
+
                 if (data.code === 200 && data.data && data.data.length > 0) {
                     setMenus(data.data);
-                    // Expand all parent menus by default
-                    const initialExpanded = {};
-                    data.data.forEach(menu => {
-                        if (menu.children && menu.children.length > 0) {
-                            initialExpanded[menu.menuId] = true;
-                        }
-                    });
-                    setExpandedMenus(initialExpanded);
+                    // Keep all parent menus collapsed by default
+                    setExpandedMenus({});
                 } else if (data.code === 401 || data.code === 403) {
                     // Not authenticated, will redirect
                     console.log('Not authenticated, waiting for login...');

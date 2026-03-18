@@ -159,9 +159,9 @@ create table sys_logininfor (
   status          varchar(1)         default '0',
   ipaddr          varchar(128)    default '',
   login_location  varchar(255)    default '',
-  browser         varchar(50)     default '',
-  os              varchar(50)     default '',
-  msg             varchar(255)    default '',
+  browser         varchar(255)    default '',
+  os              varchar(100)    default '',
+  msg             varchar(500)    default '',
   login_time      timestamp       default current_timestamp,
   primary key (info_id)
 );

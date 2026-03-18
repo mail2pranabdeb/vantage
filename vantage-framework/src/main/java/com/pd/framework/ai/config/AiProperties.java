@@ -34,7 +34,12 @@ public class AiProperties {
     /**
      * Maximum tokens for response
      */
-    private int maxTokens = 1024;
+    private int maxTokens = 512;
+
+    /**
+     * Timeout in seconds for Ollama requests
+     */
+    private int timeout = 60;
 
     /**
      * Enable RAG (Retrieval-Augmented Generation)
@@ -78,6 +83,8 @@ public class AiProperties {
     public void setTemperature(double temperature) { this.temperature = temperature; }
     public int getMaxTokens() { return maxTokens; }
     public void setMaxTokens(int maxTokens) { this.maxTokens = maxTokens; }
+    public int getTimeout() { return timeout; }
+    public void setTimeout(int timeout) { this.timeout = timeout; }
     public boolean isRagEnabled() { return ragEnabled; }
     public void setRagEnabled(boolean ragEnabled) { this.ragEnabled = ragEnabled; }
     public String getSystemPrompt() { return systemPrompt; }

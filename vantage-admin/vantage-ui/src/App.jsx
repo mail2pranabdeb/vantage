@@ -11,6 +11,12 @@ function App() {
   useEffect(() => {
     fetch('/api/me')
       .then(res => {
+        // Check if response is JSON (not HTML login page)
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          setAuthState('unauthenticated');
+          return;
+        }
         if (res.ok) {
           setAuthState('authenticated');
         } else {
