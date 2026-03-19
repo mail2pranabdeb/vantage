@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Menu, Plus, Edit, Trash2, Eye, Folder, RefreshCw } from 'lucide-react';
-import DataGrid from '../components/DataGrid';
+import { Menu, Plus, Edit, Trash2, Eye, Folder, FolderOpen, File, ChevronRight, ChevronDown, RefreshCw } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
 
 const MenuList = () => {
+    const { addToast } = useToast();
     const [menus, setMenus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [currentMenu, setCurrentMenu] = useState(null);
+    const [expandedNodes, setExpandedNodes] = useState({});
     const [formData, setFormData] = useState({
         menuName: '',
         menuType: 'M',
@@ -34,15 +36,163 @@ const MenuList = () => {
         fetch('/api/system/menu/list')
             .then(res => res.json())
             .then(data => {
-                if (data.code === 200) {
-                    setMenus(data.data || []);
-                }
                 setLoading(false);
+                if (data.code === 200) {
+                    const menuTree = buildMenuTree(data.data || []);
+                    setMenus(menuTree);
+                    addToast('success', `Loaded ${data.data.length} menu item(s)`, 2000);
+                    // Expand all by default
+                    const allExpanded = {};
+                    data.data.forEach(m => {
+                        if (m.children && m.children.length > 0) {
+                            allExpanded[m.menuId] = true;
+                        }
+                    });
+                    setExpandedNodes(allExpanded);
+                } else {
+                    addToast('error', data.msg || 'Failed to load menus', 4000);
+                }
             })
             .catch(err => {
                 console.error("Failed to fetch menus:", err);
                 setLoading(false);
+                addToast('error', 'Failed to load menus. Please refresh.', 5000);
             });
+    };
+
+    const buildMenuTree = (items, parentId = '0') => {
+        const result = [];
+        items.forEach(item => {
+            if (String(item.parentId) === String(parentId)) {
+                const children = buildMenuTree(items, item.menuId);
+                result.push({
+                    ...item,
+                    children: children.length > 0 ? children : null
+                });
+            }
+        });
+        return result;
+    };
+
+    const toggleNode = (menuId) => {
+        setExpandedNodes(prev => ({
+            ...prev,
+            [menuId]: !prev[menuId]
+        }));
+    };
+
+    const renderTree = (items, level = 0) => {
+        return items.map(item => (
+            <div key={item.menuId}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '10px 12px',
+                    background: 'var(--bg-secondary)',
+                    borderRadius: '8px',
+                    marginBottom: '6px',
+                    border: '1px solid var(--border-color)',
+                    marginLeft: `${level * 24}px`
+                }}>
+                    {/* Expand/Collapse Button */}
+                    <button
+                        onClick={() => toggleNode(item.menuId)}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: item.children ? 'pointer' : 'default',
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: 'var(--text-muted)',
+                            opacity: item.children ? 1 : 0
+                        }}
+                    >
+                        {expandedNodes[item.menuId] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </button>
+
+                    {/* Icon */}
+                    <span style={{
+                        marginLeft: '8px',
+                        padding: '6px',
+                        borderRadius: '6px',
+                        background: getMenuTypeColor(item.menuType),
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: '#fff'
+                    }}>
+                        {getMenuIcon(item.menuType, item.icon)}
+                    </span>
+
+                    {/* Menu Name */}
+                    <span style={{
+                        marginLeft: '12px',
+                        fontWeight: 600,
+                        flex: 1
+                    }}>{item.menuName}</span>
+
+                    {/* Type Badge */}
+                    <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        background: getMenuTypeColor(item.menuType),
+                        color: '#fff',
+                        marginRight: '12px'
+                    }}>
+                        {getMenuTypeLabel(item.menuType)}
+                    </span>
+
+                    {/* Order Num */}
+                    <span style={{
+                        fontSize: '12px',
+                        color: 'var(--text-muted)',
+                        marginRight: '16px',
+                        minWidth: '40px'
+                    }}>
+                        #{item.orderNum || '0'}
+                    </span>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={() => handleViewClick(item)} className="btn-icon" title="View">
+                            <Eye size={16} />
+                        </button>
+                        <button onClick={() => handleEditClick(item)} className="btn-icon" title="Edit">
+                            <Edit size={16} />
+                        </button>
+                        <button onClick={() => handleDeleteClick(item)} className="btn-icon text-danger" title="Delete">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Children */}
+                {item.children && expandedNodes[item.menuId] && (
+                    <div style={{ marginLeft: '12px' }}>
+                        {renderTree(item.children, level + 1)}
+                    </div>
+                )}
+            </div>
+        ));
+    };
+
+    const getMenuTypeLabel = (type) => {
+        const labels = { 'M': 'Directory', 'C': 'Menu', 'F': 'Button' };
+        return labels[type] || type;
+    };
+
+    const getMenuTypeColor = (type) => {
+        const colors = { 'M': '#3b82f6', 'C': '#10b981', 'F': '#f59e0b' };
+        return colors[type] || '#6b7280';
+    };
+
+    const getMenuIcon = (type, icon) => {
+        if (type === 'M') return <Folder size={16} />;
+        if (type === 'C') return <Menu size={16} />;
+        if (type === 'F') return <File size={16} />;
+        return icon || <File size={16} />;
     };
 
     const handleAddClick = () => {
@@ -110,14 +260,15 @@ const MenuList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    setMenus(menus.filter(m => m.menuId !== row.menuId));
+                    fetchMenus();
+                    addToast('success', `Menu "${row.menuName}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete menu');
+                    addToast('error', data.msg || 'Failed to delete menu', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete menu:", err);
-                alert('Failed to delete menu');
+                addToast('error', 'Failed to delete menu', 5000);
             });
         }
     };
@@ -132,15 +283,15 @@ const MenuList = () => {
 
     const handleSubmit = () => {
         setSubmitting(true);
-        
-        const url = modalMode === 'add' 
-            ? '/api/system/menu' 
+
+        const url = modalMode === 'add'
+            ? '/api/system/menu'
             : '/api/system/menu';
-        
+
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = modalMode === 'add' 
-            ? { ...formData, parentId: parseInt(formData.parentId), orderNum: parseInt(formData.orderNum) } 
-            : { ...formData, menuId: currentMenu.menuId, parentId: parseInt(formData.parentId), orderNum: parseInt(formData.orderNum) };
+        const body = modalMode === 'add'
+            ? { ...formData, orderNum: parseInt(formData.orderNum) }
+            : { ...formData, menuId: currentMenu.menuId, orderNum: parseInt(formData.orderNum) };
 
         fetch(url, {
             method,
@@ -154,113 +305,18 @@ const MenuList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
+                addToast('success', `Menu "${formData.menuName}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 fetchMenus();
             } else {
-                alert(data.msg || `Failed to ${modalMode} menu`);
+                addToast('error', data.msg || `Failed to ${modalMode} menu`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} menu:`, err);
-            alert(`Failed to ${modalMode} menu`);
+            addToast('error', `Failed to ${modalMode} menu`, 5000);
         });
     };
-
-    const columns = [
-        {
-            key: 'menuId',
-            header: 'ID',
-            sortable: true,
-            align: 'center'
-        },
-        {
-            key: 'menuName',
-            header: 'Menu Name',
-            sortable: true,
-            render: (value, row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
-                        fontSize: '16px',
-                        opacity: 0.7
-                    }}>{row.icon || '📄'}</span>
-                    <span style={{ fontWeight: 600 }}>{value}</span>
-                </div>
-            )
-        },
-        {
-            key: 'menuType',
-            header: 'Type',
-            sortable: true,
-            align: 'center',
-            render: (value) => {
-                const types = { 'M': 'Directory', 'C': 'Menu', 'F': 'Button' };
-                const colors = { 'M': '#3b82f6', 'C': '#10b981', 'F': '#f59e0b' };
-                return (
-                    <span style={{
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        background: `${colors[value]}20`,
-                        color: colors[value]
-                    }}>
-                        {types[value] || value}
-                    </span>
-                );
-            }
-        },
-        {
-            key: 'url',
-            header: 'URL',
-            sortable: false,
-            render: (value) => (
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                    {value || '-'}
-                </span>
-            )
-        },
-        {
-            key: 'perms',
-            header: 'Permission',
-            sortable: true,
-            render: (value) => (
-                <span className="badge-outline" style={{ fontSize: '11px' }}>
-                    {value || '-'}
-                </span>
-            )
-        },
-        {
-            key: 'visible',
-            header: 'Visible',
-            sortable: true,
-            align: 'center',
-            render: (value) => (
-                <span className={`status-pill ${value === '0' ? 'active' : 'inactive'}`}>
-                    {value === '0' ? 'Yes' : 'No'}
-                </span>
-            )
-        },
-        {
-            key: 'orderNum',
-            header: 'Sort',
-            sortable: true,
-            align: 'center'
-        }
-    ];
-
-    const actions = [
-        { label: 'View', icon: Eye, onClick: handleViewClick },
-        { label: 'Edit', icon: Edit, onClick: handleEditClick },
-        { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
-    ];
-
-    const toolbarActions = [
-        {
-            label: 'Refresh',
-            icon: RefreshCw,
-            onClick: fetchMenus
-        }
-    ];
 
     return (
         <div className="page-container">
@@ -281,186 +337,182 @@ const MenuList = () => {
                     <div>
                         <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Menu Management</h2>
                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                            Manage system menus
+                            Manage system menus, directories, and buttons
                         </p>
                     </div>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={handleAddClick}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 14px',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        fontSize: '13px'
-                    }}
-                >
-                    <Plus size={16} />
-                    Add Menu
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn-primary" onClick={handleAddClick}>
+                        <Plus size={16} /> Add Menu
+                    </button>
+                    <button className="btn btn-secondary" onClick={fetchMenus}>
+                        <RefreshCw size={16} /> Refresh
+                    </button>
+                </div>
             </div>
 
-            <DataGrid
-                data={menus}
-                columns={columns}
-                actions={actions}
-                toolbarActions={toolbarActions}
-                loading={loading}
-                searchable={true}
-                sortable={true}
-                filterable={true}
-                selectable={true}
-                pagination={true}
-                pageSize={15}
-                emptyMessage="No menus found."
-            />
+            <div className="glass-panel" style={{
+                padding: '16px',
+                borderRadius: '12px',
+                minHeight: '400px'
+            }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                        <div className="spinner" style={{ margin: '0 auto 12px' }}></div>
+                        Loading menus...
+                    </div>
+                ) : menus.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                        <Folder size={48} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
+                        No menus found. Click "Add Menu" to create one.
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {renderTree(menus)}
+                    </div>
+                )}
+            </div>
 
-            {/* Add/Edit Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={modalMode === 'add' ? 'Add Menu' : modalMode === 'edit' ? 'Edit Menu' : 'View Menu'}
-                size="small"
-                compact={true}
-                footer={modalMode !== 'view' && (
-                    <>
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => setIsModalOpen(false)}
-                            disabled={submitting}
-                        >
-                            Cancel
-                        </button>
+                title={`${modalMode === 'add' ? 'Add' : modalMode === 'edit' ? 'Edit' : 'View'} Menu`}
+                size="lg"
+            >
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                    <FormInput
+                        label="Menu Name"
+                        name="menuName"
+                        value={formData.menuName}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        placeholder="Enter menu name"
+                    />
+                    <FormInput
+                        label="Menu Type"
+                        name="menuType"
+                        type="select"
+                        value={formData.menuType}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        options={[
+                            { value: 'M', label: 'Directory' },
+                            { value: 'C', label: 'Menu' },
+                            { value: 'F', label: 'Button' }
+                        ]}
+                    />
+                    <FormInput
+                        label="Parent Menu"
+                        name="parentName"
+                        value={formData.parentName}
+                        onChange={handleInputChange}
+                        disabled={true}
+                        placeholder="Auto-filled"
+                    />
+                    <FormInput
+                        label="Sort Order"
+                        name="orderNum"
+                        value={formData.orderNum}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        type="number"
+                        placeholder="0"
+                    />
+                    <FormInput
+                        label="Path"
+                        name="path"
+                        value={formData.path}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        placeholder="/system/user"
+                    />
+                    <FormInput
+                        label="Component"
+                        name="component"
+                        value={formData.component}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        placeholder="system/user/index"
+                    />
+                    <FormInput
+                        label="Permission"
+                        name="perms"
+                        value={formData.perms}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        placeholder="system:user:list"
+                    />
+                    <FormInput
+                        label="Icon"
+                        name="icon"
+                        value={formData.icon}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        placeholder="user"
+                    />
+                    <FormInput
+                        label="Visible"
+                        name="visible"
+                        type="select"
+                        value={formData.visible}
+                        onChange={handleInputChange}
+                        disabled={modalMode === 'view'}
+                        options={[
+                            { value: '0', label: 'Yes' },
+                            { value: '1', label: 'No' }
+                        ]}
+                    />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
+                    <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
+                        Cancel
+                    </button>
+                    {modalMode !== 'view' && (
                         <button
                             className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                            }}
                         >
-                            {submitting && (
-                                <div style={{
-                                    width: '12px',
-                                    height: '12px',
-                                    border: '2px solid white',
-                                    borderBottomColor: 'transparent',
-                                    borderRadius: '50%',
-                                    animation: 'spin 1s linear infinite'
-                                }} />
-                            )}
-                            {modalMode === 'add' ? 'Create' : 'Save'}
+                            {submitting ? 'Saving...' : modalMode === 'add' ? 'Add Menu' : 'Save Changes'}
                         </button>
-                    </>
-                )}
-            >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <div className="form-row">
-                        <FormInput
-                            label="Menu Name"
-                            name="menuName"
-                            value={formData.menuName}
-                            onChange={handleInputChange}
-                            placeholder="Enter menu name"
-                            required
-                            disabled={modalMode === 'view'}
-                        />
-                        <div className="form-group">
-                            <label className="form-label">Menu Type</label>
-                            <select
-                                name="menuType"
-                                value={formData.menuType}
-                                onChange={handleInputChange}
-                                className="form-input"
-                                disabled={modalMode === 'view'}
-                            >
-                                <option value="M">Directory</option>
-                                <option value="C">Menu</option>
-                                <option value="F">Button</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="form-row">
-                        <FormInput
-                            label="Parent Name"
-                            name="parentName"
-                            value={formData.parentName}
-                            onChange={handleInputChange}
-                            placeholder="Parent menu name"
-                            disabled={modalMode === 'view'}
-                        />
-                        <FormInput
-                            label="Icon"
-                            name="icon"
-                            value={formData.icon}
-                            onChange={handleInputChange}
-                            placeholder="e.g., user, settings"
-                            disabled={modalMode === 'view'}
-                        />
-                    </div>
-
-                    <div className="form-row">
-                        <FormInput
-                            label="Path"
-                            name="path"
-                            value={formData.path}
-                            onChange={handleInputChange}
-                            placeholder="e.g., /system/user"
-                            disabled={modalMode === 'view'}
-                        />
-                        <FormInput
-                            label="Component"
-                            name="component"
-                            value={formData.component}
-                            onChange={handleInputChange}
-                            placeholder="e.g., system/user/index"
-                            disabled={modalMode === 'view'}
-                        />
-                    </div>
-
-                    <div className="form-row">
-                        <FormInput
-                            label="Permission"
-                            name="perms"
-                            value={formData.perms}
-                            onChange={handleInputChange}
-                            placeholder="e.g., system:user:list"
-                            disabled={modalMode === 'view'}
-                        />
-                        <FormInput
-                            label="Sort Order"
-                            name="orderNum"
-                            type="number"
-                            value={formData.orderNum}
-                            onChange={handleInputChange}
-                            placeholder="Enter sort order"
-                            disabled={modalMode === 'view'}
-                        />
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label className="form-label">Visible</label>
-                            <select
-                                name="visible"
-                                value={formData.visible}
-                                onChange={handleInputChange}
-                                className="form-input"
-                                disabled={modalMode === 'view'}
-                            >
-                                <option value="0">Yes</option>
-                                <option value="1">No</option>
-                            </select>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </Modal>
+
+            <style>{`
+                .btn-icon {
+                    background: transparent;
+                    border: none;
+                    cursor: pointer;
+                    padding: 6px;
+                    border-radius: 6px;
+                    color: var(--text-muted);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s;
+                }
+                .btn-icon:hover {
+                    background: var(--bg-tertiary);
+                    color: var(--text-primary);
+                }
+                .btn-icon.text-danger:hover {
+                    background: rgba(239, 68, 68, 0.1);
+                    color: #ef4444;
+                }
+                .spinner {
+                    width: 32px;
+                    height: 32px;
+                    border: 3px solid var(--border-color);
+                    border-top-color: var(--primary-color);
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 };
