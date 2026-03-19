@@ -3,8 +3,10 @@ import { Briefcase, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import { useToast } from '../components/Toast';
 
 const PostList = () => {
+    const { addToast } = useToast();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,12 +32,18 @@ const PostList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setPosts(data.data || []);
+                    if (data.data && data.data.length > 0) {
+                        addToast('success', `Loaded ${data.data.length} post(s)`, 2000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to load posts', 4000);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch posts:", err);
                 setLoading(false);
+                addToast('error', 'Failed to load posts. Please refresh.', 5000);
             });
     };
 
@@ -87,13 +95,14 @@ const PostList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setPosts(posts.filter(p => p.postId !== row.postId));
+                    addToast('success', `Post "${row.postName}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete post');
+                    addToast('error', data.msg || 'Failed to delete post', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete post:", err);
-                alert('Failed to delete post');
+                addToast('error', 'Failed to delete post', 5000);
             });
         }
     };
@@ -108,14 +117,14 @@ const PostList = () => {
 
     const handleSubmit = () => {
         setSubmitting(true);
-        
-        const url = modalMode === 'add' 
-            ? '/api/system/post' 
+
+        const url = modalMode === 'add'
+            ? '/api/system/post'
             : '/api/system/post';
-        
+
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = modalMode === 'add' 
-            ? { ...formData, postSort: parseInt(formData.postSort) } 
+        const body = modalMode === 'add'
+            ? { ...formData, postSort: parseInt(formData.postSort) }
             : { ...formData, postId: currentPost.postId, postSort: parseInt(formData.postSort) };
 
         fetch(url, {
@@ -130,15 +139,16 @@ const PostList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
+                addToast('success', `Post "${formData.postName}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 fetchPosts();
             } else {
-                alert(data.msg || `Failed to ${modalMode} post`);
+                addToast('error', data.msg || `Failed to ${modalMode} post`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} post:`, err);
-            alert(`Failed to ${modalMode} post`);
+            addToast('error', `Failed to ${modalMode} post`, 5000);
         });
     };
 
