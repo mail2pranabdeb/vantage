@@ -23,7 +23,7 @@
 [INFO] npm WARN EBADENGINE   current: { node: 'v20.11.1', npm: '10.2.4' }
 [INFO] npm WARN EBADENGINE }
 [INFO] 
-[INFO] up to date, audited 163 packages in 4s
+[INFO] up to date, audited 163 packages in 1s
 [INFO] 
 [INFO] 34 packages are looking for funding
 [INFO]   run `npm fund` for details
@@ -49,8 +49,8 @@
 [INFO] computing gzip size...
 [INFO] ../src/main/resources/static/index.html                   0.46 kB ? gzip:   0.29 kB
 [INFO] ../src/main/resources/static/assets/index-DEC0eTA1.css   17.80 kB ? gzip:   3.68 kB
-[INFO] ../src/main/resources/static/assets/index-CVeJvKpN.js   377.61 kB ? gzip: 101.15 kB
-[INFO] ? built in 3.18s
+[INFO] ../src/main/resources/static/assets/index-BdAbgAjc.js   381.92 kB ? gzip: 102.12 kB
+[INFO] ? built in 5.43s
 [INFO] 
 [INFO] --- resources:3.3.1:resources (default-resources) @ vantage-admin ---
 [INFO] Copying 1 resource from src\main\resources to target\classes
@@ -72,13 +72,13 @@
 [INFO] 
 [INFO] --- spring-boot:4.0.3:run (default-cli) @ vantage-admin ---
 [INFO] Attaching agents: []
-19:12:39,453 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
-19:12:39,468 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
-19:12:39,487 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
-19:12:39,487 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
-19:12:39,487 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
-19:12:39,492 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
-19:12:39,494 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
+21:47:09,161 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
+21:47:09,208 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
+21:47:09,268 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
+21:47:09,268 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
+21:47:09,268 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+21:47:09,281 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
+21:47:09,287 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -89,33 +89,33 @@
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-19 19:12:39.564 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication using Java 25.0.1 with PID 5776 (D:\Projects\vantage-master\vantage-admin\target\classes started by Admin in D:\Projects\vantage-master\vantage-admin)
-2026-03-19 19:12:39.565 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
-2026-03-19 19:12:39.566 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
-2026-03-19 19:12:40.216 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-19 19:12:40.290 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 67 ms. Found 11 JPA repository interfaces.
-2026-03-19 19:12:41.400 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-03-19 19:12:41.410 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2026-03-19 19:12:41.410 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-19 19:12:41.470 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1853 ms
-2026-03-19 19:12:41.541 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
-2026-03-19 19:12:41.796 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-19 19:12:46.147 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./data/vantage user=SA
-2026-03-19 19:12:46.149 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-19 19:12:46.721 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-19 19:12:47.813 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-19 21:47:09.492 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication using Java 25.0.1 with PID 18740 (D:\Projects\vantage-master\vantage-admin\target\classes started by Admin in D:\Projects\vantage-master\vantage-admin)
+2026-03-19 21:47:09.496 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
+2026-03-19 21:47:09.498 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
+2026-03-19 21:47:10.905 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-19 21:47:11.089 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 166 ms. Found 11 JPA repository interfaces.
+2026-03-19 21:47:13.895 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-03-19 21:47:13.927 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-19 21:47:13.927 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-19 21:47:14.076 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 4431 ms
+2026-03-19 21:47:14.248 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
+2026-03-19 21:47:14.857 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-03-19 21:47:19.501 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./data/vantage user=SA
+2026-03-19 21:47:19.503 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-03-19 21:47:20.415 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-19 21:47:22.223 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
 WARNING: A restricted method in java.lang.System has been called
 WARNING: java.lang.System::load has been called by ai.onnxruntime.OnnxRuntime in an unnamed module (file:/C:/Users/Admin/.m2/repository/com/microsoft/onnxruntime/onnxruntime/1.17.1/onnxruntime-1.17.1.jar)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-2026-03-19 19:12:52.384 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:file:/C:/Users/Admin/.m2/repository/ai/djl/huggingface/tokenizers/0.28.0/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
-2026-03-19 19:12:52.792 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-19 19:12:54.450 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
-2026-03-19 19:12:54.459 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
-2026-03-19 19:12:54.459 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
-2026-03-19 19:12:54.460 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
-2026-03-19 19:12:54.460 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
+2026-03-19 21:47:27.344 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:file:/C:/Users/Admin/.m2/repository/ai/djl/huggingface/tokenizers/0.28.0/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
+2026-03-19 21:47:27.764 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-19 21:47:30.482 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
+2026-03-19 21:47:30.494 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-03-19 21:47:30.494 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
+2026-03-19 21:47:30.494 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-03-19 21:47:30.495 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
   Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
   NOT STARTED.
   Currently in standby mode.
@@ -123,91 +123,68 @@ WARNING: Restricted methods will be blocked in a future release unless native ac
   Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.
   Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
 
-2026-03-19 19:12:54.460 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
-2026-03-19 19:12:54.460 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
-2026-03-19 19:12:54.460 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@5b391bd2
-2026-03-19 19:12:54.605 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-19 19:12:54.769 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-03-19 19:12:54.769 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-03-19 19:12:55.023 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2026-03-19 19:12:55.436 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
-2026-03-19 19:12:55.442 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
-2026-03-19 19:12:55.458 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/vantage'
-2026-03-19 19:12:55.575 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-2026-03-19 19:12:55.693 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
-2026-03-19 19:12:55.693 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
-2026-03-19 19:12:55.693 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
-2026-03-19 19:12:55.700 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 16.759 seconds (process running for 17.194)
-2026-03-19 19:12:55.869 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
-2026-03-19 19:12:55.906 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 10 knowledge documents
-2026-03-19 19:12:55.951 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
-2026-03-19 19:12:55.971 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
-2026-03-19 19:12:55.990 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
-2026-03-19 19:12:56.008 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
-2026-03-19 19:12:56.028 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
-2026-03-19 19:12:56.051 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
-2026-03-19 19:12:56.074 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
-2026-03-19 19:12:56.094 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
-2026-03-19 19:12:56.122 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
-2026-03-19 19:12:56.141 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
-2026-03-19 20:18:54.729 [http-nio-8081-exec-1] [,] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-03-19 20:18:54.729 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-03-19 20:18:54.729 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
-2026-03-19 20:19:09.277 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === loadUserByUsername called for: admin ===
-2026-03-19 20:19:09.356 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === User admin authenticated successfully, publishing LoginSuccessEvent ===
-2026-03-19 20:19:09.356 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === publishLoginSuccess called for user: admin ===
-2026-03-19 20:19:09.356 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === Publishing LoginSuccessEvent: user=admin, ip=0:0:0:0:0:0:0:1 ===
-2026-03-19 20:19:09.356 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === LoginSuccessEvent published ===
-2026-03-19 20:19:09.356 [task-1] [c604622ba7774635,8f7e70e1] INFO  c.p.m.s.listener.AuthEventListener - === LOGIN SUCCESS EVENT RECEIVED ===
-2026-03-19 20:19:09.356 [task-1] [c604622ba7774635,8f7e70e1] INFO  c.p.m.s.listener.AuthEventListener - Login success: user=admin, ip=0:0:0:0:0:0:0:1, location=
-2026-03-19 20:19:09.372 [task-1] [c604622ba7774635,8f7e70e1] INFO  c.p.m.s.listener.AuthEventListener - === Inserted login record into sys_logininfor ===
-2026-03-19 20:19:09.506 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-19 20:19:09.506 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-19 20:19:09.506 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-19 20:19:09.507 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-19 20:19:09.507 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-19 20:19:09.507 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-19 20:19:09.507 [task-2] [855f4528041a44ff,fe0afeef] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-19 20:19:09.508 [task-2] [855f4528041a44ff,fe0afeef] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-19 20:19:09.510 [task-2] [855f4528041a44ff,fe0afeef] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-19 20:19:09.611 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-19 20:19:09.624 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-19 20:19:09.625 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-19 20:19:09.625 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-19 20:19:09.625 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-19 20:19:09.625 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-19 20:19:09.625 [task-3] [764cd2fe1b664073,2156b6bb] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-19 20:19:09.625 [task-3] [764cd2fe1b664073,2156b6bb] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-19 20:19:09.628 [task-3] [764cd2fe1b664073,2156b6bb] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-19 20:19:12.472 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
-2026-03-19 20:19:12.472 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
-2026-03-19 20:19:12.472 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-19 20:19:12.472 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
-2026-03-19 20:19:12.472 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-19 20:19:12.472 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-19 20:19:12.472 [task-4] [2be0980fd4374216,ce73eee3] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-19 20:19:12.472 [task-4] [2be0980fd4374216,ce73eee3] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
-2026-03-19 20:19:12.483 [task-4] [2be0980fd4374216,ce73eee3] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-19 20:19:28.430 [http-nio-8081-exec-4] [,] DEBUG com.pd.common.aspect.LogAspect - Starting logged method: SysUserController.add(..)
-2026-03-19 20:19:28.430 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.add(..) ===
-2026-03-19 20:19:28.446 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.listener.UserEventListener - User created event received: userId=100, loginName=sayani, userName=Sayani
-2026-03-19 20:19:28.446 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.add(..) ===
-2026-03-19 20:19:28.446 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-19 20:19:28.446 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.add, method=com.pd.modules.system.web.SysUserController.add(), url=/api/system/user ===
-2026-03-19 20:19:28.446 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-19 20:19:28.446 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-19 20:19:28.446 [task-5] [951dc3a2488d45c1,547b8593] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-19 20:19:28.446 [task-5] [951dc3a2488d45c1,547b8593] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.add, operName=anonymous, url=/api/system/user, status=0
-2026-03-19 20:19:28.450 [task-5] [951dc3a2488d45c1,547b8593] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-19 20:19:28.450 [task-6] [e9ea251583a14ba1,1d2addff] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-19 20:19:28.450 [task-6] [e9ea251583a14ba1,1d2addff] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=User Management, operName=admin, url=/api/system/user, status=0
-2026-03-19 20:19:28.454 [task-6] [e9ea251583a14ba1,1d2addff] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-19 20:19:28.565 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
-2026-03-19 20:19:28.565 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
-2026-03-19 20:19:28.565 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-19 20:19:28.565 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
-2026-03-19 20:19:28.565 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-19 20:19:28.572 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-19 20:19:28.572 [task-7] [b590475e85cb4e61,8ca85904] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-19 20:19:28.572 [task-7] [b590475e85cb4e61,8ca85904] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
-2026-03-19 20:19:28.578 [task-7] [b590475e85cb4e61,8ca85904] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 21:47:30.495 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
+2026-03-19 21:47:30.495 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
+2026-03-19 21:47:30.495 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@1aa1c691
+2026-03-19 21:47:30.715 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-19 21:47:30.960 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-03-19 21:47:30.961 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-03-19 21:47:31.306 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2026-03-19 21:47:31.862 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-19 21:47:31.868 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-19 21:47:31.891 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/vantage'
+2026-03-19 21:47:32.030 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
+2026-03-19 21:47:32.185 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
+2026-03-19 21:47:32.186 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-03-19 21:47:32.187 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
+2026-03-19 21:47:32.198 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 23.852 seconds (process running for 24.604)
+2026-03-19 21:47:32.397 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
+2026-03-19 21:47:32.457 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 10 knowledge documents
+2026-03-19 21:47:32.530 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
+2026-03-19 21:47:32.570 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
+2026-03-19 21:47:32.608 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
+2026-03-19 21:47:32.642 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
+2026-03-19 21:47:32.682 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
+2026-03-19 21:47:32.734 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
+2026-03-19 21:47:32.786 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
+2026-03-19 21:47:32.830 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
+2026-03-19 21:47:32.885 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
+2026-03-19 21:47:32.923 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
+2026-03-19 21:47:37.909 [http-nio-8081-exec-1] [,] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-19 21:47:37.909 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-03-19 21:47:37.909 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2026-03-19 21:47:46.455 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === loadUserByUsername called for: admin ===
+2026-03-19 21:47:46.591 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === User admin authenticated successfully, publishing LoginSuccessEvent ===
+2026-03-19 21:47:46.591 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === publishLoginSuccess called for user: admin ===
+2026-03-19 21:47:46.591 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === Publishing LoginSuccessEvent: user=admin, ip=0:0:0:0:0:0:0:1 ===
+2026-03-19 21:47:46.591 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === LoginSuccessEvent published ===
+2026-03-19 21:47:46.591 [task-1] [81bdb925d24948f3,0f3218fd] INFO  c.p.m.s.listener.AuthEventListener - === LOGIN SUCCESS EVENT RECEIVED ===
+2026-03-19 21:47:46.591 [task-1] [81bdb925d24948f3,0f3218fd] INFO  c.p.m.s.listener.AuthEventListener - Login success: user=admin, ip=0:0:0:0:0:0:0:1, location=
+2026-03-19 21:47:46.607 [task-1] [81bdb925d24948f3,0f3218fd] INFO  c.p.m.s.listener.AuthEventListener - === Inserted login record into sys_logininfor ===
+2026-03-19 21:47:46.841 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 21:47:46.846 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 21:47:46.846 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 21:47:46.846 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 21:47:46.846 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 21:47:46.846 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 21:47:46.846 [task-2] [34003ed213514227,7d27d2ee] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 21:47:46.846 [task-2] [34003ed213514227,7d27d2ee] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 21:47:46.855 [task-2] [34003ed213514227,7d27d2ee] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 21:47:47.049 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 21:47:47.071 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 21:47:47.071 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 21:47:47.071 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 21:47:47.071 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 21:47:47.071 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 21:47:47.071 [task-3] [8adf19a6e1964d09,5eb1c001] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 21:47:47.071 [task-3] [8adf19a6e1964d09,5eb1c001] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 21:47:47.075 [task-3] [8adf19a6e1964d09,5eb1c001] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 21:47:54.252 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.list() ===
+2026-03-19 21:47:54.282 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.list() ===
+2026-03-19 21:47:54.282 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 21:47:54.282 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.list, method=com.pd.modules.system.web.SysMenuController.list(), url=/api/system/menu/list ===
+2026-03-19 21:47:54.282 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 21:47:54.282 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 21:47:54.282 [task-4] [6d7c4e337ed84460,31520770] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 21:47:54.282 [task-4] [6d7c4e337ed84460,31520770] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.list, operName=anonymous, url=/api/system/menu/list, status=0
+2026-03-19 21:47:54.288 [task-4] [6d7c4e337ed84460,31520770] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===

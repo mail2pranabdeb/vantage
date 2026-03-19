@@ -87,12 +87,13 @@ const MenuList = () => {
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '10px 12px',
+                    padding: '8px 10px',
                     background: 'var(--bg-secondary)',
-                    borderRadius: '8px',
-                    marginBottom: '6px',
+                    borderRadius: '6px',
+                    marginBottom: '4px',
                     border: '1px solid var(--border-color)',
-                    marginLeft: `${level * 24}px`
+                    marginLeft: `${level * 20}px`,
+                    fontSize: '12px'
                 }}>
                     {/* Expand/Collapse Button */}
                     <button
@@ -101,76 +102,85 @@ const MenuList = () => {
                             background: 'transparent',
                             border: 'none',
                             cursor: item.children ? 'pointer' : 'default',
-                            padding: '4px',
+                            padding: '2px',
                             display: 'flex',
                             alignItems: 'center',
                             color: 'var(--text-muted)',
-                            opacity: item.children ? 1 : 0
+                            opacity: item.children ? 1 : 0,
+                            width: '20px',
+                            height: '20px'
                         }}
                     >
-                        {expandedNodes[item.menuId] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        {expandedNodes[item.menuId] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                     </button>
 
                     {/* Icon */}
                     <span style={{
-                        marginLeft: '8px',
-                        padding: '6px',
-                        borderRadius: '6px',
+                        marginLeft: '4px',
+                        padding: '4px',
+                        borderRadius: '4px',
                         background: getMenuTypeColor(item.menuType),
                         display: 'flex',
                         alignItems: 'center',
-                        color: '#fff'
+                        color: '#fff',
+                        width: '24px',
+                        height: '24px',
+                        justifyContent: 'center'
                     }}>
                         {getMenuIcon(item.menuType, item.icon)}
                     </span>
 
                     {/* Menu Name */}
                     <span style={{
-                        marginLeft: '12px',
+                        marginLeft: '8px',
                         fontWeight: 600,
-                        flex: 1
+                        flex: 1,
+                        fontSize: '12px'
                     }}>{item.menuName}</span>
 
                     {/* Type Badge */}
                     <span style={{
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        fontSize: '10px',
                         fontWeight: 600,
                         background: getMenuTypeColor(item.menuType),
                         color: '#fff',
-                        marginRight: '12px'
+                        marginRight: '8px',
+                        minWidth: '55px',
+                        textAlign: 'center'
                     }}>
                         {getMenuTypeLabel(item.menuType)}
                     </span>
 
                     {/* Order Num */}
                     <span style={{
-                        fontSize: '12px',
+                        fontSize: '11px',
                         color: 'var(--text-muted)',
-                        marginRight: '16px',
-                        minWidth: '40px'
+                        marginRight: '12px',
+                        minWidth: '30px',
+                        textAlign: 'right'
                     }}>
                         #{item.orderNum || '0'}
                     </span>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => handleViewClick(item)} className="btn-icon" title="View">
-                            <Eye size={16} />
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => handleViewClick(item)} className="btn-icon" title="View" style={{ padding: '3px' }}>
+                            <Eye size={14} />
                         </button>
-                        <button onClick={() => handleEditClick(item)} className="btn-icon" title="Edit">
-                            <Edit size={16} />
+                        <button onClick={() => handleEditClick(item)} className="btn-icon" title="Edit" style={{ padding: '3px' }}>
+                            <Edit size={14} />
                         </button>
-                        <button onClick={() => handleDeleteClick(item)} className="btn-icon text-danger" title="Delete">
-                            <Trash2 size={16} />
+                        <button onClick={() => handleDeleteClick(item)} className="btn-icon text-danger" title="Delete" style={{ padding: '3px' }}>
+                            <Trash2 size={14} />
                         </button>
                     </div>
                 </div>
 
                 {/* Children */}
                 {item.children && expandedNodes[item.menuId] && (
-                    <div style={{ marginLeft: '12px' }}>
+                    <div style={{ marginLeft: '8px' }}>
                         {renderTree(item.children, level + 1)}
                     </div>
                 )}
