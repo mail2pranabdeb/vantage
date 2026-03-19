@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShieldAlert, Trash2, RefreshCw, CheckCircle, XCircle, MapPin, Monitor } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
+import { toast } from '../components/Toast';
 
 const LogininforList = () => {
     const [list, setList] = useState([]);
@@ -10,14 +11,23 @@ const LogininforList = () => {
         fetch('/api/system/logininfor/list')
             .then(res => res.json())
             .then(data => {
-                if (data.code === 200) {
-                    setList(data.data || []);
-                }
                 setLoading(false);
+                if (data.code === 200) {
+                    const dataList = data.data || [];
+                    setList(dataList);
+                    if (dataList.length === 0) {
+                        toast.info('No login records found. Login to see records here.', 4000);
+                    } else {
+                        toast.success(`Loaded ${dataList.length} login record(s)`, 3000);
+                    }
+                } else {
+                    toast.error(data.msg || 'Failed to load login records', 5000);
+                }
             })
             .catch(err => {
                 console.error("Failed to fetch login info:", err);
                 setLoading(false);
+                toast.error('Network error. Please try again.', 5000);
             });
     }, []);
 
@@ -77,19 +87,45 @@ const LogininforList = () => {
     ];
 
     const actions = [
-        { label: 'Delete', icon: Trash2, danger: true, onClick: (row) => console.log('Delete:', row) }
+        { 
+            label: 'Delete', 
+            icon: Trash2, 
+            danger: true, 
+            onClick: (row) => {
+                toast.warning(`Delete record for ${row.loginName}?`, 3000);
+            } 
+        }
     ];
 
     const toolbarActions = [
         {
             label: 'Clean',
             icon: Trash2,
-            onClick: () => { if(confirm('Clear all login logs?')) console.log('Clean all'); }
+            onClick: () => { 
+                if(confirm('Clear all login logs?')) {
+                    toast.info('Clean feature coming soon...', 3000);
+                }
+            }
         },
         {
             label: 'Refresh',
             icon: RefreshCw,
-            onClick: () => { setLoading(true); setTimeout(() => setLoading(false), 500); }
+            onClick: () => { 
+                setLoading(true);
+                fetch('/api/system/logininfor/list')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.code === 200) {
+                            setList(data.data || []);
+                            toast.success('Refreshed successfully', 2000);
+                        }
+                        setLoading(false);
+                    })
+                    .catch(() => {
+                        toast.error('Failed to refresh', 3000);
+                        setLoading(false);
+                    });
+            }
         }
     ];
 

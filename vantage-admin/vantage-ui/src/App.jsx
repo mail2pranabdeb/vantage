@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import FloatingChat from './components/FloatingChat'
+import ToastContainer from './components/Toast'
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -52,6 +53,7 @@ function App() {
         </div>
       </div>
       <FloatingChat />
+      <ToastContainer />
     </div>
   )
 }
