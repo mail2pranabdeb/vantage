@@ -3,8 +3,10 @@ import { Bell, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import { useToast } from '../components/Toast';
 
 const NoticeList = () => {
+    const { addToast } = useToast();
     const [notices, setNotices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,12 +31,18 @@ const NoticeList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setNotices(data.data || []);
+                    if (data.data && data.data.length > 0) {
+                        addToast('success', `Loaded ${data.data.length} notice(s)`, 2000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to load notices', 4000);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch notices:", err);
                 setLoading(false);
+                addToast('error', 'Failed to load notices. Please refresh.', 5000);
             });
     };
 
@@ -83,13 +91,14 @@ const NoticeList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setNotices(notices.filter(n => n.noticeId !== row.noticeId));
+                    addToast('success', `Notice "${row.noticeTitle}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete notice');
+                    addToast('error', data.msg || 'Failed to delete notice', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete notice:", err);
-                alert('Failed to delete notice');
+                addToast('error', 'Failed to delete notice', 5000);
             });
         }
     };
@@ -126,15 +135,16 @@ const NoticeList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
+                addToast('success', `Notice "${formData.noticeTitle}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 fetchNotices();
             } else {
-                alert(data.msg || `Failed to ${modalMode} notice`);
+                addToast('error', data.msg || `Failed to ${modalMode} notice`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} notice:`, err);
-            alert(`Failed to ${modalMode} notice`);
+            addToast('error', `Failed to ${modalMode} notice`, 5000);
         });
     };
 

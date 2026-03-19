@@ -3,8 +3,10 @@ import { Database, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import { useToast } from '../components/Toast';
 
 const DictList = () => {
+    const { addToast } = useToast();
     const [dicts, setDicts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,12 +31,18 @@ const DictList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setDicts(data.data || []);
+                    if (data.data && data.data.length > 0) {
+                        addToast('success', `Loaded ${data.data.length} dict ionary(ies)`, 2000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to load dictionaries', 4000);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch dicts:", err);
                 setLoading(false);
+                addToast('error', 'Failed to load dictionaries. Please refresh.', 5000);
             });
     };
 
@@ -83,13 +91,14 @@ const DictList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setDicts(dicts.filter(d => d.dictId !== row.dictId));
+                    addToast('success', `Dictionary "${row.dictName}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete dictionary');
+                    addToast('error', data.msg || 'Failed to delete dictionary', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete dictionary:", err);
-                alert('Failed to delete dictionary');
+                addToast('error', 'Failed to delete dictionary', 5000);
             });
         }
     };
@@ -126,15 +135,16 @@ const DictList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
+                addToast('success', `Dictionary "${formData.dictName}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 fetchDicts();
             } else {
-                alert(data.msg || `Failed to ${modalMode} dictionary`);
+                addToast('error', data.msg || `Failed to ${modalMode} dictionary`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} dictionary:`, err);
-            alert(`Failed to ${modalMode} dictionary`);
+            addToast('error', `Failed to ${modalMode} dictionary`, 5000);
         });
     };
 

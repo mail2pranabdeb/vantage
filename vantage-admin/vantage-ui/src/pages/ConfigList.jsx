@@ -3,8 +3,10 @@ import { Settings, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import { useToast } from '../components/Toast';
 
 const ConfigList = () => {
+    const { addToast } = useToast();
     const [configs, setConfigs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,12 +32,18 @@ const ConfigList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setConfigs(data.data || []);
+                    if (data.data && data.data.length > 0) {
+                        addToast('success', `Loaded ${data.data.length} config(s)`, 2000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to load configs', 4000);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch configs:", err);
                 setLoading(false);
+                addToast('error', 'Failed to load configs. Please refresh.', 5000);
             });
     };
 
@@ -87,13 +95,14 @@ const ConfigList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setConfigs(configs.filter(c => c.configId !== row.configId));
+                    addToast('success', `Config "${row.configName}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete config');
+                    addToast('error', data.msg || 'Failed to delete config', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete config:", err);
-                alert('Failed to delete config');
+                addToast('error', 'Failed to delete config', 5000);
             });
         }
     };
@@ -130,15 +139,16 @@ const ConfigList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
+                addToast('success', `Config "${formData.configName}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 fetchConfigs();
             } else {
-                alert(data.msg || `Failed to ${modalMode} config`);
+                addToast('error', data.msg || `Failed to ${modalMode} config`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} config:`, err);
-            alert(`Failed to ${modalMode} config`);
+            addToast('error', `Failed to ${modalMode} config`, 5000);
         });
     };
 
