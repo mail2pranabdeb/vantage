@@ -3,8 +3,10 @@ import { Shield, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import { useToast } from '../components/Toast';
 
 const RoleList = () => {
+    const { addToast } = useToast();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,11 +32,17 @@ const RoleList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setRoles(data.data || []);
+                    if (data.data && data.data.length > 0) {
+                        addToast('success', `Loaded ${data.data.length} role(s)`, 2000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to load roles', 4000);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch roles:", err);
+                addToast('error', 'Failed to load roles. Please refresh.', 5000);
                 setLoading(false);
             });
     };
@@ -87,13 +95,14 @@ const RoleList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setRoles(roles.filter(r => r.roleId !== row.roleId));
+                    addToast('success', `Role "${row.roleName}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete role');
+                    addToast('error', data.msg || 'Failed to delete role', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete role:", err);
-                alert('Failed to delete role');
+                addToast('error', 'Failed to delete role', 5000);
             });
         }
     };
@@ -108,14 +117,14 @@ const RoleList = () => {
 
     const handleSubmit = () => {
         setSubmitting(true);
-        
-        const url = modalMode === 'add' 
-            ? '/api/system/role' 
+
+        const url = modalMode === 'add'
+            ? '/api/system/role'
             : '/api/system/role';
-        
+
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = modalMode === 'add' 
-            ? { ...formData, roleSort: parseInt(formData.roleSort) } 
+        const body = modalMode === 'add'
+            ? { ...formData, roleSort: parseInt(formData.roleSort) }
             : { ...formData, roleId: currentRole.roleId, roleSort: parseInt(formData.roleSort) };
 
         fetch(url, {
@@ -130,15 +139,16 @@ const RoleList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
+                addToast('success', `Role "${formData.roleName}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 fetchRoles();
             } else {
-                alert(data.msg || `Failed to ${modalMode} role`);
+                addToast('error', data.msg || `Failed to ${modalMode} role`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} role:`, err);
-            alert(`Failed to ${modalMode} role`);
+            addToast('error', `Failed to ${modalMode} role`, 5000);
         });
     };
 

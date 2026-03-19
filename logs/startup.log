@@ -1230,3 +1230,314 @@ org.springframework.security.authorization.AuthorizationDeniedException: Access 
 2026-03-19 18:44:21.330 [task-28] [51b0fe039cd74213,5b9dc08f] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
 2026-03-19 18:44:21.330 [task-28] [51b0fe039cd74213,5b9dc08f] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
 2026-03-19 18:44:21.342 [task-28] [51b0fe039cd74213,5b9dc08f] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:46:44.283 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 18:46:44.283 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 18:46:44.283 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:46:44.283 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 18:46:44.283 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:46:44.288 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:46:44.288 [task-29] [dd1e4b0db4234ee0,e3116366] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:46:44.288 [task-29] [dd1e4b0db4234ee0,e3116366] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 18:46:44.290 [task-29] [dd1e4b0db4234ee0,e3116366] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:47:34.189 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 18:47:34.190 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 18:47:34.190 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:47:34.190 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 18:47:34.190 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:47:34.190 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:47:34.191 [task-30] [5f1a9780c3dc43c5,ed5168c0] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:47:34.191 [task-30] [5f1a9780c3dc43c5,ed5168c0] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 18:47:34.193 [task-30] [5f1a9780c3dc43c5,ed5168c0] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:47:34.234 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 18:47:34.240 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 18:47:34.240 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:47:34.240 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 18:47:34.240 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:47:34.240 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:47:34.240 [task-31] [7065b7fffaa946d3,baf7820c] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:47:34.242 [task-31] [7065b7fffaa946d3,baf7820c] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 18:47:34.243 [task-31] [7065b7fffaa946d3,baf7820c] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:47:41.063 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:47:41.067 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:47:41.067 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:47:41.067 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:47:41.067 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:47:41.067 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:47:41.068 [task-32] [44557cd365054291,e19bfa2c] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:47:41.068 [task-32] [44557cd365054291,e19bfa2c] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:47:41.070 [task-32] [44557cd365054291,e19bfa2c] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:47:47.303 [http-nio-8081-exec-8] [,] ERROR c.p.c.e.GlobalExceptionHandler - No static resource .well-known/appspecific/com.chrome.devtools.json for request '/.well-known/appspecific/com.chrome.devtools.json'.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource .well-known/appspecific/com.chrome.devtools.json for request '/.well-known/appspecific/com.chrome.devtools.json'.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:527)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:50)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.pd.config.CacheControlFilter.doFilter(CacheControlFilter.java:29)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:245)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:239)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-03-19 18:48:02.623 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:48:02.626 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:48:02.626 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:48:02.626 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:48:02.627 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:48:02.629 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:48:02.631 [task-33] [bf7b62d040844dc0,ab574dec] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:48:02.631 [task-33] [bf7b62d040844dc0,ab574dec] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:48:02.635 [task-33] [bf7b62d040844dc0,ab574dec] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:48:04.659 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:48:04.664 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:48:04.664 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:48:04.664 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:48:04.664 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:48:04.665 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:48:04.666 [task-34] [174f4233098241d8,7913a772] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:48:04.666 [task-34] [174f4233098241d8,7913a772] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:48:04.670 [task-34] [174f4233098241d8,7913a772] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:48:12.331 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:48:12.335 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:48:12.335 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:48:12.336 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:48:12.336 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:48:12.336 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:48:12.337 [task-35] [f001e0c5e96345c4,4af9cd2a] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:48:12.337 [task-35] [f001e0c5e96345c4,4af9cd2a] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:48:12.342 [task-35] [f001e0c5e96345c4,4af9cd2a] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:48:35.921 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:48:35.926 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:48:35.926 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:48:35.926 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:48:35.926 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:48:35.927 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:48:35.928 [task-36] [b403b6d17e1842cf,1f278f1d] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:48:35.929 [task-36] [b403b6d17e1842cf,1f278f1d] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:48:35.937 [task-36] [b403b6d17e1842cf,1f278f1d] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:48:42.200 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:48:42.203 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:48:42.206 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:48:42.206 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:48:42.207 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:48:42.207 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:48:42.207 [task-37] [6a3d7de2a32a4693,c7418f8e] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:48:42.207 [task-37] [6a3d7de2a32a4693,c7418f8e] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:48:42.212 [task-37] [6a3d7de2a32a4693,c7418f8e] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:49:44.325 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 18:49:44.327 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 18:49:44.327 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:49:44.327 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 18:49:44.327 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:49:44.328 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:49:44.328 [task-38] [5d98f0c77ed64184,ac27b39e] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:49:44.328 [task-38] [5d98f0c77ed64184,ac27b39e] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 18:49:44.330 [task-38] [5d98f0c77ed64184,ac27b39e] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:49:54.135 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 18:49:54.136 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 18:49:54.136 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:49:54.136 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 18:49:54.136 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:49:54.142 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:49:54.142 [task-39] [079fef8cf2914851,3b5602a4] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:49:54.142 [task-39] [079fef8cf2914851,3b5602a4] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 18:49:54.146 [task-39] [079fef8cf2914851,3b5602a4] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:49:57.301 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 18:49:57.306 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 18:49:57.306 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:49:57.306 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 18:49:57.306 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:49:57.306 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:49:57.308 [task-40] [52492657e86e490f,5cf900a2] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:49:57.308 [task-40] [52492657e86e490f,5cf900a2] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 18:49:57.310 [task-40] [52492657e86e490f,5cf900a2] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:50:00.392 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 18:50:00.396 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 18:50:00.396 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:50:00.396 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 18:50:00.396 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:50:00.397 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:50:00.398 [task-41] [d81b0d89e53c4657,98513af4] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:50:00.398 [task-41] [d81b0d89e53c4657,98513af4] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 18:50:00.404 [task-41] [d81b0d89e53c4657,98513af4] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:51:38.177 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 18:51:38.182 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 18:51:38.182 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:51:38.182 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 18:51:38.182 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:51:38.183 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:51:38.185 [task-42] [9b88242e1bf34925,ccfbfb74] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:51:38.185 [task-42] [9b88242e1bf34925,ccfbfb74] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 18:51:38.191 [task-42] [9b88242e1bf34925,ccfbfb74] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:51:47.445 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.list() ===
+2026-03-19 18:51:47.451 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.list() ===
+2026-03-19 18:51:47.451 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:51:47.451 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.list, method=com.pd.modules.system.web.SysMenuController.list(), url=/api/system/menu/list ===
+2026-03-19 18:51:47.451 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:51:47.452 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:51:47.452 [task-43] [c61a0b0a61cf4d00,73d5119e] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:51:47.452 [task-43] [c61a0b0a61cf4d00,73d5119e] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.list, operName=anonymous, url=/api/system/menu/list, status=0
+2026-03-19 18:51:47.454 [task-43] [c61a0b0a61cf4d00,73d5119e] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:54:57.154 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 18:54:57.154 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 18:54:57.154 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:54:57.154 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 18:54:57.154 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:54:57.154 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:54:57.155 [task-44] [7a2f950414da4ec4,42e97e58] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:54:57.155 [task-44] [7a2f950414da4ec4,42e97e58] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 18:54:57.157 [task-44] [7a2f950414da4ec4,42e97e58] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:54:57.172 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 18:54:57.172 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.list() ===
+2026-03-19 18:54:57.173 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 18:54:57.173 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:54:57.173 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 18:54:57.173 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:54:57.173 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:54:57.173 [task-45] [00659251394142ad,54e05667] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:54:57.175 [task-45] [00659251394142ad,54e05667] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 18:54:57.176 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.list() ===
+2026-03-19 18:54:57.176 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:54:57.176 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.list, method=com.pd.modules.system.web.SysMenuController.list(), url=/api/system/menu/list ===
+2026-03-19 18:54:57.176 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:54:57.176 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:54:57.176 [task-45] [00659251394142ad,54e05667] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:54:57.176 [task-46] [bb71ceb1bbec458e,195a6ba4] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:54:57.176 [task-46] [bb71ceb1bbec458e,195a6ba4] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.list, operName=anonymous, url=/api/system/menu/list, status=0
+2026-03-19 18:54:57.178 [task-46] [bb71ceb1bbec458e,195a6ba4] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:55:00.798 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 18:55:00.798 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 18:55:00.798 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:55:00.798 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 18:55:00.798 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:55:00.802 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:55:00.802 [task-47] [f569ae5ecf5c40e3,acd50d76] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:55:00.802 [task-47] [f569ae5ecf5c40e3,acd50d76] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 18:55:00.805 [task-47] [f569ae5ecf5c40e3,acd50d76] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:55:00.816 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 18:55:00.816 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.list() ===
+2026-03-19 18:55:00.817 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 18:55:00.817 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:55:00.817 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 18:55:00.817 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:55:00.817 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:55:00.818 [task-48] [33eeb61b3c944344,7e6b36b0] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:55:00.818 [task-48] [33eeb61b3c944344,7e6b36b0] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 18:55:00.820 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.list() ===
+2026-03-19 18:55:00.820 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:55:00.820 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.list, method=com.pd.modules.system.web.SysMenuController.list(), url=/api/system/menu/list ===
+2026-03-19 18:55:00.820 [task-48] [33eeb61b3c944344,7e6b36b0] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:55:00.820 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:55:00.821 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:55:00.821 [task-49] [cda541fe679b4dd9,1e2557fb] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:55:00.821 [task-49] [cda541fe679b4dd9,1e2557fb] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.list, operName=anonymous, url=/api/system/menu/list, status=0
+2026-03-19 18:55:00.824 [task-49] [cda541fe679b4dd9,1e2557fb] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:55:02.974 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:55:02.977 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:55:02.978 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:55:02.978 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:55:02.978 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:55:02.978 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:55:02.978 [task-50] [9eaa1147f81348cd,4a706991] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:55:02.978 [task-50] [9eaa1147f81348cd,4a706991] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:55:02.981 [task-50] [9eaa1147f81348cd,4a706991] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===

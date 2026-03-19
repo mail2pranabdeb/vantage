@@ -83,10 +83,10 @@ const ToastContainer = ({ toasts, removeToast }) => {
         };
 
         const typeStyles = {
-            success: { borderLeft: '4px solid #10b981', background: 'rgba(16, 185, 129, 0.05)' },
-            error: { borderLeft: '4px solid #ef4444', background: 'rgba(239, 68, 68, 0.05)' },
-            warning: { borderLeft: '4px solid #f59e0b', background: 'rgba(245, 158, 11, 0.05)' },
-            info: { borderLeft: '4px solid #3b82f6', background: 'rgba(59, 130, 246, 0.05)' },
+            success: { borderLeft: '4px solid #10b981', background: '#10b981' },
+            error: { borderLeft: '4px solid #ef4444', background: '#ef4444' },
+            warning: { borderLeft: '4px solid #f59e0b', background: '#f59e0b' },
+            info: { borderLeft: '4px solid #3b82f6', background: '#3b82f6' },
         };
 
         return { ...base, ...typeStyles[type] };
@@ -105,7 +105,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
     return (
         <div style={{
             position: 'fixed',
-            top: '80px',
+            top: '20px',
             right: '24px',
             zIndex: 9999,
             display: 'flex',
@@ -121,14 +121,14 @@ const ToastContainer = ({ toasts, removeToast }) => {
                         pointerEvents: 'auto'
                     }}
                 >
-                    <span style={{ color: getColor(toast.type) }}>
+                    <span style={{ color: '#fff' }}>
                         {getIcon(toast.type)}
                     </span>
                     <span style={{ 
                         flex: 1, 
                         fontSize: '13px', 
                         fontWeight: 500,
-                        color: 'var(--text-primary)'
+                        color: '#fff'
                     }}>
                         {toast.message}
                     </span>
