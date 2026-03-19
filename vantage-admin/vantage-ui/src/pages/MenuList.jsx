@@ -189,7 +189,7 @@ const MenuList = () => {
     };
 
     const getMenuTypeLabel = (type) => {
-        const labels = { 'M': 'Directory', 'C': 'Menu', 'F': 'Button' };
+        const labels = { 'M': 'Menu', 'C': 'Sub Menu', 'F': 'Permission' };
         return labels[type] || type;
     };
 
@@ -406,9 +406,9 @@ const MenuList = () => {
                         onChange={handleInputChange}
                         disabled={modalMode === 'view'}
                         options={[
-                            { value: 'M', label: 'Directory' },
-                            { value: 'C', label: 'Menu' },
-                            { value: 'F', label: 'Button' }
+                            { value: 'M', label: 'Menu' },
+                            { value: 'C', label: 'Sub Menu' },
+                            { value: 'F', label: 'Permission' }
                         ]}
                     />
                     <FormInput
