@@ -9,24 +9,29 @@ const LogininforList = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        console.log('[LogininforList] Fetching login records...');
         fetch('/api/system/logininfor/list')
             .then(res => res.json())
             .then(data => {
+                console.log('[LogininforList] API Response:', data);
                 setLoading(false);
                 if (data.code === 200) {
                     const dataList = data.data || [];
                     setList(dataList);
                     if (dataList.length === 0) {
+                        console.log('[Toast] Showing info toast: No records');
                         addToast('info', 'No login records found. Login to see records here.', 4000);
                     } else {
+                        console.log('[Toast] Showing success toast:', dataList.length, 'records');
                         addToast('success', `Loaded ${dataList.length} login record(s)`, 3000);
                     }
                 } else {
+                    console.log('[Toast] Showing error toast:', data.msg);
                     addToast('error', data.msg || 'Failed to load login records', 5000);
                 }
             })
             .catch(err => {
-                console.error("Failed to fetch login info:", err);
+                console.error("[LogininforList] Fetch error:", err);
                 setLoading(false);
                 addToast('error', 'Network error. Please try again.', 5000);
             });

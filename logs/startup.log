@@ -1,0 +1,587 @@
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/com/github/eirslett/maven-metadata.xml
+Progress (1): 240 B                   Downloaded from central: https://repo.maven.apache.org/maven2/com/github/eirslett/maven-metadata.xml (240 B at 191 B/s)
+[INFO] 
+[INFO] ------------------------< com.pd:vantage-admin >------------------------
+[INFO] Building vantage-admin 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.3:run (default-cli) > test-compile @ vantage-admin >>>
+[INFO] 
+[INFO] --- frontend:1.15.0:install-node-and-npm (install node and npm) @ vantage-admin ---
+[INFO] Node v20.11.1 is already installed.
+[INFO] 
+[INFO] --- frontend:1.15.0:npm (npm install) @ vantage-admin ---
+[INFO] Running 'npm install' in D:\Projects\vantage-master\vantage-admin\vantage-ui
+[INFO] npm WARN EBADENGINE Unsupported engine {
+[INFO] npm WARN EBADENGINE   package: '@vitejs/plugin-react@5.1.4',
+[INFO] npm WARN EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+[INFO] npm WARN EBADENGINE   current: { node: 'v20.11.1', npm: '10.2.4' }
+[INFO] npm WARN EBADENGINE }
+[INFO] npm WARN EBADENGINE Unsupported engine {
+[INFO] npm WARN EBADENGINE   package: 'vite@7.3.1',
+[INFO] npm WARN EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+[INFO] npm WARN EBADENGINE   current: { node: 'v20.11.1', npm: '10.2.4' }
+[INFO] npm WARN EBADENGINE }
+[INFO] 
+[INFO] up to date, audited 163 packages in 3s
+[INFO] 
+[INFO] 34 packages are looking for funding
+[INFO]   run `npm fund` for details
+[INFO] 
+[INFO] 1 high severity vulnerability
+[INFO] 
+[INFO] To address all issues, run:
+[INFO]   npm audit fix
+[INFO] 
+[INFO] Run `npm audit` for details.
+[INFO] 
+[INFO] --- frontend:1.15.0:npm (npm run build) @ vantage-admin ---
+[INFO] Running 'npm run build' in D:\Projects\vantage-master\vantage-admin\vantage-ui
+[INFO] 
+[INFO] > vantage-ui@0.0.0 build
+[INFO] > vite build
+[INFO] 
+[INFO] You are using Node.js 20.11.1. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+[INFO] vite v7.3.1 building client environment for production...
+[INFO] transforming...
+[INFO] ? 1761 modules transformed.
+[INFO] rendering chunks...
+[INFO] computing gzip size...
+[INFO] ../src/main/resources/static/index.html                   0.46 kB ? gzip:   0.29 kB
+[INFO] ../src/main/resources/static/assets/index-DEC0eTA1.css   17.80 kB ? gzip:   3.68 kB
+[INFO] ../src/main/resources/static/assets/index-BvI2itZQ.js   376.67 kB ? gzip: 100.41 kB
+[INFO] ? built in 9.25s
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ vantage-admin ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 7 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ vantage-admin ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 4 source files with javac [debug parameters release 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ vantage-admin ---
+[INFO] skip non existing resourceDirectory D:\Projects\vantage-master\vantage-admin\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ vantage-admin ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 2 source files with javac [debug parameters release 17] to target\test-classes
+[INFO] 
+[INFO] <<< spring-boot:4.0.3:run (default-cli) < test-compile @ vantage-admin <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:4.0.3:run (default-cli) @ vantage-admin ---
+[INFO] Attaching agents: []
+08:39:06,611 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
+08:39:06,645 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
+08:39:06,697 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
+08:39:06,697 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
+08:39:06,697 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+08:39:06,707 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
+08:39:06,711 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-03-19 08:39:06.912 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication using Java 25.0.1 with PID 19340 (D:\Projects\vantage-master\vantage-admin\target\classes started by Admin in D:\Projects\vantage-master\vantage-admin)
+2026-03-19 08:39:06.918 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
+2026-03-19 08:39:06.919 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
+2026-03-19 08:39:08.683 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-19 08:39:08.884 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 176 ms. Found 11 JPA repository interfaces.
+2026-03-19 08:39:11.763 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-03-19 08:39:11.787 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-19 08:39:11.787 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-19 08:39:11.940 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 4869 ms
+2026-03-19 08:39:12.114 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
+2026-03-19 08:39:12.734 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-03-19 08:39:17.600 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./data/vantage user=SA
+2026-03-19 08:39:17.603 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-03-19 08:39:19.446 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-19 08:39:22.711 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by ai.onnxruntime.OnnxRuntime in an unnamed module (file:/C:/Users/Admin/.m2/repository/com/microsoft/onnxruntime/onnxruntime/1.17.1/onnxruntime-1.17.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-03-19 08:39:28.171 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:file:/C:/Users/Admin/.m2/repository/ai/djl/huggingface/tokenizers/0.28.0/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
+2026-03-19 08:39:28.989 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-19 08:39:33.664 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
+2026-03-19 08:39:33.684 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-03-19 08:39:33.684 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
+2026-03-19 08:39:33.685 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-03-19 08:39:33.686 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
+  Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
+  NOT STARTED.
+  Currently in standby mode.
+  Number of jobs executed: 0
+  Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.
+  Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
+
+2026-03-19 08:39:33.688 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
+2026-03-19 08:39:33.688 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
+2026-03-19 08:39:33.688 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@3952fa33
+2026-03-19 08:39:34.057 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-19 08:39:34.489 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-03-19 08:39:34.491 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-03-19 08:39:35.180 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2026-03-19 08:39:36.295 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-19 08:39:36.310 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-19 08:39:36.353 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/vantage'
+2026-03-19 08:39:36.662 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
+2026-03-19 08:39:36.930 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
+2026-03-19 08:39:36.931 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-03-19 08:39:36.932 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
+2026-03-19 08:39:36.949 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 31.541 seconds (process running for 32.674)
+2026-03-19 08:39:37.368 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
+2026-03-19 08:39:37.486 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 10 knowledge documents
+2026-03-19 08:39:37.602 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
+2026-03-19 08:39:37.655 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
+2026-03-19 08:39:37.701 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
+2026-03-19 08:39:37.751 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
+2026-03-19 08:39:37.799 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
+2026-03-19 08:39:37.859 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
+2026-03-19 08:39:37.920 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
+2026-03-19 08:39:37.974 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
+2026-03-19 08:39:38.067 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
+2026-03-19 08:39:38.117 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
+2026-03-19 08:48:28.546 [HikariPool-1:housekeeper] [,] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3m40s757ms761µs400ns).
+2026-03-19 08:48:39.846 [http-nio-8081-exec-1] [,] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-19 08:48:39.846 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-03-19 08:48:39.848 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2026-03-19 08:48:48.210 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === loadUserByUsername called for: admin ===
+2026-03-19 08:48:48.282 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === User admin authenticated successfully, publishing LoginSuccessEvent ===
+2026-03-19 08:48:48.282 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === publishLoginSuccess called for user: admin ===
+2026-03-19 08:48:48.282 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === Publishing LoginSuccessEvent: user=admin, ip=0:0:0:0:0:0:0:1 ===
+2026-03-19 08:48:48.283 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === LoginSuccessEvent published ===
+2026-03-19 08:48:48.283 [task-1] [c7ee6a0332924e46,b42e600e] INFO  c.p.m.s.listener.AuthEventListener - === LOGIN SUCCESS EVENT RECEIVED ===
+2026-03-19 08:48:48.283 [task-1] [c7ee6a0332924e46,b42e600e] INFO  c.p.m.s.listener.AuthEventListener - Login success: user=admin, ip=0:0:0:0:0:0:0:1, location=
+2026-03-19 08:48:48.287 [task-1] [c7ee6a0332924e46,b42e600e] INFO  c.p.m.s.listener.AuthEventListener - === Inserted login record into sys_logininfor ===
+2026-03-19 08:48:48.394 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 08:48:48.394 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 08:48:48.394 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 08:48:48.394 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 08:48:48.394 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 08:48:48.394 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 08:48:48.394 [task-2] [e2de2cf0e0db4037,eba8ae6e] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:48:48.394 [task-2] [e2de2cf0e0db4037,eba8ae6e] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 08:48:48.402 [task-2] [e2de2cf0e0db4037,eba8ae6e] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 08:48:48.497 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 08:48:48.521 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 08:48:48.521 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 08:48:48.521 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 08:48:48.521 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 08:48:48.521 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 08:48:48.521 [task-3] [de492fc1a32a4ac9,be15ce68] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:48:48.521 [task-3] [de492fc1a32a4ac9,be15ce68] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 08:48:48.521 [task-3] [de492fc1a32a4ac9,be15ce68] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 08:48:54.095 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysLogininforController.list(..) ===
+2026-03-19 08:48:54.122 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysLogininforController.list(..) ===
+2026-03-19 08:48:54.122 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 08:48:54.124 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysLogininforController.list, method=com.pd.modules.system.web.SysLogininforController.list(), url=/api/system/logininfor/list ===
+2026-03-19 08:48:54.125 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 08:48:54.125 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 08:48:54.125 [task-4] [4e0d69daf50a4295,6adc9b0b] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:48:54.125 [task-4] [4e0d69daf50a4295,6adc9b0b] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysLogininforController.list, operName=anonymous, url=/api/system/logininfor/list, status=0
+2026-03-19 08:48:54.125 [task-4] [4e0d69daf50a4295,6adc9b0b] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 08:49:11.467 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 08:49:11.479 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 08:49:11.479 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 08:49:11.479 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 08:49:11.479 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 08:49:11.479 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 08:49:11.481 [task-5] [715ca2cf3c08483b,099aa0fb] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:49:11.481 [task-5] [715ca2cf3c08483b,099aa0fb] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 08:49:11.482 [task-5] [715ca2cf3c08483b,099aa0fb] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 08:49:28.055 [http-nio-8081-exec-8] [,] DEBUG com.pd.common.aspect.LogAspect - Starting logged method: SysUserController.add(..)
+2026-03-19 08:49:28.059 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.add(..) ===
+2026-03-19 08:49:28.068 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.listener.UserEventListener - User created event received: userId=100, loginName=test, userName=test user
+2026-03-19 08:49:28.070 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.add(..) ===
+2026-03-19 08:49:28.070 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 08:49:28.070 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.add, method=com.pd.modules.system.web.SysUserController.add(), url=/api/system/user ===
+2026-03-19 08:49:28.070 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 08:49:28.070 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 08:49:28.071 [task-6] [02defbb87be0444f,845d6b83] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:49:28.071 [task-6] [02defbb87be0444f,845d6b83] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.add, operName=anonymous, url=/api/system/user, status=0
+2026-03-19 08:49:28.071 [task-7] [8867d4d18fc249ee,1ca5d4a6] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:49:28.071 [task-6] [02defbb87be0444f,845d6b83] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 08:49:28.071 [task-7] [8867d4d18fc249ee,1ca5d4a6] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=User Management, operName=admin, url=/api/system/user, status=0
+2026-03-19 08:49:28.076 [task-7] [8867d4d18fc249ee,1ca5d4a6] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 08:49:28.188 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 08:49:28.193 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 08:49:28.193 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 08:49:28.193 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 08:49:28.193 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 08:49:28.193 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 08:49:28.195 [task-8] [187e7ae66b7547d8,d170874c] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 08:49:28.195 [task-8] [187e7ae66b7547d8,d170874c] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 08:49:28.200 [task-8] [187e7ae66b7547d8,d170874c] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:38:00.499 [HikariPool-1:housekeeper] [,] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=9h37m39s334ms22µs).
+2026-03-19 18:39:01.573 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === loadUserByUsername called for: admin ===
+2026-03-19 18:39:01.573 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === User admin authenticated successfully, publishing LoginSuccessEvent ===
+2026-03-19 18:39:01.573 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === publishLoginSuccess called for user: admin ===
+2026-03-19 18:39:01.573 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === Publishing LoginSuccessEvent: user=admin, ip=0:0:0:0:0:0:0:1 ===
+2026-03-19 18:39:01.573 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === LoginSuccessEvent published ===
+2026-03-19 18:39:01.573 [task-9] [20692521a41e47d0,064a90ca] INFO  c.p.m.s.listener.AuthEventListener - === LOGIN SUCCESS EVENT RECEIVED ===
+2026-03-19 18:39:01.573 [task-9] [20692521a41e47d0,064a90ca] INFO  c.p.m.s.listener.AuthEventListener - Login success: user=admin, ip=0:0:0:0:0:0:0:1, location=
+2026-03-19 18:39:01.583 [task-9] [20692521a41e47d0,064a90ca] INFO  c.p.m.s.listener.AuthEventListener - === Inserted login record into sys_logininfor ===
+2026-03-19 18:39:01.762 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 18:39:01.762 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 18:39:01.762 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:01.762 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 18:39:01.762 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:01.762 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:01.764 [task-10] [e393e3e02fa3487c,f6a030eb] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:01.764 [task-10] [e393e3e02fa3487c,f6a030eb] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 18:39:01.777 [task-10] [e393e3e02fa3487c,f6a030eb] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:01.827 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 18:39:01.834 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 18:39:01.834 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:01.834 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 18:39:01.834 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:01.834 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:01.834 [task-11] [081e2aa668ab4065,7416a387] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:01.834 [task-11] [081e2aa668ab4065,7416a387] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 18:39:01.842 [task-11] [081e2aa668ab4065,7416a387] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:07.131 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:39:07.134 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:39:07.134 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:07.134 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:39:07.134 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:07.134 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:07.134 [task-12] [9aefc5a9dd5045e8,5e33dfac] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:07.134 [task-12] [9aefc5a9dd5045e8,5e33dfac] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:39:07.140 [task-12] [9aefc5a9dd5045e8,5e33dfac] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:27.046 [http-nio-8081-exec-9] [,] DEBUG com.pd.common.aspect.LogAspect - Starting logged method: SysUserController.add(..)
+2026-03-19 18:39:27.046 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.add(..) ===
+2026-03-19 18:39:27.062 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.listener.UserEventListener - User created event received: userId=101, loginName=sayani, userName=Sayani
+2026-03-19 18:39:27.062 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.add(..) ===
+2026-03-19 18:39:27.062 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:27.062 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.add, method=com.pd.modules.system.web.SysUserController.add(), url=/api/system/user ===
+2026-03-19 18:39:27.062 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:27.062 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:27.064 [task-13] [17f7cc33419c4aad,1f92e66d] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:27.064 [task-13] [17f7cc33419c4aad,1f92e66d] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.add, operName=anonymous, url=/api/system/user, status=0
+2026-03-19 18:39:27.065 [task-14] [574fba2402584ef6,81a4ce49] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:27.065 [task-14] [574fba2402584ef6,81a4ce49] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=User Management, operName=admin, url=/api/system/user, status=0
+2026-03-19 18:39:27.068 [task-13] [17f7cc33419c4aad,1f92e66d] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:27.068 [task-14] [574fba2402584ef6,81a4ce49] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:27.182 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:39:27.182 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:39:27.182 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:27.182 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:39:27.188 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:27.188 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:27.188 [task-15] [6b2e77f41b294f0f,17b32f8b] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:27.188 [task-15] [6b2e77f41b294f0f,17b32f8b] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:39:27.193 [task-15] [6b2e77f41b294f0f,17b32f8b] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:41.983 [http-nio-8081-exec-7] [,] ERROR c.p.c.e.GlobalExceptionHandler - No static resource .well-known/appspecific/com.chrome.devtools.json for request '/.well-known/appspecific/com.chrome.devtools.json'.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource .well-known/appspecific/com.chrome.devtools.json for request '/.well-known/appspecific/com.chrome.devtools.json'.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:527)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:50)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.pd.config.CacheControlFilter.doFilter(CacheControlFilter.java:29)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:245)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:239)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-03-19 18:39:43.523 [http-nio-8081-exec-2] [,] ERROR c.p.c.e.GlobalExceptionHandler - No static resource .well-known/appspecific/com.chrome.devtools.json for request '/.well-known/appspecific/com.chrome.devtools.json'.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource .well-known/appspecific/com.chrome.devtools.json for request '/.well-known/appspecific/com.chrome.devtools.json'.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:527)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:50)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.pd.config.CacheControlFilter.doFilter(CacheControlFilter.java:29)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:245)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:239)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-03-19 18:39:50.768 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === loadUserByUsername called for: admin ===
+2026-03-19 18:39:50.769 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === User admin authenticated successfully, publishing LoginSuccessEvent ===
+2026-03-19 18:39:50.769 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === publishLoginSuccess called for user: admin ===
+2026-03-19 18:39:50.769 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === Publishing LoginSuccessEvent: user=admin, ip=0:0:0:0:0:0:0:1 ===
+2026-03-19 18:39:50.769 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === LoginSuccessEvent published ===
+2026-03-19 18:39:50.769 [task-16] [a5b2449514624de9,1cc746fd] INFO  c.p.m.s.listener.AuthEventListener - === LOGIN SUCCESS EVENT RECEIVED ===
+2026-03-19 18:39:50.769 [task-16] [a5b2449514624de9,1cc746fd] INFO  c.p.m.s.listener.AuthEventListener - Login success: user=admin, ip=0:0:0:0:0:0:0:1, location=
+2026-03-19 18:39:50.772 [task-16] [a5b2449514624de9,1cc746fd] INFO  c.p.m.s.listener.AuthEventListener - === Inserted login record into sys_logininfor ===
+2026-03-19 18:39:50.990 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
+2026-03-19 18:39:50.990 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
+2026-03-19 18:39:50.990 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:50.990 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
+2026-03-19 18:39:50.990 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:50.990 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:50.990 [task-9] [304f86a50b004790,edf465ec] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:50.990 [task-9] [304f86a50b004790,edf465ec] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
+2026-03-19 18:39:50.992 [task-9] [304f86a50b004790,edf465ec] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:51.025 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
+2026-03-19 18:39:51.033 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
+2026-03-19 18:39:51.033 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:51.033 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
+2026-03-19 18:39:51.035 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:51.035 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:51.035 [task-10] [a3851cc1754e4be4,40c88e78] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:51.035 [task-10] [a3851cc1754e4be4,40c88e78] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
+2026-03-19 18:39:51.035 [task-10] [a3851cc1754e4be4,40c88e78] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:39:55.162 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:39:55.167 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:39:55.167 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:39:55.167 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:39:55.167 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:39:55.170 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:39:55.170 [task-11] [a768881ea45b4a0e,27eb2cea] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:39:55.171 [task-11] [a768881ea45b4a0e,27eb2cea] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:39:55.178 [task-11] [a768881ea45b4a0e,27eb2cea] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:40:10.195 [http-nio-8081-exec-6] [,] DEBUG com.pd.common.aspect.LogAspect - Starting logged method: SysUserController.add(..)
+2026-03-19 18:40:10.195 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.add(..) ===
+2026-03-19 18:40:10.207 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.listener.UserEventListener - User created event received: userId=102, loginName=debnath, userName=Debnath
+2026-03-19 18:40:10.209 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.add(..) ===
+2026-03-19 18:40:10.209 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:40:10.210 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.add, method=com.pd.modules.system.web.SysUserController.add(), url=/api/system/user ===
+2026-03-19 18:40:10.210 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:40:10.211 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:40:10.211 [task-17] [9933a8dfb51243b2,bd85a3cb] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:40:10.211 [task-17] [9933a8dfb51243b2,bd85a3cb] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.add, operName=anonymous, url=/api/system/user, status=0
+2026-03-19 18:40:10.213 [task-13] [206c274a3d1046c8,6e785cb4] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:40:10.213 [task-13] [206c274a3d1046c8,6e785cb4] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=User Management, operName=admin, url=/api/system/user, status=0
+2026-03-19 18:40:10.223 [task-13] [206c274a3d1046c8,6e785cb4] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:40:10.223 [task-17] [9933a8dfb51243b2,bd85a3cb] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:40:10.344 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysUserController.list() ===
+2026-03-19 18:40:10.353 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysUserController.list() ===
+2026-03-19 18:40:10.353 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:40:10.353 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysUserController.list, method=com.pd.modules.system.web.SysUserController.list(), url=/api/system/user/list ===
+2026-03-19 18:40:10.353 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:40:10.356 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:40:10.356 [task-14] [4dcc2ad4225542f8,5fb8354f] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:40:10.356 [task-14] [4dcc2ad4225542f8,5fb8354f] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysUserController.list, operName=anonymous, url=/api/system/user/list, status=0
+2026-03-19 18:40:10.366 [task-14] [4dcc2ad4225542f8,5fb8354f] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:40:33.518 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysRoleController.list() ===
+2026-03-19 18:40:33.537 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysRoleController.list() ===
+2026-03-19 18:40:33.537 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:40:33.537 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysRoleController.list, method=com.pd.modules.system.web.SysRoleController.list(), url=/api/system/role/list ===
+2026-03-19 18:40:33.537 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:40:33.537 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:40:33.539 [task-18] [e0e3d11f35f644ac,b994a12b] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:40:33.539 [task-18] [e0e3d11f35f644ac,b994a12b] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysRoleController.list, operName=anonymous, url=/api/system/role/list, status=0
+2026-03-19 18:40:33.545 [task-18] [e0e3d11f35f644ac,b994a12b] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-19 18:40:53.731 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: ChatController.chat(..) ===
+2026-03-19 18:40:58.458 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.list() ===
+2026-03-19 18:40:58.514 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.list() ===
+2026-03-19 18:40:58.514 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
+2026-03-19 18:40:58.514 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.list, method=com.pd.modules.system.web.SysMenuController.list(), url=/api/system/menu/list ===
+2026-03-19 18:40:58.514 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
+2026-03-19 18:40:58.517 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
+2026-03-19 18:40:58.518 [task-19] [3e8fc71769ba4259,7d671cc6] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
+2026-03-19 18:40:58.518 [task-19] [3e8fc71769ba4259,7d671cc6] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.list, operName=anonymous, url=/api/system/menu/list, status=0
+2026-03-19 18:40:58.521 [task-19] [3e8fc71769ba4259,7d671cc6] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
