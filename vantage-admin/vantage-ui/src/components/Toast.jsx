@@ -1,44 +1,62 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
-// Toast context for global access
-let toastListeners = [];
+// Create Toast Context
+const ToastContext = createContext(null);
 
-export const toast = {
-    success: (message, duration = 3000) => notify('success', message, duration),
-    error: (message, duration = 5000) => notify('error', message, duration),
-    warning: (message, duration = 4000) => notify('warning', message, duration),
-    info: (message, duration = 3000) => notify('info', message, duration),
-};
-
-function notify(type, message, duration) {
-    const id = Date.now();
-    toastListeners.forEach(listener => listener({ id, type, message, duration }));
-    return id;
-}
-
-const ToastContainer = () => {
+// Toast Provider Component
+export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
 
-    useEffect(() => {
-        const listener = (newToast) => {
-            setToasts(prev => [...prev, newToast]);
-            // Auto-remove after duration
-            setTimeout(() => {
-                setToasts(prev => prev.filter(t => t.id !== newToast.id));
-            }, newToast.duration);
-        };
-
-        toastListeners.push(listener);
-        return () => {
-            toastListeners = toastListeners.filter(l => l !== listener);
-        };
+    const addToast = useCallback((type, message, duration = 3000) => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, type, message, duration }]);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== id));
+        }, duration);
+        
+        return id;
     }, []);
 
-    const removeToast = (id) => {
+    const removeToast = useCallback((id) => {
         setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    }, []);
 
+    return (
+        <ToastContext.Provider value={{ addToast }}>
+            {children}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </ToastContext.Provider>
+    );
+};
+
+// Custom hook to use toast
+export const useToast = () => {
+    const context = useContext(ToastContext);
+    if (!context) {
+        throw new Error('useToast must be used within ToastProvider');
+    }
+    return context;
+};
+
+// Convenience functions that will be exported
+let toastApi = null;
+
+export const setupToastApi = (addToast) => {
+    toastApi = addToast;
+};
+
+export const toast = {
+    success: (message, duration) => toastApi?.('success', message, duration),
+    error: (message, duration) => toastApi?.('error', message, duration),
+    warning: (message, duration) => toastApi?.('warning', message, duration),
+    info: (message, duration) => toastApi?.('info', message, duration),
+};
+
+// Toast Container Component
+const ToastContainer = ({ toasts, removeToast }) => {
     const getIcon = (type) => {
         switch (type) {
             case 'success': return <CheckCircle size={20} />;
@@ -74,6 +92,16 @@ const ToastContainer = () => {
         return { ...base, ...typeStyles[type] };
     };
 
+    const getColor = (type) => {
+        switch (type) {
+            case 'success': return '#10b981';
+            case 'error': return '#ef4444';
+            case 'warning': return '#f59e0b';
+            case 'info': return '#3b82f6';
+            default: return '#3b82f6';
+        }
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -93,11 +121,7 @@ const ToastContainer = () => {
                         pointerEvents: 'auto'
                     }}
                 >
-                    <span style={{ 
-                        color: toast.type === 'error' ? '#ef4444' : 
-                               toast.type === 'success' ? '#10b981' : 
-                               toast.type === 'warning' ? '#f59e0b' : '#3b82f6' 
-                    }}>
+                    <span style={{ color: getColor(toast.type) }}>
                         {getIcon(toast.type)}
                     </span>
                     <span style={{ 

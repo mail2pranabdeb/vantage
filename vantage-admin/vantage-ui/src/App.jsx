@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import FloatingChat from './components/FloatingChat'
-import ToastContainer from './components/Toast'
+import { ToastProvider } from './components/Toast'
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -44,17 +44,18 @@ function App() {
   }
 
   return (
-    <div className="app-container" style={{ display: 'flex', width: '100vw', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
-      <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
-        <Topbar />
-        <div className="page-content glass-panel animate-fade-in" style={{ margin: '12px 16px 16px', flex: '1 1 auto', position: 'relative' }}>
-          <Outlet />
+    <ToastProvider>
+      <div className="app-container" style={{ display: 'flex', width: '100vw', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+        <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
+          <Topbar />
+          <div className="page-content glass-panel animate-fade-in" style={{ margin: '12px 16px 16px', flex: '1 1 auto', position: 'relative' }}>
+            <Outlet />
+          </div>
         </div>
+        <FloatingChat />
       </div>
-      <FloatingChat />
-      <ToastContainer />
-    </div>
+    </ToastProvider>
   )
 }
 
