@@ -3,6 +3,7 @@ import { User, Mail, Phone, ShieldCheck, Clock, Plus, Edit, Trash2, Eye, Refresh
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import { useToast } from '../components/Toast';
 
 const formatDate = (dateValue) => {
     if (!dateValue) return 'N/A';
@@ -14,6 +15,7 @@ const formatDate = (dateValue) => {
 };
 
 const UserList = () => {
+    const { addToast } = useToast();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,11 +50,17 @@ const UserList = () => {
                 if (data.code === 200) {
                     console.log('Users data:', data.data);
                     setUsers(data.data || []);
+                    if (data.data && data.data.length > 0) {
+                        addToast('success', `Loaded ${data.data.length} user(s)`, 2000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to load users', 4000);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch users:", err);
+                addToast('error', 'Failed to load users. Please refresh.', 5000);
                 setLoading(false);
             });
     };
@@ -112,13 +120,14 @@ const UserList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setUsers(users.filter(u => u.userId !== row.userId));
+                    addToast('success', `User "${row.userName}" deleted successfully`, 3000);
                 } else {
-                    alert(data.msg || 'Failed to delete user');
+                    addToast('error', data.msg || 'Failed to delete user', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to delete user:", err);
-                alert('Failed to delete user');
+                addToast('error', 'Failed to delete user', 5000);
             });
         }
     };
@@ -162,6 +171,7 @@ const UserList = () => {
             if (data.code === 200) {
                 console.log('User added successfully, fetching users...');
                 setIsModalOpen(false);
+                addToast('success', `User ${formData.userName} ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
                 // Add a small delay to ensure database transaction is committed
                 setTimeout(() => {
                     fetchUsers().then(() => {
@@ -169,13 +179,13 @@ const UserList = () => {
                     });
                 }, 100);
             } else {
-                alert(data.msg || `Failed to ${modalMode} user`);
+                addToast('error', data.msg || `Failed to ${modalMode} user`, 5000);
             }
         })
         .catch(err => {
             setSubmitting(false);
             console.error(`Failed to ${modalMode} user:`, err);
-            alert(`Failed to ${modalMode} user: ${err.message}`);
+            addToast('error', `Failed to ${modalMode} user: ${err.message}`, 5000);
         });
     };
 
