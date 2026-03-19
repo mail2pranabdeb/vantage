@@ -5,7 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class SysDictDataRepository {
@@ -15,7 +18,9 @@ public class SysDictDataRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private final RowMapper<SysDictData> rowMapper = (rs, rowNum) -> {
+    private final RowMapper<SysDictData> rowMapper = this::mapRow;
+
+    private SysDictData mapRow(ResultSet rs, int rowNum) throws SQLException {
         SysDictData data = new SysDictData();
         data.setDictCode(rs.getLong("dict_code"));
         data.setDictSort(rs.getInt("dict_sort"));
@@ -25,10 +30,35 @@ public class SysDictDataRepository {
         data.setIsDefault(rs.getString("is_default"));
         data.setStatus(rs.getString("status"));
         return data;
-    };
+    }
 
     public List<SysDictData> findByType(String dictType) {
-        return jdbcTemplate.query("SELECT * FROM sys_dict_data WHERE dict_type = ? ORDER BY dict_sort ASC", rowMapper,
-                dictType);
+        return jdbcTemplate.query(
+                "SELECT * FROM sys_dict_data WHERE dict_type = ? ORDER BY dict_sort ASC",
+                rowMapper,
+                dictType
+        );
+    }
+
+    public List<SysDictData> findByDictTypeOrderBySort(String dictType) {
+        return jdbcTemplate.query(
+                "SELECT * FROM sys_dict_data WHERE dict_type = ? AND status = '0' ORDER BY dict_sort ASC",
+                rowMapper,
+                dictType
+        );
+    }
+
+    public Optional<SysDictData> findByDictTypeAndValue(String dictType, String dictValue) {
+        try {
+            SysDictData data = jdbcTemplate.queryForObject(
+                    "SELECT * FROM sys_dict_data WHERE dict_type = ? AND dict_value = ?",
+                    rowMapper,
+                    dictType,
+                    dictValue
+            );
+            return Optional.ofNullable(data);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }
