@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface SysMenuRepository extends JpaRepository<SysMenu, Long> {
@@ -17,14 +18,22 @@ public interface SysMenuRepository extends JpaRepository<SysMenu, Long> {
     @Query("SELECT m FROM SysMenu m WHERE m.menuType IN ('M', 'C') AND m.status = '0' ORDER BY m.parentId, m.orderNum")
     List<SysMenu> findMenusAndDirectories();
 
-    // Simplified query - will be enhanced when relationships are added
-    @Query("SELECT m FROM SysMenu m WHERE m.menuType IN ('M', 'C') AND m.status = '0' ORDER BY m.parentId, m.orderNum")
+    // Get menu tree for specific user
+    @Query(value = "SELECT DISTINCT m.* FROM sys_menu m " +
+           "INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
+           "INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
+           "WHERE ur.user_id = :userId AND m.status = '0' " +
+           "ORDER BY m.parent_id, m.order_num", nativeQuery = true)
     List<SysMenu> findMenuTreeByUserId(@Param("userId") Long userId);
 
-    // Simplified - returns all permissions for now
-    @Query("SELECT m.perms FROM SysMenu m WHERE m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''")
-    List<String> findPermsByUserId(@Param("userId") Long userId);
+    // Get all permissions for specific user
+    @Query(value = "SELECT DISTINCT m.perms FROM sys_menu m " +
+           "INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
+           "INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
+           "WHERE ur.user_id = :userId AND m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", nativeQuery = true)
+    Set<String> findMenuPermsByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT m.perms FROM SysMenu m WHERE m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''")
-    List<String> findAllPerms();
+    // Get all permissions (fallback)
+    @Query(value = "SELECT DISTINCT m.perms FROM sys_menu m WHERE m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", nativeQuery = true)
+    Set<String> findAllPerms();
 }

@@ -41,73 +41,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             SysUser user = userRepository.findByLoginName(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
-            Set<String> permissions;
-            if (user.getUserId() == 1L) {
-                // Admin user gets all permissions
-                permissions = Set.of(
-                        "*:*:*",
-                        // User Management
-                        "system:user:list", "system:user:query", "system:user:add", "system:user:edit", "system:user:remove", "system:user:export", "system:user:import", "system:user:resetPwd",
-                        // Role Management
-                        "system:role:list", "system:role:query", "system:role:add", "system:role:edit", "system:role:remove", "system:role:export",
-                        // Menu Management
-                        "system:menu:list", "system:menu:query", "system:menu:add", "system:menu:edit", "system:menu:remove",
-                        // Config Management
-                        "system:config:list", "system:config:query", "system:config:add", "system:config:edit", "system:config:remove", "system:config:export",
-                        // Dictionary Management
-                        "system:dict:list", "system:dict:query", "system:dict:add", "system:dict:edit", "system:dict:remove", "system:dict:export",
-                        // Post Management
-                        "system:post:list", "system:post:query", "system:post:add", "system:post:edit", "system:post:remove", "system:post:export",
-                        // Operation Log
-                        "monitor:operlog:list", "monitor:operlog:query", "monitor:operlog:remove", "monitor:operlog:export",
-                        // Login Log
-                        "monitor:logininfor:list", "monitor:logininfor:query", "monitor:logininfor:remove", "monitor:logininfor:export", "monitor:logininfor:unlock",
-                        // Job Management
-                        "monitor:job:list", "monitor:job:query", "monitor:job:add", "monitor:job:edit", "monitor:job:remove", "monitor:job:export", "monitor:job:changeStatus", "monitor:job:run",
-                        // Job Log
-                        "monitor:jobLog:list", "monitor:jobLog:query", "monitor:jobLog:remove", "monitor:jobLog:export",
-                        // Code Generation
-                        "tool:gen:list", "tool:gen:query", "tool:gen:add", "tool:gen:edit", "tool:gen:remove", "tool:gen:import", "tool:gen:editTable", "tool:gen:preview", "tool:gen:code", "tool:gen:batchGen",
-                        // Notice Management
-                        "system:notice:list", "system:notice:query", "system:notice:add", "system:notice:edit", "system:notice:remove"
-                );
-            } else {
-                // For now, give all users the same permissions as admin (temporary for development)
-                permissions = Set.of(
-                        "*:*:*",
-                        // User Management
-                        "system:user:list", "system:user:query", "system:user:add", "system:user:edit", "system:user:remove", "system:user:export", "system:user:import", "system:user:resetPwd",
-                        // Role Management
-                        "system:role:list", "system:role:query", "system:role:add", "system:role:edit", "system:role:remove", "system:role:export",
-                        // Menu Management
-                        "system:menu:list", "system:menu:query", "system:menu:add", "system:menu:edit", "system:menu:remove",
-                        // Config Management
-                        "system:config:list", "system:config:query", "system:config:add", "system:config:edit", "system:config:remove", "system:config:export",
-                        // Dictionary Management
-                        "system:dict:list", "system:dict:query", "system:dict:add", "system:dict:edit", "system:dict:remove", "system:dict:export",
-                        // Post Management
-                        "system:post:list", "system:post:query", "system:post:add", "system:post:edit", "system:post:remove", "system:post:export",
-                        // Operation Log
-                        "monitor:operlog:list", "monitor:operlog:query", "monitor:operlog:remove", "monitor:operlog:export",
-                        // Login Log
-                        "monitor:logininfor:list", "monitor:logininfor:query", "monitor:logininfor:remove", "monitor:logininfor:export", "monitor:logininfor:unlock",
-                        // Job Management
-                        "monitor:job:list", "monitor:job:query", "monitor:job:add", "monitor:job:edit", "monitor:job:remove", "monitor:job:export", "monitor:job:changeStatus", "monitor:job:run",
-                        // Job Log
-                        "monitor:jobLog:list", "monitor:jobLog:query", "monitor:jobLog:remove", "monitor:jobLog:export",
-                        // Code Generation
-                        "tool:gen:list", "tool:gen:query", "tool:gen:add", "tool:gen:edit", "tool:gen:remove", "tool:gen:import", "tool:gen:editTable", "tool:gen:preview", "tool:gen:code", "tool:gen:batchGen",
-                        // Notice Management
-                        "system:notice:list", "system:notice:query", "system:notice:add", "system:notice:edit", "system:notice:remove"
-                );
+            // Load permissions from database based on user's roles
+            Set<String> permissions = menuRepository.findMenuPermsByUserId(user.getUserId());
+            
+            // If no permissions found, return empty set
+            if (permissions == null || permissions.isEmpty()) {
+                permissions = Set.of();
             }
             
-            log.info("=== User {} authenticated successfully, publishing LoginSuccessEvent ===", username);
+            log.info("=== User {} authenticated successfully with {} permissions ===", username, permissions.size());
             // Publish login success event
             publishLoginSuccess(user);
-            
+
             return new LoginUser(user, permissions);
-            
+
         } catch (UsernameNotFoundException e) {
             log.info("=== User {} not found, publishing LoginFailureEvent ===", username);
             // Publish login failure event
