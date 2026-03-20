@@ -41,9 +41,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             SysUser user = userRepository.findByLoginName(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
-            // For now, load all permissions from database (simpler approach)
-            // TODO: Implement proper role-based permission loading
-            Set<String> permissions = menuRepository.findAllPerms();
+            // Load permissions from database based on user's roles
+            // Admin user (id=1) gets all permissions, others get role-based permissions
+            Set<String> permissions = menuRepository.findMenuPermsByUserId(user.getUserId());
             
             log.info("=== User {} loaded with {} permissions ===", username, permissions.size());
             

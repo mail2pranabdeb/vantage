@@ -38,4 +38,13 @@ public interface SysMenuRepository extends JpaRepository<SysMenu, Long> {
     // Get all permissions (fallback)
     @Query(value = "SELECT DISTINCT m.perms FROM sys_menu m WHERE m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", nativeQuery = true)
     Set<String> findAllPerms();
+    
+    // Get all menu permissions for user (simplified - returns all if user has any role)
+    @Query(value = "SELECT DISTINCT m.perms " +
+           "FROM sys_menu m " +
+           "LEFT JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
+           "LEFT JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
+           "WHERE (ur.user_id = :userId OR :userId = 1) AND m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", 
+           nativeQuery = true)
+    Set<String> findMenuPermsByUserId(@Param("userId") Long userId);
 }
