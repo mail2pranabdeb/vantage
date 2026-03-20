@@ -44,12 +44,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             // Load permissions from database based on user's roles
             Set<String> permissions = menuRepository.findMenuPermsByUserId(user.getUserId());
             
+            log.info("=== User {} has {} permissions: {} ===", username, permissions.size(), permissions);
+            
             // If no permissions found, return empty set
             if (permissions == null || permissions.isEmpty()) {
+                log.warn("=== WARNING: User {} has NO permissions! ===", username);
                 permissions = Set.of();
             }
             
-            log.info("=== User {} authenticated successfully with {} permissions ===", username, permissions.size());
+            log.info("=== User {} authenticated successfully, publishing LoginSuccessEvent ===", username);
             // Publish login success event
             publishLoginSuccess(user);
 
