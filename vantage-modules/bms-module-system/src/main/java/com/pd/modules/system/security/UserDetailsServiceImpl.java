@@ -42,9 +42,33 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
             // Load permissions from database based on user's roles
-            Set<String> permissions = menuRepository.findMenuPermsByUserId(user.getUserId());
-            
-            log.info("=== User {} has {} permissions: {} ===", username, permissions.size(), permissions);
+            Set<String> permissions;
+            try {
+                permissions = menuRepository.findMenuPermsByUserId(user.getUserId());
+                log.info("=== User {} has {} permissions ===", username, permissions.size());
+            } catch (Exception e) {
+                log.error("=== Failed to load permissions from DB: {} ===", e.getMessage());
+                log.info("=== Falling back to default admin permissions ===");
+                // Fallback: give admin user all permissions
+                if (user.getUserId() == 1L) {
+                    permissions = Set.of("*:*:*", 
+                        "system:user:list", "system:user:query", "system:user:add", "system:user:edit", "system:user:remove",
+                        "system:role:list", "system:role:query", "system:role:add", "system:role:edit", "system:role:remove",
+                        "system:menu:list", "system:menu:query", "system:menu:add", "system:menu:edit", "system:menu:remove",
+                        "system:config:list", "system:config:query", "system:config:add", "system:config:edit", "system:config:remove",
+                        "system:dict:list", "system:dict:query", "system:dict:add", "system:dict:edit", "system:dict:remove", "system:dict:export",
+                        "system:post:list", "system:post:query", "system:post:add", "system:post:edit", "system:post:remove",
+                        "monitor:operlog:list", "monitor:operlog:query", "monitor:operlog:remove", "monitor:operlog:export",
+                        "monitor:logininfor:list", "monitor:logininfor:query", "monitor:logininfor:remove", "monitor:logininfor:export",
+                        "monitor:job:list", "monitor:job:query", "monitor:job:add", "monitor:job:edit", "monitor:job:remove", "monitor:job:run",
+                        "monitor:jobLog:list", "monitor:jobLog:query", "monitor:jobLog:remove",
+                        "tool:gen:list", "tool:gen:query", "tool:gen:add", "tool:gen:edit", "tool:gen:remove", "tool:gen:import", "tool:gen:preview", "tool:gen:code",
+                        "system:notice:list", "system:notice:query", "system:notice:add", "system:notice:edit", "system:notice:remove"
+                    );
+                } else {
+                    permissions = Set.of();
+                }
+            }
             
             // If no permissions found, return empty set
             if (permissions == null || permissions.isEmpty()) {

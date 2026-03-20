@@ -26,11 +26,13 @@ public interface SysMenuRepository extends JpaRepository<SysMenu, Long> {
            "ORDER BY m.parent_id, m.order_num", nativeQuery = true)
     List<SysMenu> findMenuTreeByUserId(@Param("userId") Long userId);
 
-    // Get all permissions for specific user
-    @Query(value = "SELECT DISTINCT m.perms FROM sys_menu m " +
+    // Get all permissions for specific user via role relationships
+    @Query(value = "SELECT DISTINCT m.perms " +
+           "FROM sys_menu m " +
            "INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
            "INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
-           "WHERE ur.user_id = :userId AND m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", nativeQuery = true)
+           "WHERE ur.user_id = :userId AND m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", 
+           nativeQuery = true)
     Set<String> findMenuPermsByUserId(@Param("userId") Long userId);
 
     // Get all permissions (fallback)
