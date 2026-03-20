@@ -50,7 +50,7 @@
 [INFO] ../src/main/resources/static/index.html                   0.46 kB ? gzip:   0.29 kB
 [INFO] ../src/main/resources/static/assets/index-DEC0eTA1.css   17.80 kB ? gzip:   3.68 kB
 [INFO] ../src/main/resources/static/assets/index-B9tP6gYd.js   381.93 kB ? gzip: 102.12 kB
-[INFO] ? built in 9.36s
+[INFO] ? built in 5.40s
 [INFO] 
 [INFO] --- resources:3.3.1:resources (default-resources) @ vantage-admin ---
 [INFO] Copying 1 resource from src\main\resources to target\classes
@@ -72,13 +72,13 @@
 [INFO] 
 [INFO] --- spring-boot:4.0.3:run (default-cli) @ vantage-admin ---
 [INFO] Attaching agents: []
-19:11:41,582 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
-19:11:41,617 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
-19:11:41,664 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
-19:11:41,665 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
-19:11:41,665 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
-19:11:41,674 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
-19:11:41,679 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
+19:21:50,286 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
+19:21:50,312 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
+19:21:50,343 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
+19:21:50,343 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
+19:21:50,343 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@285c08c8 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+19:21:50,350 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
+19:21:50,353 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -89,33 +89,33 @@
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-20 19:11:41.870 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication using Java 25.0.1 with PID 3620 (D:\Projects\vantage-master\vantage-admin\target\classes started by Admin in D:\Projects\vantage-master\vantage-admin)
-2026-03-20 19:11:41.874 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
-2026-03-20 19:11:41.875 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
-2026-03-20 19:11:43.495 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-20 19:11:43.662 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 124 ms. Found 11 JPA repository interfaces.
-2026-03-20 19:11:46.288 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-03-20 19:11:46.312 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2026-03-20 19:11:46.312 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-20 19:11:46.444 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 4431 ms
-2026-03-20 19:11:46.611 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
-2026-03-20 19:11:47.163 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-20 19:11:47.824 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./data/vantage user=SA
-2026-03-20 19:11:47.826 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-20 19:11:49.265 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-20 19:11:52.050 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-20 19:21:50.466 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication using Java 25.0.1 with PID 21596 (D:\Projects\vantage-master\vantage-admin\target\classes started by Admin in D:\Projects\vantage-master\vantage-admin)
+2026-03-20 19:21:50.468 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
+2026-03-20 19:21:50.469 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
+2026-03-20 19:21:51.528 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-20 19:21:51.643 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 104 ms. Found 11 JPA repository interfaces.
+2026-03-20 19:21:54.355 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-03-20 19:21:54.389 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-20 19:21:54.390 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-20 19:21:54.566 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 4005 ms
+2026-03-20 19:21:54.773 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
+2026-03-20 19:21:55.347 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-03-20 19:22:00.156 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./data/vantage user=SA
+2026-03-20 19:22:00.158 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-03-20 19:22:01.819 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-20 19:22:04.628 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
 WARNING: A restricted method in java.lang.System has been called
 WARNING: java.lang.System::load has been called by ai.onnxruntime.OnnxRuntime in an unnamed module (file:/C:/Users/Admin/.m2/repository/com/microsoft/onnxruntime/onnxruntime/1.17.1/onnxruntime-1.17.1.jar)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-2026-03-20 19:11:57.408 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:file:/C:/Users/Admin/.m2/repository/ai/djl/huggingface/tokenizers/0.28.0/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
-2026-03-20 19:11:58.084 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-20 19:12:02.323 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
-2026-03-20 19:12:02.344 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
-2026-03-20 19:12:02.344 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
-2026-03-20 19:12:02.345 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
-2026-03-20 19:12:02.346 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
+2026-03-20 19:22:10.069 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:file:/C:/Users/Admin/.m2/repository/ai/djl/huggingface/tokenizers/0.28.0/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
+2026-03-20 19:22:10.801 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-20 19:22:15.212 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
+2026-03-20 19:22:15.232 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-03-20 19:22:15.232 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
+2026-03-20 19:22:15.233 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-03-20 19:22:15.234 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
   Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
   NOT STARTED.
   Currently in standby mode.
@@ -123,406 +123,35 @@ WARNING: Restricted methods will be blocked in a future release unless native ac
   Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.
   Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
 
-2026-03-20 19:12:02.347 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
-2026-03-20 19:12:02.347 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
-2026-03-20 19:12:02.347 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@2c1feb95
-2026-03-20 19:12:02.699 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-20 19:12:03.049 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-03-20 19:12:03.050 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-03-20 19:12:03.696 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2026-03-20 19:12:04.691 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
-2026-03-20 19:12:04.701 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
-2026-03-20 19:12:04.741 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/vantage'
-2026-03-20 19:12:05.022 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-2026-03-20 19:12:05.304 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
-2026-03-20 19:12:05.307 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
-2026-03-20 19:12:05.307 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
-2026-03-20 19:12:05.330 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 24.728 seconds (process running for 25.816)
-2026-03-20 19:12:05.523 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Initializing dictionary cache...
-2026-03-20 19:12:05.829 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Dictionary cache refreshed: 4 types loaded
-2026-03-20 19:12:05.870 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
-2026-03-20 19:12:05.956 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 13 knowledge documents
-2026-03-20 19:12:06.083 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
-2026-03-20 19:12:06.137 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
-2026-03-20 19:12:06.189 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
-2026-03-20 19:12:06.240 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
-2026-03-20 19:12:06.290 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
-2026-03-20 19:12:06.350 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
-2026-03-20 19:12:06.401 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
-2026-03-20 19:12:06.455 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
-2026-03-20 19:12:06.523 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
-2026-03-20 19:12:06.568 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
-2026-03-20 19:12:06.609 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Security Best Practices with 4 segments
-2026-03-20 19:12:06.654 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Troubleshooting Guide with 4 segments
-2026-03-20 19:12:06.705 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: API Documentation with 3 segments
-2026-03-20 19:12:35.338 [http-nio-8081-exec-1] [,] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-03-20 19:12:35.338 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-03-20 19:12:35.338 [http-nio-8081-exec-1] [,] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
-2026-03-20 19:12:44.334 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === loadUserByUsername called for: admin ===
-2026-03-20 19:12:44.502 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === User admin authenticated successfully with 0 permissions ===
-2026-03-20 19:12:44.502 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === publishLoginSuccess called for user: admin ===
-2026-03-20 19:12:44.502 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === Publishing LoginSuccessEvent: user=admin, ip=0:0:0:0:0:0:0:1 ===
-2026-03-20 19:12:44.502 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.s.UserDetailsServiceImpl - === LoginSuccessEvent published ===
-2026-03-20 19:12:44.502 [task-1] [7d0cd0cc1c784b6c,ee99a5c5] INFO  c.p.m.s.listener.AuthEventListener - === LOGIN SUCCESS EVENT RECEIVED ===
-2026-03-20 19:12:44.502 [task-1] [7d0cd0cc1c784b6c,ee99a5c5] INFO  c.p.m.s.listener.AuthEventListener - Login success: user=admin, ip=0:0:0:0:0:0:0:1, location=
-2026-03-20 19:12:44.518 [task-1] [7d0cd0cc1c784b6c,ee99a5c5] INFO  c.p.m.s.listener.AuthEventListener - === Inserted login record into sys_logininfor ===
-2026-03-20 19:12:44.777 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:12:44.777 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:12:44.777 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:44.777 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:12:44.777 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:44.777 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:44.784 [task-2] [e892aac046dd4d9c,9d6a2787] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:44.784 [task-2] [e892aac046dd4d9c,9d6a2787] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:12:44.789 [task-2] [e892aac046dd4d9c,9d6a2787] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:44.921 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:44.940 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:44.942 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:44.942 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:12:44.942 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:44.943 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:44.943 [task-3] [d2ee0fd0abc44d46,9486cc75] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:44.943 [task-3] [d2ee0fd0abc44d46,9486cc75] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:12:44.947 [task-3] [d2ee0fd0abc44d46,9486cc75] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:51.763 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:12:51.765 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:12:51.765 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:51.765 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:12:51.765 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:51.770 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:51.770 [task-4] [31b7b4ea490745d6,27d27a1c] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:51.770 [task-4] [31b7b4ea490745d6,27d27a1c] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:12:51.775 [task-4] [31b7b4ea490745d6,27d27a1c] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:51.806 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:51.809 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:51.809 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:51.811 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:12:51.811 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:51.811 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:51.811 [task-5] [add32ff4df114f6c,1da22f53] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:51.811 [task-5] [add32ff4df114f6c,1da22f53] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:12:51.816 [task-5] [add32ff4df114f6c,1da22f53] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:53.816 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:12:53.816 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:12:53.816 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:53.816 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:12:53.816 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:53.824 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:53.824 [task-6] [b11a66b395de422f,40def72b] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:53.824 [task-6] [b11a66b395de422f,40def72b] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:12:53.827 [task-6] [b11a66b395de422f,40def72b] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:53.851 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:53.854 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:53.854 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:53.854 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:12:53.854 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:53.854 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:53.854 [task-7] [2a618656d8224034,0a95b8ec] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:53.854 [task-7] [2a618656d8224034,0a95b8ec] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:12:53.860 [task-7] [2a618656d8224034,0a95b8ec] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:54.769 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:12:54.770 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:12:54.770 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:54.770 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:12:54.770 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:54.770 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:54.770 [task-8] [839fc2ac8f564f07,1ca8b751] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:54.770 [task-8] [839fc2ac8f564f07,1ca8b751] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:12:54.773 [task-8] [839fc2ac8f564f07,1ca8b751] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:54.799 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:54.802 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:54.805 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:54.805 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:12:54.805 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:54.805 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:54.805 [task-1] [b856bdf0496c414a,5e491abf] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:54.805 [task-1] [b856bdf0496c414a,5e491abf] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:12:54.810 [task-1] [b856bdf0496c414a,5e491abf] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:55.536 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:12:55.536 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:12:55.536 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:55.536 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:12:55.536 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:55.536 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:55.536 [task-2] [0bd794cb5798478d,9e6364f5] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:55.536 [task-2] [0bd794cb5798478d,9e6364f5] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:12:55.542 [task-2] [0bd794cb5798478d,9e6364f5] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:55.574 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:55.581 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:55.581 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:55.581 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:12:55.581 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:55.582 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:55.582 [task-3] [c13e7fe1d07c4f66,3af75d33] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:55.582 [task-3] [c13e7fe1d07c4f66,3af75d33] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:12:55.584 [task-3] [c13e7fe1d07c4f66,3af75d33] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:56.243 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:12:56.244 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:12:56.244 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:56.244 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:12:56.244 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:56.244 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:56.244 [task-4] [540628b7186141ae,74c39bc9] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:56.244 [task-4] [540628b7186141ae,74c39bc9] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:12:56.247 [task-4] [540628b7186141ae,74c39bc9] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:12:56.263 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:56.263 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:12:56.263 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:12:56.263 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:12:56.263 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:12:56.263 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:12:56.263 [task-5] [047639fa3c2c4922,4b493e4d] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:12:56.263 [task-5] [047639fa3c2c4922,4b493e4d] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:12:56.268 [task-5] [047639fa3c2c4922,4b493e4d] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:04.673 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:04.673 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:04.673 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:04.673 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:04.673 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:04.673 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:04.673 [task-6] [3d4b95d4fa114d14,be652755] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:04.673 [task-6] [3d4b95d4fa114d14,be652755] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:04.677 [task-6] [3d4b95d4fa114d14,be652755] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:04.700 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:04.703 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:04.703 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:04.703 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:04.703 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:04.703 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:04.703 [task-7] [abe199f52c6e479f,755cf9a5] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:04.703 [task-7] [abe199f52c6e479f,755cf9a5] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:04.707 [task-7] [abe199f52c6e479f,755cf9a5] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:05.455 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:05.455 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:05.455 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:05.455 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:05.455 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:05.455 [http-nio-8081-exec-9] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:05.455 [task-8] [2bd2b444a0e1431c,c5c29650] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:05.455 [task-8] [2bd2b444a0e1431c,c5c29650] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:05.462 [task-8] [2bd2b444a0e1431c,c5c29650] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:05.466 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:05.477 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:05.477 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:05.477 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:05.477 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:05.477 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:05.477 [task-1] [df6f4e300a344126,c7ee92c8] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:05.477 [task-1] [df6f4e300a344126,c7ee92c8] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:05.477 [task-1] [df6f4e300a344126,c7ee92c8] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:06.180 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:06.180 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:06.180 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:06.180 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:06.180 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:06.182 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:06.182 [task-2] [77b3784892f649d2,08963766] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:06.182 [task-2] [77b3784892f649d2,08963766] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:06.186 [task-2] [77b3784892f649d2,08963766] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:06.209 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:06.216 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:06.216 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:06.216 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:06.216 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:06.216 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:06.216 [task-3] [59a3d1770aff4d07,fee41453] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:06.216 [task-3] [59a3d1770aff4d07,fee41453] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:06.222 [task-3] [59a3d1770aff4d07,fee41453] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:06.628 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:06.628 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:06.628 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:06.628 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:06.628 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:06.629 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:06.629 [task-4] [2b261094509f43bf,6799f733] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:06.629 [task-4] [2b261094509f43bf,6799f733] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:06.632 [task-4] [2b261094509f43bf,6799f733] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:06.655 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:06.660 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:06.660 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:06.660 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:06.661 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:06.661 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:06.661 [task-5] [85009d2c2f284297,a6de40b1] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:06.661 [task-5] [85009d2c2f284297,a6de40b1] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:06.664 [task-5] [85009d2c2f284297,a6de40b1] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:07.077 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:07.079 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:07.079 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:07.079 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:07.079 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:07.079 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:07.081 [task-6] [83f2bafb113d401b,623e0b0a] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:07.081 [task-6] [83f2bafb113d401b,623e0b0a] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:07.088 [task-6] [83f2bafb113d401b,623e0b0a] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:07.124 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:07.129 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:07.131 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:07.131 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:07.131 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:07.131 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:07.131 [task-7] [7d3d8951f4d9415b,861b3004] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:07.131 [task-7] [7d3d8951f4d9415b,861b3004] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:07.143 [task-7] [7d3d8951f4d9415b,861b3004] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:07.695 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:07.695 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:07.695 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:07.695 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:07.697 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:07.698 [task-8] [6b3f4004f3ec44ec,aa016526] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:07.698 [http-nio-8081-exec-3] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:07.698 [task-8] [6b3f4004f3ec44ec,aa016526] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:07.706 [task-8] [6b3f4004f3ec44ec,aa016526] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:07.739 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:07.745 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:07.745 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:07.745 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:07.745 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:07.745 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:07.745 [task-1] [9323db4bc3b34562,9417e7f4] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:07.745 [task-1] [9323db4bc3b34562,9417e7f4] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:07.748 [task-1] [9323db4bc3b34562,9417e7f4] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:08.473 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:08.473 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:08.473 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:08.473 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:08.473 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:08.475 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:08.475 [task-2] [07d9f2859a094779,f0e8795e] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:08.475 [task-2] [07d9f2859a094779,f0e8795e] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:08.479 [task-2] [07d9f2859a094779,f0e8795e] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:08.493 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:08.495 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:08.495 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:08.495 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:08.495 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:08.495 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:08.495 [task-3] [9c912b2a71474f77,78d1ae9c] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:08.495 [task-3] [9c912b2a71474f77,78d1ae9c] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:08.495 [task-3] [9c912b2a71474f77,78d1ae9c] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:13.074 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:13.074 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:13.074 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:13.074 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:13.075 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:13.075 [http-nio-8081-exec-7] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:13.075 [task-4] [6ee4c0e108a04728,2e2608fd] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:13.076 [task-4] [6ee4c0e108a04728,2e2608fd] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:13.079 [task-4] [6ee4c0e108a04728,2e2608fd] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:13.094 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:13.094 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:13.094 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:13.094 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:13.094 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:13.094 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:13.094 [task-5] [cf56d43571e445e2,318d9661] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:13.094 [task-5] [cf56d43571e445e2,318d9661] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:13.101 [task-5] [cf56d43571e445e2,318d9661] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:24.107 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:24.107 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:24.107 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:24.107 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:24.107 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:24.107 [http-nio-8081-exec-1] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:24.107 [task-6] [9c926e82e4054e39,20530ecb] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:24.107 [task-6] [9c926e82e4054e39,20530ecb] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:24.112 [task-6] [9c926e82e4054e39,20530ecb] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:24.136 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:24.136 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:24.136 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:24.136 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:24.136 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:24.140 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:24.140 [task-7] [390a238c1ed846b6,2fa09b80] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:24.140 [task-7] [390a238c1ed846b6,2fa09b80] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:24.140 [task-7] [390a238c1ed846b6,2fa09b80] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:24.875 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:24.875 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:24.875 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:24.875 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:24.875 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:24.878 [http-nio-8081-exec-5] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:24.878 [task-8] [0eee7380d6fa4352,32301599] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:24.878 [task-8] [0eee7380d6fa4352,32301599] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:24.880 [task-8] [0eee7380d6fa4352,32301599] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:24.905 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:24.908 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:24.909 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:24.909 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:24.909 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:24.909 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:24.909 [task-1] [df186bff7a744885,e6cea7f4] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:24.909 [task-1] [df186bff7a744885,e6cea7f4] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:24.913 [task-1] [df186bff7a744885,e6cea7f4] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:25.201 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:25.201 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:25.201 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:25.201 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:25.201 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:25.203 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:25.203 [task-2] [43b6e00a23d84a36,5cf2befe] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:25.203 [task-2] [43b6e00a23d84a36,5cf2befe] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:25.206 [task-2] [43b6e00a23d84a36,5cf2befe] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:25.221 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:25.221 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:25.221 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:25.221 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:25.221 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:25.221 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:25.221 [task-3] [a2fffada1cc84c8e,25c11ddc] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:25.221 [task-3] [a2fffada1cc84c8e,25c11ddc] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:25.227 [task-3] [a2fffada1cc84c8e,25c11ddc] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:25.505 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:25.505 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:25.505 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:25.505 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:25.505 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:25.506 [http-nio-8081-exec-10] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:25.506 [task-4] [5c70cc108cec488f,572d2d7a] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:25.506 [task-4] [5c70cc108cec488f,572d2d7a] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:25.511 [task-4] [5c70cc108cec488f,572d2d7a] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:25.540 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:25.540 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:25.544 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:25.544 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:25.544 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:25.544 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:25.544 [task-5] [a2142c0a928647c2,3438402a] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:25.544 [task-5] [a2142c0a928647c2,3438402a] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:25.549 [task-5] [a2142c0a928647c2,3438402a] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:25.798 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:25.798 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:25.798 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:25.798 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:25.798 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:25.798 [http-nio-8081-exec-6] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:25.798 [task-6] [259e4fbedcd24ae5,256f4f7e] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:25.798 [task-6] [259e4fbedcd24ae5,256f4f7e] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:25.805 [task-6] [259e4fbedcd24ae5,256f4f7e] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:25.824 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:25.824 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:25.824 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:25.824 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:25.824 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:25.824 [http-nio-8081-exec-8] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:25.824 [task-7] [5c86459550774727,3065ecab] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:25.824 [task-7] [5c86459550774727,3065ecab] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:25.827 [task-7] [5c86459550774727,3065ecab] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:26.078 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: AuthController.me(..) ===
-2026-03-20 19:13:26.078 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: AuthController.me(..) ===
-2026-03-20 19:13:26.078 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:26.078 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=AuthController.me, method=com.pd.modules.system.web.AuthController.me(), url=/api/me ===
-2026-03-20 19:13:26.078 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:26.078 [http-nio-8081-exec-2] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:26.078 [task-8] [f8bd51280a55449f,cad73dc7] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:26.078 [task-8] [f8bd51280a55449f,cad73dc7] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=AuthController.me, operName=anonymous, url=/api/me, status=0
-2026-03-20 19:13:26.078 [task-8] [f8bd51280a55449f,cad73dc7] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
-2026-03-20 19:13:26.111 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === AOP BEFORE: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:26.114 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === @AfterReturning TRIGGERED for: SysMenuController.getMenuTree() ===
-2026-03-20 19:13:26.114 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === publishOperationLog called ===
-2026-03-20 19:13:26.114 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Building OperationLogEvent: title=SysMenuController.getMenuTree, method=com.pd.modules.system.web.SysMenuController.getMenuTree(), url=/api/system/menu/tree ===
-2026-03-20 19:13:26.114 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === Publishing OperationLogEvent ===
-2026-03-20 19:13:26.114 [http-nio-8081-exec-4] [,] INFO  c.p.m.s.aspect.OperationLogAspect - === OperationLogEvent published successfully ===
-2026-03-20 19:13:26.114 [task-1] [bd5b787e4a224f98,fe652c86] INFO  c.p.m.s.l.OperationLogListener - === OPERATION LOG EVENT RECEIVED ===
-2026-03-20 19:13:26.114 [task-1] [bd5b787e4a224f98,fe652c86] INFO  c.p.m.s.l.OperationLogListener - Operation log: title=SysMenuController.getMenuTree, operName=anonymous, url=/api/system/menu/tree, status=0
-2026-03-20 19:13:26.120 [task-1] [bd5b787e4a224f98,fe652c86] INFO  c.p.m.s.l.OperationLogListener - === Inserted operation log record into sys_oper_log ===
+2026-03-20 19:22:15.234 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
+2026-03-20 19:22:15.234 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
+2026-03-20 19:22:15.234 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@672b0f0a
+2026-03-20 19:22:15.635 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-20 19:22:16.037 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-03-20 19:22:16.038 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-03-20 19:22:16.663 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2026-03-20 19:22:17.890 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-20 19:22:17.904 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-20 19:22:17.965 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/vantage'
+2026-03-20 19:22:18.264 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
+2026-03-20 19:22:18.610 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
+2026-03-20 19:22:18.612 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-03-20 19:22:18.613 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
+2026-03-20 19:22:18.636 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 29.012 seconds (process running for 29.763)
+2026-03-20 19:22:18.815 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Initializing dictionary cache...
+2026-03-20 19:22:19.151 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Dictionary cache refreshed: 4 types loaded
+2026-03-20 19:22:19.205 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
+2026-03-20 19:22:19.312 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 13 knowledge documents
+2026-03-20 19:22:19.426 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
+2026-03-20 19:22:19.478 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
+2026-03-20 19:22:19.531 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
+2026-03-20 19:22:19.583 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
+2026-03-20 19:22:19.636 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
+2026-03-20 19:22:19.698 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
+2026-03-20 19:22:19.756 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
+2026-03-20 19:22:19.810 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
+2026-03-20 19:22:19.886 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
+2026-03-20 19:22:19.933 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
+2026-03-20 19:22:19.976 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Security Best Practices with 4 segments
+2026-03-20 19:22:20.023 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Troubleshooting Guide with 4 segments
+2026-03-20 19:22:20.074 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: API Documentation with 3 segments

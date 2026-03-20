@@ -270,6 +270,12 @@ insert into sys_role_menu (role_id, menu_id) values (2, 1060);
 insert into sys_role_menu (role_id, menu_id) values (2, 107);
 insert into sys_role_menu (role_id, menu_id) values (2, 1070);
 
+-- ==================== USER-ROLE ASSIGNMENTS ====================
+-- Admin user gets admin role
+insert into sys_user_role (user_id, role_id) values (1, 1);
+-- Common user gets common role
+insert into sys_user_role (user_id, role_id) values (2, 2);
+
 -- ==================== DICTIONARY DATA ====================
 -- Dictionary Types
 insert into sys_dict_type (dict_type, dict_name, status, create_by, create_time, remark) values ('sys_normal_disable', 'Normal/Disabled Status', '0', 'admin', current_timestamp, 'System status options');
