@@ -35,17 +35,17 @@ public class OperationLogAspect {
     }
 
     /**
-     * Pointcut for all controller methods
+     * Pointcut for methods with @Log annotation
      */
-    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
-    public void controllerPointcut() {
-        log.info("=== AOP Pointcut matched for RestController ===");
+    @Pointcut("@annotation(com.pd.common.annotation.Log)")
+    public void logPointcut() {
+        log.info("=== AOP Pointcut matched for @Log annotation ===");
     }
 
     /**
      * Record start time before method execution
      */
-    @Before("controllerPointcut()")
+    @Before("logPointcut()")
     public void before(JoinPoint joinPoint) {
         startTimeHolder.set(System.currentTimeMillis());
         log.info("=== AOP BEFORE: {} ===", joinPoint.getSignature().toShortString());
@@ -54,7 +54,7 @@ public class OperationLogAspect {
     /**
      * Publish operation log event after successful method execution
      */
-    @AfterReturning(pointcut = "controllerPointcut()", returning = "result")
+    @AfterReturning(pointcut = "logPointcut()", returning = "result")
     public void afterReturning(JoinPoint joinPoint, Object result) {
         log.info("=== @AfterReturning TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
         publishOperationLog(joinPoint, result, null, 0);
@@ -63,7 +63,7 @@ public class OperationLogAspect {
     /**
      * Publish operation log event after method throws exception
      */
-    @AfterThrowing(pointcut = "controllerPointcut()", throwing = "e")
+    @AfterThrowing(pointcut = "logPointcut()", throwing = "e")
     public void afterThrowing(JoinPoint joinPoint, Exception e) {
         log.info("=== @AfterThrowing TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
         publishOperationLog(joinPoint, null, e, 1);
@@ -82,14 +82,6 @@ public class OperationLogAspect {
             }
 
             HttpServletRequest request = attributes.getRequest();
-            
-            // Skip logging for GET requests (only log write operations)
-            String httpMethod = request.getMethod();
-            if ("GET".equalsIgnoreCase(httpMethod)) {
-                log.debug("=== Skipping operation log for GET request: {} ===", request.getRequestURI());
-                return;
-            }
-            
             long costTime = System.currentTimeMillis() - startTimeHolder.get();
             startTimeHolder.remove();
 
