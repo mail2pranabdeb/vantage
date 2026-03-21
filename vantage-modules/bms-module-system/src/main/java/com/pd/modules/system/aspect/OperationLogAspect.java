@@ -82,6 +82,14 @@ public class OperationLogAspect {
             }
 
             HttpServletRequest request = attributes.getRequest();
+            
+            // Skip logging for GET requests (only log write operations)
+            String httpMethod = request.getMethod();
+            if ("GET".equalsIgnoreCase(httpMethod)) {
+                log.debug("=== Skipping operation log for GET request: {} ===", request.getRequestURI());
+                return;
+            }
+            
             long costTime = System.currentTimeMillis() - startTimeHolder.get();
             startTimeHolder.remove();
 
