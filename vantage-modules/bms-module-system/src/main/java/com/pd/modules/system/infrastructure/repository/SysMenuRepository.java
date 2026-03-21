@@ -18,33 +18,15 @@ public interface SysMenuRepository extends JpaRepository<SysMenu, Long> {
     @Query("SELECT m FROM SysMenu m WHERE m.menuType IN ('M', 'C') AND m.status = '0' ORDER BY m.parentId, m.orderNum")
     List<SysMenu> findMenusAndDirectories();
 
-    // Get menu tree for specific user
-    @Query(value = "SELECT DISTINCT m.* FROM sys_menu m " +
-           "INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
-           "INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
-           "WHERE ur.user_id = :userId AND m.status = '0' " +
-           "ORDER BY m.parent_id, m.order_num", nativeQuery = true)
-    List<SysMenu> findMenuTreeByUserId(@Param("userId") Long userId);
-
-    // Get all permissions for specific user via role relationships
-    @Query(value = "SELECT DISTINCT m.perms " +
-           "FROM sys_menu m " +
-           "INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
-           "INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
-           "WHERE ur.user_id = :userId AND m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", 
-           nativeQuery = true)
-    Set<String> findMenuPermsByUserId(@Param("userId") Long userId);
-
-    // Get all permissions (fallback)
-    @Query(value = "SELECT DISTINCT m.perms FROM sys_menu m WHERE m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", nativeQuery = true)
+    // Get all permissions from database (for all users - simple approach)
+    @Query(value = "SELECT DISTINCT NVL(m.perms, '') as perms FROM sys_menu m WHERE m.status = '0' AND m.perms IS NOT NULL AND LENGTH(TRIM(m.perms)) > 0", nativeQuery = true)
     Set<String> findAllPerms();
     
-    // Get all menu permissions for user (simplified - returns all if user has any role)
-    @Query(value = "SELECT DISTINCT m.perms " +
-           "FROM sys_menu m " +
+    // Get menu tree for specific user
+    @Query(value = "SELECT DISTINCT m.* FROM sys_menu m " +
            "LEFT JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +
            "LEFT JOIN sys_user_role ur ON rm.role_id = ur.role_id " +
-           "WHERE (ur.user_id = :userId OR :userId = 1) AND m.status = '0' AND m.perms IS NOT NULL AND m.perms <> ''", 
-           nativeQuery = true)
-    Set<String> findMenuPermsByUserId(@Param("userId") Long userId);
+           "WHERE (ur.user_id = :userId OR :userId = 1) AND m.status = '0' " +
+           "ORDER BY m.parent_id, m.order_num", nativeQuery = true)
+    List<SysMenu> findMenuTreeByUserId(@Param("userId") Long userId);
 }

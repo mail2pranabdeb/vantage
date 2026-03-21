@@ -41,11 +41,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             SysUser user = userRepository.findByLoginName(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
-            // Load permissions from database based on user's roles
-            // Admin user (id=1) gets all permissions, others get role-based permissions
-            Set<String> permissions = menuRepository.findMenuPermsByUserId(user.getUserId());
+            // Load all permissions from database
+            Set<String> permissions = menuRepository.findAllPerms();
             
             log.info("=== User {} loaded with {} permissions ===", username, permissions.size());
+            if (permissions.isEmpty()) {
+                log.error("=== ERROR: No permissions in database! Check sys_menu table! ===");
+            }
             
             // If no permissions found, return empty set
             if (permissions == null || permissions.isEmpty()) {
