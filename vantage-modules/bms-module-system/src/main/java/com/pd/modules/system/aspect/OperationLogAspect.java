@@ -1,5 +1,6 @@
 package com.pd.modules.system.aspect;
 
+import com.pd.common.annotation.Log;
 import com.pd.common.event.operation.OperationLogEvent;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -7,6 +8,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -122,12 +124,29 @@ public class OperationLogAspect {
     }
 
     /**
-     * Extract title from request URI
+     * Extract title from @Log annotation
      */
     private String extractTitle(JoinPoint joinPoint) {
+        // Try to get title from @Log annotation
+        Log logAnnotation = getLogAnnotation(joinPoint);
+        if (logAnnotation != null && !logAnnotation.title().isEmpty()) {
+            return logAnnotation.title();
+        }
+        // Fallback to class.method name
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
         return className + "." + methodName;
+    }
+
+    /**
+     * Get @Log annotation from join point
+     */
+    private Log getLogAnnotation(JoinPoint joinPoint) {
+        try {
+            return ((MethodSignature) joinPoint.getSignature()).getMethod().getAnnotation(Log.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
