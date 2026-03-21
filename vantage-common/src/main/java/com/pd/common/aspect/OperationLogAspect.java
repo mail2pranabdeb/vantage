@@ -1,29 +1,37 @@
-package com.pd.modules.system.aspect;
+package com.pd.common.aspect;
 
 import com.pd.common.annotation.Log;
 import com.pd.common.event.operation.OperationLogEvent;
-import com.pd.modules.system.security.LoginUser;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
+import java.util.UUID;
 
 /**
  * Aspect for automatic operation logging.
- * Captures controller method executions and publishes OperationLogEvent.
+ * Captures controller method executions annotated with @Log and publishes OperationLogEvent.
+ * 
+ * Features:
+ * - Only logs methods with @Log annotation (opt-in)
+ * - Skips GET requests automatically
+ * - Extracts title from @Log annotation
+ * - Extracts current user from SecurityContext
+ * - Generates trace IDs for log correlation
+ * - Async event publishing for better performance
  */
 @Aspect
 @Component
@@ -39,45 +47,58 @@ public class OperationLogAspect {
     }
 
     /**
-     * Pointcut for methods with @Log annotation
+     * Pointcut for methods annotated with @Log
      */
-    @Pointcut("@annotation(com.pd.common.annotation.Log)")
-    public void logPointcut() {
-        log.info("=== AOP Pointcut matched for @Log annotation ===");
-    }
-
-    /**
-     * Record start time before method execution
-     */
-    @Before("logPointcut()")
-    public void before(JoinPoint joinPoint) {
+    @Before("@annotation(logAnnotation)")
+    public void before(JoinPoint joinPoint, Log logAnnotation) {
+        // Skip GET requests - only log write operations
+        if (isGetRequest()) {
+            log.debug("=== Skipping operation log for GET request: {} ===", 
+                joinPoint.getSignature().toShortString());
+            return;
+        }
         startTimeHolder.set(System.currentTimeMillis());
         log.info("=== AOP BEFORE: {} ===", joinPoint.getSignature().toShortString());
     }
 
     /**
-     * Publish operation log event after successful method execution
+     * Handle successful method execution
      */
-    @AfterReturning(pointcut = "logPointcut()", returning = "result")
-    public void afterReturning(JoinPoint joinPoint, Object result) {
-        log.info("=== @AfterReturning TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
-        publishOperationLog(joinPoint, result, null, 0);
+    @AfterReturning(pointcut = "@annotation(logAnnotation)", returning = "result")
+    public void afterReturning(JoinPoint joinPoint, Log logAnnotation, Object result) {
+        if (!isGetRequest()) {
+            log.info("=== @AfterReturning TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
+            publishOperationLog(joinPoint, logAnnotation, result, null, 0);
+        }
     }
 
     /**
-     * Publish operation log event after method throws exception
+     * Handle method execution with exception
      */
-    @AfterThrowing(pointcut = "logPointcut()", throwing = "e")
-    public void afterThrowing(JoinPoint joinPoint, Exception e) {
-        log.info("=== @AfterThrowing TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
-        publishOperationLog(joinPoint, null, e, 1);
+    @AfterThrowing(pointcut = "@annotation(logAnnotation)", throwing = "e")
+    public void afterThrowing(JoinPoint joinPoint, Log logAnnotation, Exception e) {
+        if (!isGetRequest() && logAnnotation.isLogError()) {
+            log.info("=== @AfterThrowing TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
+            publishOperationLog(joinPoint, logAnnotation, null, e, 1);
+        }
+    }
+
+    /**
+     * Check if current request is GET
+     */
+    private boolean isGetRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            String method = attributes.getRequest().getMethod();
+            return "GET".equalsIgnoreCase(method);
+        }
+        return false;
     }
 
     /**
      * Publish operation log event
      */
-    private void publishOperationLog(JoinPoint joinPoint, Object result, Exception e, int status) {
-        log.info("=== publishOperationLog called ===");
+    private void publishOperationLog(JoinPoint joinPoint, Log logAnnotation, Object result, Exception e, int status) {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes == null) {
@@ -94,23 +115,23 @@ public class OperationLogAspect {
             String methodName = joinPoint.getSignature().getName();
             String method = className + "." + methodName + "()";
 
-            log.info("=== Building OperationLogEvent: title={}, method={}, url={} ===", 
-                extractTitle(joinPoint), method, request.getRequestURI());
+            log.info("=== Building OperationLogEvent: title={}, method={}, url={} ===",
+                extractTitle(joinPoint, logAnnotation), method, request.getRequestURI());
 
             // Build operation log event
             OperationLogEvent event = new OperationLogEvent(
-                extractTitle(joinPoint),                          // title
-                extractBusinessType(joinPoint),                   // businessType
+                extractTitle(joinPoint, logAnnotation),           // title
+                logAnnotation.businessType().value(),             // businessType
                 method,                                           // method
                 request.getMethod(),                              // requestMethod
-                0,                                                // operatorType (0=other)
+                logAnnotation.operatorType().value(),             // operatorType
                 getCurrentUser(),                                 // operName
-                getCurrentDept(),                                 // deptName
+                "",                                               // deptName
                 request.getRequestURI(),                          // operUrl
                 getClientIp(request),                             // operIp
                 "",                                               // operLocation
-                paramsToString(joinPoint.getArgs()),              // operParam
-                result != null ? result.toString() : "",          // jsonResult
+                logAnnotation.isSaveRequestData() ? paramsToString(joinPoint.getArgs()) : "", // operParam
+                (logAnnotation.isSaveResponseData() && result != null) ? result.toString() : "", // jsonResult
                 status,                                           // status
                 e != null ? e.getMessage() : "",                  // errorMsg
                 costTime                                          // costTime
@@ -128,9 +149,8 @@ public class OperationLogAspect {
     /**
      * Extract title from @Log annotation
      */
-    private String extractTitle(JoinPoint joinPoint) {
-        // Try to get title from @Log annotation
-        Log logAnnotation = getLogAnnotation(joinPoint);
+    private String extractTitle(JoinPoint joinPoint, Log logAnnotation) {
+        // Use title from @Log annotation if present
         if (logAnnotation != null && !logAnnotation.title().isEmpty()) {
             return logAnnotation.title();
         }
@@ -141,53 +161,24 @@ public class OperationLogAspect {
     }
 
     /**
-     * Get @Log annotation from join point
-     */
-    private Log getLogAnnotation(JoinPoint joinPoint) {
-        try {
-            return ((MethodSignature) joinPoint.getSignature()).getMethod().getAnnotation(Log.class);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * Extract business type from method name
-     */
-    private Integer extractBusinessType(JoinPoint joinPoint) {
-        String methodName = joinPoint.getSignature().getName().toLowerCase();
-        if (methodName.contains("add") || methodName.contains("insert") || methodName.contains("create")) {
-            return 1; // Insert
-        } else if (methodName.contains("update") || methodName.contains("edit")) {
-            return 2; // Update
-        } else if (methodName.contains("delete") || methodName.contains("remove")) {
-            return 3; // Delete
-        }
-        return 0; // Other
-    }
-
-    /**
      * Get current logged in user from SecurityContext
      */
     private String getCurrentUser() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.getPrincipal() instanceof LoginUser) {
-                LoginUser loginUser = (LoginUser) auth.getPrincipal();
-                return loginUser.getUser().getLoginName();
+            if (auth != null && auth.isAuthenticated()
+                    && !(auth.getPrincipal() instanceof String)
+                    && !"anonymousUser".equals(auth.getPrincipal())) {
+                Object principal = auth.getPrincipal();
+                if (principal instanceof UserDetails) {
+                    return ((UserDetails) principal).getUsername();
+                }
+                return principal.toString();
             }
         } catch (Exception e) {
             log.debug("=== Failed to extract current user ===");
         }
         return "anonymous";
-    }
-
-    /**
-     * Get current department (placeholder)
-     */
-    private String getCurrentDept() {
-        // TODO: Extract from user info
-        return "";
     }
 
     /**
@@ -216,6 +207,6 @@ public class OperationLogAspect {
             if (i > 0) sb.append(", ");
             sb.append(args[i] != null ? args[i].toString() : "null");
         }
-        return sb.length() > 2000 ? sb.substring(0, 2000) + "..." : sb.toString();
+        return sb.length() > 4000 ? sb.substring(0, 4000) + "..." : sb.toString();
     }
 }
