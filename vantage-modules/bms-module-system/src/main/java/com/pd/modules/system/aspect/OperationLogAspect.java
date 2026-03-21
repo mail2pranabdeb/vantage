@@ -2,6 +2,7 @@ package com.pd.modules.system.aspect;
 
 import com.pd.common.annotation.Log;
 import com.pd.common.event.operation.OperationLogEvent;
+import com.pd.modules.system.security.LoginUser;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -12,6 +13,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -165,10 +167,18 @@ public class OperationLogAspect {
     }
 
     /**
-     * Get current logged in user (placeholder)
+     * Get current logged in user from SecurityContext
      */
     private String getCurrentUser() {
-        // TODO: Extract from SecurityContext
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof LoginUser) {
+                LoginUser loginUser = (LoginUser) auth.getPrincipal();
+                return loginUser.getUser().getLoginName();
+            }
+        } catch (Exception e) {
+            log.debug("=== Failed to extract current user ===");
+        }
         return "anonymous";
     }
 
