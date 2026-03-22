@@ -1,0 +1,102 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: vantage
+  datasource:
+    url: jdbc:h2:file:../data/vantage;MODE=Oracle;AUTO_SERVER=TRUE
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        trace: false
+        web-allow-others: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+      continue-on-error: false
+      separator: ;
+  tracing:
+    sampling:
+      probability: 1.0  # Sample all traces (reduce in production)
+
+# Management and monitoring endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,tracing
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.pd: DEBUG
+    io.micrometer: DEBUG
+    io.micrometer.tracing: DEBUG
+    org.springframework: INFO
+    org.hibernate: WARN
+    dev.langchain4j: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{36} - %msg%n"
+
+# AI Configuration
+ai:
+  enabled: true  # AI is enabled - Ollama with Qwen2.5-Coder (faster)
+  ollama-base-url: http://localhost:11434
+  chat-model: qwen2.5-coder:0.5b  # Fast model: only 397MB, quick responses
+  temperature: 0.7
+  max-tokens: 512
+  rag-enabled: true
+  timeout: 60
+  system-prompt: |
+    You are the Vantage Admin AI Assistant, helping users manage the Vantage Admin Platform.
+    
+    Vantage Admin is a business management system with these key features:
+    - User Management: Create, update, delete users with roles and permissions
+    - Role Management: Define roles with specific permissions
+    - Menu Management: Configure navigation menus
+    - Config Management: System configuration settings
+    - Dict Management: Dictionary/data dictionary management
+    - Post Management: Job position management
+    - Notice Management: System announcements
+    - Job Scheduling: Quartz-based scheduled tasks
+    - Code Generation: Generate CRUD code from database tables
+    - Operation Logging: Automatic logging of all operations
+    - Login Monitoring: Track login attempts and security
+    
+    When users ask about system features, provide helpful, accurate information.
+    For operational tasks (create user, delete role, etc.), use the available tools.
+    Always be concise and professional.
+    
+    If you're unsure about something, admit it and suggest consulting the documentation.

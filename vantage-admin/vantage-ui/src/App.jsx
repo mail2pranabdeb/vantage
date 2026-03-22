@@ -1,0 +1,160 @@
+import { useState, useEffect } from 'react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
+import FloatingChat from './components/FloatingChat';
+import { ToastProvider } from './components/Toast';
+import TabBar from './components/TabBar';
+import TabContent from './components/TabContent';
+import { menuCache } from './services/menuCache';
+
+function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [authState, setAuthState] = useState('loading');
+  const [tabs, setTabs] = useState([]);
+  const [activeTabId, setActiveTabId] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then(res => {
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          setAuthState('unauthenticated');
+          return;
+        }
+        if (res.ok) {
+          setAuthState('authenticated');
+        } else {
+          setAuthState('unauthenticated');
+        }
+      })
+      .catch(() => setAuthState('unauthenticated'));
+  }, []);
+
+  // Listen to navigation events and open tabs
+  useEffect(() => {
+    if (authState === 'authenticated') {
+      // If no tabs yet, open dashboard as default (non-closable)
+      if (tabs.length === 0) {
+        const dashboardConfig = {
+          id: 'dashboard',
+          title: 'Dashboard',
+          url: '/dashboard',
+          icon: '📊',
+          closable: false  // Dashboard cannot be closed
+        };
+        addTab(dashboardConfig);
+        setActiveTabId('dashboard');
+        return;
+      }
+
+      // Check if current path should open a new tab
+      if (location.pathname !== '/' && location.pathname !== '/dashboard') {
+        menuCache.getPageConfig(location.pathname).then(pageConfig => {
+          if (pageConfig && !tabs.find(t => t.id === pageConfig.id)) {
+            addTab(pageConfig);
+          }
+        });
+      }
+    }
+  }, [location, authState]);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const addTab = (pageConfig) => {
+    setTabs(prev => [...prev, {
+      ...pageConfig,
+      timestamp: Date.now()
+    }]);
+  };
+
+  const closeTab = (tabId) => {
+    // Prevent closing dashboard (default tab)
+    if (tabId === 'dashboard') {
+      return;
+    }
+    
+    setTabs(prev => {
+      const newTabs = prev.filter(t => t.id !== tabId);
+      if (activeTabId === tabId && newTabs.length > 0) {
+        const newActive = newTabs[newTabs.length - 1];
+        setActiveTabId(newActive.id);
+      } else if (newTabs.length === 0) {
+        setActiveTabId(null);
+      }
+      return newTabs;
+    });
+  };
+
+  const refreshTab = (tabId) => {
+    const tab = tabs.find(t => t.id === tabId);
+    if (tab) {
+      setTabs(prev => prev.map(t => 
+        t.id === tabId ? { ...t, timestamp: Date.now() } : t
+      ));
+    }
+  };
+
+  if (authState === 'loading') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
+        Loading...
+      </div>
+    );
+  }
+
+  if (authState === 'unauthenticated') {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <ToastProvider>
+      <div className="app-container" style={{ display: 'flex', width: '100vw', height: '100vh', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+        <Sidebar 
+          isCollapsed={isCollapsed} 
+          toggleSidebar={toggleSidebar} 
+          onNavigate={(page) => {
+            if (!tabs.find(t => t.id === page.id)) {
+              addTab(page);
+            }
+            setActiveTabId(page.id);
+          }}
+          activeTabUrl={tabs.find(t => t.id === activeTabId)?.url || null}
+        />
+        <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+          <Topbar />
+          {tabs.length > 0 && (
+            <>
+              <TabBar
+                tabs={tabs}
+                activeTab={activeTabId}
+                onTabClick={(id) => {
+                  // Just update active tab, no navigation needed
+                  setActiveTabId(id);
+                }}
+                onTabClose={closeTab}
+                onRefresh={refreshTab}
+              />
+              <div style={{ flex: 1, overflow: 'hidden', background: 'var(--bg-primary)' }}>
+                {tabs.map(tab => (
+                  <TabContent
+                    key={tab.id}
+                    tab={tab}
+                    isActive={activeTabId === tab.id}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        <FloatingChat />
+      </div>
+    </ToastProvider>
+  );
+}
+
+export default App;

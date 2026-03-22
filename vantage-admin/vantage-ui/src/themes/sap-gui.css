@@ -1,0 +1,293 @@
+/* SAP GUI Theme - Professional Blue/Grey Color Scheme */
+
+[data-theme="sap"] {
+    /* SAP GUI Primary Colors */
+    --sap-primary: #0a6ed1;          /* SAP Blue */
+    --sap-primary-dark: #0854a0;     /* Darker Blue */
+    --sap-primary-light: #e8f4fc;    /* Light Blue Background */
+    
+    /* Secondary Colors */
+    --sap-secondary: #6b7c93;        /* Grey Blue */
+    --sap-accent: #f0ab00;           /* SAP Gold/Yellow */
+    
+    /* Background Colors */
+    --bg-primary: #f5f7fa;           /* Light Grey Background */
+    --bg-secondary: #ffffff;         /* White */
+    --bg-tertiary: #eef2f6;          /* Light Grey */
+    
+    /* Text Colors */
+    --text-primary: #32363a;         /* Dark Grey */
+    --text-secondary: #6b7c93;       /* Medium Grey */
+    --text-muted: #a0a0a0;           /* Light Grey */
+    
+    /* Border Colors */
+    --border-color: #d1d9e6;         /* Light Blue Grey */
+    --border-dark: #a0a0a0;          /* Darker Grey */
+    
+    /* Status Colors */
+    --success-color: #10b981;        /* Green */
+    --error-color: #ef4444;          /* Red */
+    --warning-color: #f59e0b;        /* Orange */
+    --info-color: #0a6ed1;           /* SAP Blue */
+    
+    /* Shadow */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    /* SAP Header/Footer */
+    --sap-header-bg: #ffffff;
+    --sap-header-border: #d1d9e6;
+    --sap-sidebar-bg: #f5f7fa;
+    --sap-tab-bg: #eef2f6;
+    --sap-tab-active-bg: #ffffff;
+    --sap-tab-active-border: #0a6ed1;
+}
+
+/* Global Styles */
+[data-theme="sap"] body {
+    font-family: '72', 'Arial', sans-serif;  /* SAP 72 font if available */
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+}
+
+/* Topbar - SAP Shell Header */
+[data-theme="sap"] .topbar {
+    background: var(--sap-header-bg) !important;
+    border-bottom: 1px solid var(--sap-header-border) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+[data-theme="sap"] .topbar .logo-text {
+    color: var(--sap-primary) !important;
+    font-weight: 600 !important;
+    font-size: 18px !important;
+}
+
+/* Sidebar - SAP Navigation */
+[data-theme="sap"] .sidebar {
+    background: var(--sap-sidebar-bg) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+[data-theme="sap"] .sidebar-header {
+    background: var(--sap-primary) !important;
+    color: white !important;
+}
+
+[data-theme="sap"] .sidebar .nav-item {
+    color: var(--text-secondary) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-theme="sap"] .sidebar .nav-item:hover {
+    background: var(--sap-primary-light) !important;
+    color: var(--sap-primary) !important;
+}
+
+[data-theme="sap"] .sidebar .nav-item.active {
+    background: var(--sap-primary-light) !important;
+    color: var(--sap-primary) !important;
+    border-left: 3px solid var(--sap-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Tab Bar - SAP Tab Strip */
+[data-theme="sap"] .tab-bar {
+    background: var(--sap-tab-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+[data-theme="sap"] .tab-bar .tab {
+    background: var(--sap-tab-bg) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-bottom: none !important;
+    font-size: 12px !important;
+    padding: 8px 16px !important;
+}
+
+[data-theme="sap"] .tab-bar .tab:hover {
+    background: var(--sap-primary-light) !important;
+    color: var(--sap-primary) !important;
+}
+
+[data-theme="sap"] .tab-bar .tab.active {
+    background: var(--sap-tab-active-bg) !important;
+    color: var(--sap-primary) !important;
+    border-bottom: 2px solid var(--sap-tab-active-border) !important;
+    font-weight: 600 !important;
+}
+
+/* Buttons - SAP Buttons */
+[data-theme="sap"] .btn-primary {
+    background: var(--sap-primary) !important;
+    border-color: var(--sap-primary) !important;
+    color: white !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 0.5px !important;
+}
+
+[data-theme="sap"] .btn-primary:hover {
+    background: var(--sap-primary-dark) !important;
+    border-color: var(--sap-primary-dark) !important;
+}
+
+[data-theme="sap"] .btn-secondary {
+    background: white !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="sap"] .btn-secondary:hover {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border-dark) !important;
+}
+
+/* Cards/Panels - SAP Content Areas */
+[data-theme="sap"] .glass-panel {
+    background: var(--sap-header-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-sm) !important;
+    border-radius: 4px !important;
+}
+
+/* Tables - SAP Table Style */
+[data-theme="sap"] .data-grid {
+    background: var(--sap-header-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+[data-theme="sap"] .data-grid th {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid var(--sap-primary) !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+}
+
+[data-theme="sap"] .data-grid tr:hover {
+    background: var(--sap-primary-light) !important;
+}
+
+/* Forms - SAP Input Fields */
+[data-theme="sap"] input, [data-theme="sap"] select, [data-theme="sap"] textarea {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+}
+
+[data-theme="sap"] input:focus, [data-theme="sap"] select:focus, [data-theme="sap"] textarea:focus {
+    border-color: var(--sap-primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px var(--sap-primary-light) !important;
+}
+
+/* Toast Notifications - SAP Messages */
+[data-theme="sap"] .toast-success {
+    background: #10b981 !important;
+    border-left: 4px solid #0a6ed1 !important;
+}
+
+[data-theme="sap"] .toast-error {
+    background: #ef4444 !important;
+    border-left: 4px solid #0a6ed1 !important;
+}
+
+[data-theme="sap"] .toast-warning {
+    background: #f59e0b !important;
+    border-left: 4px solid #0a6ed1 !important;
+}
+
+[data-theme="sap"] .toast-info {
+    background: #0a6ed1 !important;
+    border-left: 4px solid #f0ab00 !important;
+}
+
+/* Modal - SAP Dialog */
+[data-theme="sap"] .modal-content {
+    border-radius: 4px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+[data-theme="sap"] .modal-header {
+    background: var(--bg-tertiary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-weight: 600 !important;
+    color: var(--sap-primary) !important;
+}
+
+/* Page Headers - SAP Page Titles */
+[data-theme="sap"] .page-header h2 {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    font-size: 20px !important;
+}
+
+/* Scrollbars - SAP Style */
+[data-theme="sap"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+[data-theme="sap"] ::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="sap"] ::-webkit-scrollbar-thumb {
+    background: var(--sap-secondary);
+    border-radius: 4px;
+}
+
+[data-theme="sap"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--sap-primary);
+}
+
+/* Status Badges - SAP Status Indicators */
+[data-theme="sap"] .status-pill {
+    padding: 4px 12px !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+[data-theme="sap"] .status-pill.active {
+    background: #d1fae5 !important;
+    color: #10b981 !important;
+}
+
+[data-theme="sap"] .status-pill.inactive {
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+}
+
+/* Loading Spinner - SAP Style */
+[data-theme="sap"] .spinner {
+    border: 3px solid var(--bg-tertiary) !important;
+    border-top-color: var(--sap-primary) !important;
+}
+
+/* SAP Footer */
+[data-theme="sap"] .sap-footer {
+    background: var(--sap-header-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 8px 16px !important;
+    font-size: 11px !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    [data-theme="sap"] :root {
+        --sap-sidebar-bg: #ffffff;
+    }
+}
