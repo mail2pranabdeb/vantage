@@ -54,6 +54,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- WebSocket for real-time updates -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <!-- Spring Boot Starter Mail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- ArchUnit for architecture tests -->
         <dependency>
             <groupId>com.tngtech.archunit</groupId>

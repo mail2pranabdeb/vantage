@@ -66,6 +66,50 @@ public class SysJob implements Serializable {
     @Column(name = "remark", length = 500)
     private String remark;
 
+    /** Maximum retry count for failed jobs */
+    @Column(name = "max_retry_count")
+    private Integer maxRetryCount = 0;
+
+    /** Retry interval in seconds */
+    @Column(name = "retry_interval")
+    private Integer retryInterval = 60;
+
+    /** Timeout in seconds */
+    @Column(name = "timeout_seconds")
+    private Integer timeoutSeconds = 3600;
+
+    /** Enable email notification on failure */
+    @Column(name = "notify_on_failure")
+    private Boolean notifyOnFailure = false;
+
+    /** Email addresses for notifications (comma-separated) */
+    @Column(name = "notification_emails", length = 500)
+    private String notificationEmails;
+
+    /** Email template ID for notifications */
+    @Column(name = "email_template_id")
+    private Long emailTemplateId;
+
+    /** Webhook URL for notifications */
+    @Column(name = "webhook_url", length = 500)
+    private String webhookUrl;
+
+    /** Dependent job IDs (comma-separated) */
+    @Column(name = "dependent_job_ids", length = 500)
+    private String dependentJobIds;
+
+    /** Time zone for scheduling */
+    @Column(name = "time_zone", length = 50)
+    private String timeZone = "UTC";
+
+    /** Allow execution on holidays */
+    @Column(name = "allow_holiday")
+    private Boolean allowHoliday = true;
+
+    /** Job template name */
+    @Column(name = "template_name", length = 64)
+    private String templateName;
+
     // Getters and Setters
     public Long getJobId() {
         return jobId;
@@ -169,5 +213,93 @@ public class SysJob implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Integer getMaxRetryCount() {
+        return maxRetryCount;
+    }
+
+    public void setMaxRetryCount(Integer maxRetryCount) {
+        this.maxRetryCount = maxRetryCount;
+    }
+
+    public Integer getRetryInterval() {
+        return retryInterval;
+    }
+
+    public void setRetryInterval(Integer retryInterval) {
+        this.retryInterval = retryInterval;
+    }
+
+    public Integer getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(Integer timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+    }
+
+    public Boolean getNotifyOnFailure() {
+        return notifyOnFailure;
+    }
+
+    public void setNotifyOnFailure(Boolean notifyOnFailure) {
+        this.notifyOnFailure = notifyOnFailure;
+    }
+
+    public String getNotificationEmails() {
+        return notificationEmails;
+    }
+
+    public void setNotificationEmails(String notificationEmails) {
+        this.notificationEmails = notificationEmails;
+    }
+
+    public Long getEmailTemplateId() {
+        return emailTemplateId;
+    }
+
+    public void setEmailTemplateId(Long emailTemplateId) {
+        this.emailTemplateId = emailTemplateId;
+    }
+
+    public String getWebhookUrl() {
+        return webhookUrl;
+    }
+
+    public void setWebhookUrl(String webhookUrl) {
+        this.webhookUrl = webhookUrl;
+    }
+
+    public String getDependentJobIds() {
+        return dependentJobIds;
+    }
+
+    public void setDependentJobIds(String dependentJobIds) {
+        this.dependentJobIds = dependentJobIds;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
+
+    public Boolean getAllowHoliday() {
+        return allowHoliday;
+    }
+
+    public void setAllowHoliday(Boolean allowHoliday) {
+        this.allowHoliday = allowHoliday;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
     }
 }

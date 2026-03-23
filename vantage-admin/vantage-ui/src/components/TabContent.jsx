@@ -11,6 +11,12 @@ import NoticeList from '../pages/NoticeList';
 import JobList from '../pages/JobList';
 import JobLogList from '../pages/JobLogList';
 import GenList from '../pages/GenList';
+import JobCalendar from '../pages/JobCalendar';
+import HolidayCalendar from '../pages/HolidayCalendar';
+import LiveJobLogs from '../pages/LiveJobLogs';
+import EmailTemplateManager from '../pages/EmailTemplateManager';
+import EmailConfig from '../pages/EmailConfig';
+import SystemSettings from '../pages/SystemSettings';
 
 // Map URLs to components
 const pageComponents = {
@@ -18,7 +24,7 @@ const pageComponents = {
     '/system/user': UserList,
     '/system/role': RoleList,
     '/system/menu': MenuList,
-    '/system/config': ConfigList,
+    '/system/config': SystemSettings,
     '/system/dict': DictList,
     '/system/post': PostList,
     '/system/logininfor': LogininforList,
@@ -27,6 +33,11 @@ const pageComponents = {
     '/system/job': JobList,
     '/system/jobLog': JobLogList,
     '/tool/gen': GenList,
+    '/system/job-calendar': JobCalendar,
+    '/system/holiday-calendar': HolidayCalendar,
+    '/system/job-logs': LiveJobLogs,
+    '/system/email-templates': EmailTemplateManager,
+    '/system/email-config': EmailConfig,
 };
 
 const TabContent = ({ tab, isActive }) => {

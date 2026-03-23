@@ -5,35 +5,20 @@ spring:
   application:
     name: vantage
   datasource:
-    url: jdbc:h2:file:../data/vantage;MODE=Oracle;AUTO_SERVER=TRUE
+    url: jdbc:h2:mem:vantage;MODE=Oracle;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driverClassName: org.h2.Driver
     username: sa
     password:
+  flyway:
+    enabled: false
   h2:
     console:
       enabled: true
       path: /h2-console
-      settings:
-        trace: false
-        web-allow-others: false
+  jpa:
     hibernate:
-      ddl-auto: none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-        cache:
-          use_second_level_cache: false
-          use_query_cache: false
-    open-in-view: false
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema.sql
-      data-locations: classpath:data.sql
-      continue-on-error: false
-      separator: ;
+      ddl-auto: update
+    show-sql: false
   tracing:
     sampling:
       probability: 1.0  # Sample all traces (reduce in production)

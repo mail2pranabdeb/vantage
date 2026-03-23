@@ -1,0 +1,136 @@
+package com.pd.modules.quartz.domain;
+
+import jakarta.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * Email template entity for job notifications
+ */
+@Entity
+@Table(name = "sys_job_email_template")
+public class EmailTemplate implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "template_id")
+    private Long templateId;
+
+    /** Template name */
+    @Column(name = "template_name", length = 64, nullable = false, unique = true)
+    private String templateName;
+
+    /** Template type (JOB_FAILURE, JOB_SUCCESS, JOB_COMPLETED) */
+    @Column(name = "template_type", length = 32, nullable = false)
+    private String templateType;
+
+    /** Email subject */
+    @Column(name = "email_subject", length = 255, nullable = false)
+    private String emailSubject;
+
+    /** Email body (supports HTML) */
+    @Column(name = "email_body", columnDefinition = "TEXT", nullable = false)
+    private String emailBody;
+
+    /** Is default template */
+    @Column(name = "is_default")
+    private Boolean isDefault = false;
+
+    /** Is active */
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    /** Create time */
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
+
+    /** Update time */
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
+
+    /** Remark */
+    @Column(name = "remark", length = 500)
+    private String remark;
+
+    // Getters and Setters
+    public Long getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(Long templateId) {
+        this.templateId = templateId;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    public String getTemplateType() {
+        return templateType;
+    }
+
+    public void setTemplateType(String templateType) {
+        this.templateType = templateType;
+    }
+
+    public String getEmailSubject() {
+        return emailSubject;
+    }
+
+    public void setEmailSubject(String emailSubject) {
+        this.emailSubject = emailSubject;
+    }
+
+    public String getEmailBody() {
+        return emailBody;
+    }
+
+    public void setEmailBody(String emailBody) {
+        this.emailBody = emailBody;
+    }
+
+    public Boolean getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+}

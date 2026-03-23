@@ -1,15 +1,35 @@
-import { useState, useEffect } from 'react';
-import { Clock, Plus, Play, Pause, RefreshCw, Trash2, Eye, Edit } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { 
+    Clock, Plus, Play, Pause, RefreshCw, Trash2, Eye, Edit, 
+    BarChart3, Calendar, FileText, Download, Upload, Settings,
+    Bell, Link, Timer, Globe, Copy, Check, X
+} from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
+import CronBuilder from '../components/CronBuilder';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { useToast } from '../components/Toast';
 
 const JobList = () => {
+    const toast = useToast();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
+    const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false);
+    const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [currentJob, setCurrentJob] = useState(null);
+    const [jobLogs, setJobLogs] = useState([]);
+    const [jobTemplates, setJobTemplates] = useState([]);
+    const [emailTemplates, setEmailTemplates] = useState([]);
+    const [metrics, setMetrics] = useState(null);
+    const [selectedJobs, setSelectedJobs] = useState([]);
+    const [showCronBuilder, setShowCronBuilder] = useState(false);
+    const [copiedId, setCopiedId] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         jobName: '',
         jobGroup: '',
@@ -17,13 +37,77 @@ const JobList = () => {
         cronExpression: '',
         misfirePolicy: '3',
         concurrent: '1',
-        status: '0'
+        status: '0',
+        maxRetryCount: 0,
+        retryInterval: 60,
+        timeoutSeconds: 3600,
+        notifyOnFailure: false,
+        notificationEmails: '',
+        webhookUrl: '',
+        emailTemplateId: '',
+        dependentJobIds: '',
+        timeZone: 'UTC',
+        allowHoliday: true,
+        remark: ''
     });
-    const [submitting, setSubmitting] = useState(false);
+
+    const wsClientRef = useRef(null);
+
+    // WebSocket connection for real-time updates
+    useEffect(() => {
+        const client = new Client({
+            webSocketFactory: () => new SockJS('/ws-job'),
+            reconnectDelay: 5000,
+            onConnect: () => {
+                console.log('WebSocket connected');
+                client.subscribe('/topic/job/updates', (message) => {
+                    const event = JSON.parse(message.body);
+                    console.log('Job event:', event);
+                    fetchJobs(); // Refresh jobs on any event
+                });
+            },
+            onDisconnect: () => {
+                console.log('WebSocket disconnected');
+            }
+        });
+        client.activate();
+        wsClientRef.current = client;
+
+        return () => {
+            if (wsClientRef.current) {
+                wsClientRef.current.deactivate();
+            }
+        };
+    }, []);
 
     useEffect(() => {
         fetchJobs();
+        fetchJobTemplates();
+        fetchEmailTemplates();
+        fetchMetrics();
     }, []);
+
+    const fetchJobTemplates = () => {
+        fetch('/api/system/job-template/list')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setJobTemplates(data.data || []);
+                }
+            })
+            .catch(err => console.error("Failed to fetch job templates:", err));
+    };
+
+    const fetchEmailTemplates = () => {
+        fetch('/api/system/email-template/active')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setEmailTemplates(data.data || []);
+                }
+            })
+            .catch(err => console.error("Failed to fetch email templates:", err));
+    };
 
     const fetchJobs = () => {
         setLoading(true);
@@ -41,6 +125,29 @@ const JobList = () => {
             });
     };
 
+    const fetchMetrics = () => {
+        fetch('/api/system/job-dashboard/metrics')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setMetrics(data.data);
+                }
+            })
+            .catch(err => console.error("Failed to fetch metrics:", err));
+    };
+
+    const fetchJobLogs = (jobId) => {
+        fetch(`/api/system/job-log/job/${jobId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setJobLogs(data.data || []);
+                    setIsLogsModalOpen(true);
+                }
+            })
+            .catch(err => console.error("Failed to fetch job logs:", err));
+    };
+
     const handleAddClick = () => {
         setModalMode('add');
         setCurrentJob(null);
@@ -51,8 +158,19 @@ const JobList = () => {
             cronExpression: '',
             misfirePolicy: '3',
             concurrent: '1',
-            status: '0'
+            status: '0',
+            maxRetryCount: 0,
+            retryInterval: 60,
+            timeoutSeconds: 3600,
+            notifyOnFailure: false,
+            notificationEmails: '',
+            webhookUrl: '',
+            dependentJobIds: '',
+            timeZone: 'UTC',
+            allowHoliday: true,
+            remark: ''
         });
+        setShowCronBuilder(false);
         setIsModalOpen(true);
     };
 
@@ -66,8 +184,20 @@ const JobList = () => {
             cronExpression: row.cronExpression || '',
             misfirePolicy: String(row.misfirePolicy || '3'),
             concurrent: String(row.concurrent || '1'),
-            status: row.status || '0'
+            status: row.status || '0',
+            maxRetryCount: row.maxRetryCount || 0,
+            retryInterval: row.retryInterval || 60,
+            timeoutSeconds: row.timeoutSeconds || 3600,
+            notifyOnFailure: row.notifyOnFailure || false,
+            notificationEmails: row.notificationEmails || '',
+            webhookUrl: row.webhookUrl || '',
+            emailTemplateId: row.emailTemplateId || '',
+            dependentJobIds: row.dependentJobIds || '',
+            timeZone: row.timeZone || 'UTC',
+            allowHoliday: row.allowHoliday !== undefined ? row.allowHoliday : true,
+            remark: row.remark || ''
         });
+        setShowCronBuilder(false);
         setIsModalOpen(true);
     };
 
@@ -81,7 +211,17 @@ const JobList = () => {
             cronExpression: row.cronExpression || '',
             misfirePolicy: String(row.misfirePolicy || '3'),
             concurrent: String(row.concurrent || '1'),
-            status: row.status || '0'
+            status: row.status || '0',
+            maxRetryCount: row.maxRetryCount || 0,
+            retryInterval: row.retryInterval || 60,
+            timeoutSeconds: row.timeoutSeconds || 3600,
+            notifyOnFailure: row.notifyOnFailure || false,
+            notificationEmails: row.notificationEmails || '',
+            webhookUrl: row.webhookUrl || '',
+            dependentJobIds: row.dependentJobIds || '',
+            timeZone: row.timeZone || 'UTC',
+            allowHoliday: row.allowHoliday !== undefined ? row.allowHoliday : true,
+            remark: row.remark || ''
         });
         setIsModalOpen(true);
     };
@@ -116,14 +256,14 @@ const JobList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    alert('Job executed successfully');
+                    toast.success('Job executed successfully');
                 } else {
-                    alert(data.msg || 'Failed to run job');
+                    toast.error(data.msg || 'Failed to run job');
                 }
             })
             .catch(err => {
                 console.error("Failed to run job:", err);
-                alert('Failed to run job');
+                toast.error('Failed to run job');
             });
         }
     };
@@ -149,31 +289,132 @@ const JobList = () => {
         });
     };
 
+    const handleBulkAction = (action) => {
+        if (selectedJobs.length === 0) {
+            alert('Please select at least one job');
+            return;
+        }
+        
+        const ids = selectedJobs.map(j => j.jobId);
+        const confirmMsg = `Are you sure you want to ${action} ${selectedJobs.length} job(s)?`;
+        
+        if (!window.confirm(confirmMsg)) return;
+
+        const url = `/api/system/job/batch/${action}`;
+        fetch(url, {
+            method: action === 'run' ? 'POST' : 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ids)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                alert(data.msg || `Bulk ${action} completed`);
+                fetchJobs();
+                setSelectedJobs([]);
+            } else {
+                alert(data.msg || `Bulk ${action} failed`);
+            }
+        })
+        .catch(err => {
+            console.error(`Bulk ${action} failed:`, err);
+            alert(`Bulk ${action} failed`);
+        });
+    };
+
+    const handleExport = () => {
+        const ids = selectedJobs.length > 0 ? selectedJobs.map(j => j.jobId) : null;
+        const url = ids ? `/api/system/job/export?ids=${ids.join(',')}` : '/api/system/job/export';
+        
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `jobs-export-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+            })
+            .catch(err => console.error("Export failed:", err));
+    };
+
+    const handleImport = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const jobs = JSON.parse(e.target.result);
+                fetch('/api/system/job/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jobs)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        alert(data.msg || 'Import completed');
+                        fetchJobs();
+                    } else {
+                        alert(data.msg || 'Import failed');
+                    }
+                });
+            } catch (err) {
+                alert('Invalid JSON file');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+
+    const handleTemplateSelect = (templateName) => {
+        fetch(`/api/system/job-template/create/${templateName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                alert('Job created from template');
+                fetchJobs();
+                setIsTemplatesModalOpen(false);
+            } else {
+                alert(data.msg || 'Failed to create job from template');
+            }
+        });
+    };
+
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
     const handleSubmit = () => {
         setSubmitting(true);
-        
-        const url = modalMode === 'add' 
-            ? '/api/system/job' 
-            : '/api/system/job';
-        
+
+        const url = modalMode === 'add' ? '/api/system/job' : '/api/system/job';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = modalMode === 'add' 
-            ? { ...formData, misfirePolicy: parseInt(formData.misfirePolicy), concurrent: formData.concurrent === '1' } 
-            : { ...formData, jobId: currentJob.jobId, misfirePolicy: parseInt(formData.misfirePolicy), concurrent: formData.concurrent === '1' };
+        const body = { 
+            ...formData, 
+            jobId: modalMode === 'edit' ? currentJob.jobId : null,
+            misfirePolicy: parseInt(formData.misfirePolicy),
+            concurrent: formData.concurrent === '1' ? '1' : '0',
+            maxRetryCount: parseInt(formData.maxRetryCount),
+            retryInterval: parseInt(formData.retryInterval),
+            timeoutSeconds: parseInt(formData.timeoutSeconds)
+        };
 
         fetch(url, {
             method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         })
         .then(res => res.json())
@@ -182,6 +423,7 @@ const JobList = () => {
             if (data.code === 200) {
                 setIsModalOpen(false);
                 fetchJobs();
+                fetchMetrics();
             } else {
                 alert(data.msg || `Failed to ${modalMode} job`);
             }
@@ -193,8 +435,20 @@ const JobList = () => {
         });
     };
 
+    const copyToClipboard = (text, id) => {
+        navigator.clipboard.writeText(text);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
     const columns = [
-        { key: 'jobId', header: 'ID', sortable: true, align: 'center' },
+        { 
+            key: 'jobId', 
+            header: 'ID', 
+            sortable: true, 
+            align: 'center',
+            width: '60px'
+        },
         {
             key: 'jobName',
             header: 'Job Name',
@@ -202,7 +456,12 @@ const JobList = () => {
             render: (value, row) => (
                 <div>
                     <div style={{ fontWeight: 600 }}>{value}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{row.jobGroup}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{row.jobGroup}</div>
+                    {row.templateName && (
+                        <span style={{ fontSize: '10px', color: 'var(--primary)', background: 'rgba(99, 102, 241, 0.1)', padding: '2px 6px', borderRadius: '4px', marginTop: '2px', display: 'inline-block' }}>
+                            {row.templateName}
+                        </span>
+                    )}
                 </div>
             )
         },
@@ -211,7 +470,7 @@ const JobList = () => {
             header: 'Target',
             sortable: false,
             render: (value) => (
-                <span className="badge-outline" style={{ fontSize: '11px', fontFamily: 'monospace', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span className="badge-outline" style={{ fontSize: '11px', fontFamily: 'monospace', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
                     {value}
                 </span>
             )
@@ -221,16 +480,25 @@ const JobList = () => {
             header: 'Cron',
             sortable: true,
             render: (value) => (
-                <span style={{
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontFamily: 'monospace',
-                    background: 'var(--bg-tertiary)',
-                    color: 'var(--text-secondary)'
-                }}>
-                    {value}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        background: 'var(--bg-tertiary)',
+                        color: 'var(--text-secondary)'
+                    }}>
+                        {value}
+                    </span>
+                    <button 
+                        onClick={() => copyToClipboard(value, 'cron')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: 'var(--text-muted)' }}
+                        title="Copy cron expression"
+                    >
+                        {copiedId === 'cron' ? <Check size={12} style={{ color: 'var(--success)' }} /> : <Copy size={12} />}
+                    </button>
+                </div>
             )
         },
         {
@@ -242,26 +510,89 @@ const JobList = () => {
                     {value === '0' ? 'Running' : 'Paused'}
                 </span>
             )
+        },
+        {
+            key: 'actions',
+            header: 'Retry/Timeout',
+            sortable: false,
+            align: 'center',
+            render: (_, row) => (
+                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', fontSize: '10px' }}>
+                    <span style={{ padding: '2px 6px', background: 'var(--bg-tertiary)', borderRadius: '4px' }}>
+                        Retry: {row.maxRetryCount || 0}
+                    </span>
+                    <span style={{ padding: '2px 6px', background: 'var(--bg-tertiary)', borderRadius: '4px' }}>
+                        {(row.timeoutSeconds || 3600) / 60}m
+                    </span>
+                </div>
+            )
         }
     ];
 
     const actions = [
         { label: 'Run', icon: Play, onClick: handleRunClick },
         { label: 'Pause', icon: Pause, onClick: handlePauseClick },
+        { label: 'Logs', icon: FileText, onClick: (row) => fetchJobLogs(row.jobId) },
         { label: 'Edit', icon: Edit, onClick: handleEditClick },
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
     ];
 
     const toolbarActions = [
-        {
-            label: 'Refresh',
-            icon: RefreshCw,
-            onClick: fetchJobs
+        { label: 'Refresh', icon: RefreshCw, onClick: fetchJobs },
+        { label: 'Templates', icon: FileText, onClick: () => setIsTemplatesModalOpen(true) },
+        { label: 'Metrics', icon: BarChart3, onClick: () => setIsMetricsModalOpen(true) },
+        { label: 'Export', icon: Download, onClick: handleExport },
+        { 
+            label: 'Import', 
+            icon: Upload, 
+            onClick: () => document.getElementById('import-file').click() 
         }
+    ];
+
+    const bulkActions = [
+        { label: 'Run Selected', icon: Play, onClick: () => handleBulkAction('run') },
+        { label: 'Pause Selected', icon: Pause, onClick: () => handleBulkAction('pause') },
+        { label: 'Resume Selected', icon: Play, onClick: () => handleBulkAction('resume') },
+        { label: 'Delete Selected', icon: Trash2, onClick: () => handleBulkAction('delete') }
     ];
 
     return (
         <div className="page-container">
+            <input 
+                type="file" 
+                id="import-file" 
+                accept=".json" 
+                style={{ display: 'none' }} 
+                onChange={handleImport} 
+            />
+
+            {/* Metrics Summary */}
+            {metrics && (
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                    gap: '12px', 
+                    marginBottom: '20px' 
+                }}>
+                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
+                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Total Jobs</div>
+                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.totalJobs}</div>
+                    </div>
+                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', borderRadius: '12px', color: 'white' }}>
+                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Active</div>
+                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.activeJobs}</div>
+                    </div>
+                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', borderRadius: '12px', color: 'white' }}>
+                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Paused</div>
+                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.pausedJobs}</div>
+                    </div>
+                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', borderRadius: '12px', color: 'white' }}>
+                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Success Rate</div>
+                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.successRate?.toFixed(1)}%</div>
+                    </div>
+                </div>
+            )}
+
             <div className="page-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
@@ -279,12 +610,12 @@ const JobList = () => {
                     <div>
                         <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>Job Management</h2>
                         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Schedule and manage background tasks
+                            Schedule and manage background tasks with advanced features
                         </p>
                     </div>
                 </div>
-                <button 
-                    className="btn btn-primary" 
+                <button
+                    className="btn btn-primary"
                     onClick={handleAddClick}
                     style={{
                         display: 'flex',
@@ -305,6 +636,7 @@ const JobList = () => {
                 columns={columns}
                 actions={actions}
                 toolbarActions={toolbarActions}
+                bulkActions={bulkActions}
                 loading={loading}
                 searchable={true}
                 sortable={true}
@@ -313,15 +645,16 @@ const JobList = () => {
                 pagination={true}
                 pageSize={10}
                 emptyMessage="No scheduled jobs found."
+                onSelectionChange={setSelectedJobs}
             />
 
-            {/* Add/Edit Modal */}
+            {/* Add/Edit/View Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add Job' : modalMode === 'edit' ? 'Edit Job' : 'View Job'}
-                size="small"
-                compact={true}
+                size="large"
+                compact={false}
                 footer={modalMode !== 'view' && (
                     <>
                         <button
@@ -335,11 +668,7 @@ const JobList = () => {
                             className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                             {submitting && (
                                 <div style={{
@@ -356,96 +685,415 @@ const JobList = () => {
                     </>
                 )}
             >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
+                    {/* Basic Settings */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Settings size={16} /> Basic Settings
+                        </h4>
+                        <div className="form-row">
+                            <FormInput
+                                label="Job Name"
+                                name="jobName"
+                                value={formData.jobName}
+                                onChange={handleInputChange}
+                                placeholder="Enter job name"
+                                required
+                                disabled={modalMode === 'view'}
+                            />
+                            <FormInput
+                                label="Job Group"
+                                name="jobGroup"
+                                value={formData.jobGroup}
+                                onChange={handleInputChange}
+                                placeholder="e.g., system, user"
+                                required
+                                disabled={modalMode === 'view'}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Invoke Target</label>
+                            <FormInput
+                                name="invokeTarget"
+                                value={formData.invokeTarget}
+                                onChange={handleInputChange}
+                                placeholder="e.g., ryTask.ryMultipleParams('ry', 'test')"
+                                required
+                                disabled={modalMode === 'view'}
+                            />
+                            <small className="form-help">Method to invoke for this scheduled job</small>
+                        </div>
+
+                        <div className="form-group">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <label className="form-label" style={{ margin: 0 }}>Cron Expression</label>
+                                {modalMode !== 'view' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCronBuilder(!showCronBuilder)}
+                                        style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                                    >
+                                        {showCronBuilder ? 'Hide Builder' : 'Open Builder'}
+                                    </button>
+                                )}
+                            </div>
+                            <FormInput
+                                name="cronExpression"
+                                value={formData.cronExpression}
+                                onChange={handleInputChange}
+                                placeholder="e.g., 0/5 * * * * ?"
+                                required
+                                disabled={modalMode === 'view'}
+                            />
+                            {showCronBuilder && modalMode !== 'view' && (
+                                <div style={{ marginTop: '12px' }}>
+                                    <CronBuilder
+                                        value={formData.cronExpression}
+                                        onChange={(cron) => setFormData(prev => ({ ...prev, cronExpression: cron }))}
+                                        disabled={modalMode === 'view'}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label className="form-label">Misfire Policy</label>
+                                <select
+                                    name="misfirePolicy"
+                                    value={formData.misfirePolicy}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <option value="1">Fire Now</option>
+                                    <option value="2">Do Nothing</option>
+                                    <option value="3">Fire Once</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Concurrent</label>
+                                <select
+                                    name="concurrent"
+                                    value={formData.concurrent}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <option value="1">Allow</option>
+                                    <option value="0">Disallow</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Status</label>
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <option value="0">Running</option>
+                                    <option value="1">Paused</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Advanced Settings */}
+                    <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                        <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Timer size={16} /> Retry & Timeout
+                        </h4>
+                        <div className="form-row">
+                            <FormInput
+                                label="Max Retry Count"
+                                name="maxRetryCount"
+                                type="number"
+                                value={formData.maxRetryCount}
+                                onChange={handleInputChange}
+                                placeholder="0"
+                                disabled={modalMode === 'view'}
+                            />
+                            <FormInput
+                                label="Retry Interval (seconds)"
+                                name="retryInterval"
+                                type="number"
+                                value={formData.retryInterval}
+                                onChange={handleInputChange}
+                                placeholder="60"
+                                disabled={modalMode === 'view'}
+                            />
+                            <FormInput
+                                label="Timeout (seconds)"
+                                name="timeoutSeconds"
+                                type="number"
+                                value={formData.timeoutSeconds}
+                                onChange={handleInputChange}
+                                placeholder="3600"
+                                disabled={modalMode === 'view'}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Notification Settings */}
+                    <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                        <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Bell size={16} /> Notifications
+                        </h4>
+                        <div className="form-group">
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    name="notifyOnFailure"
+                                    checked={formData.notifyOnFailure}
+                                    onChange={handleInputChange}
+                                    disabled={modalMode === 'view'}
+                                    style={{ width: '16px', height: '16px' }}
+                                />
+                                <span style={{ fontSize: '13px' }}>Enable failure notifications</span>
+                            </label>
+                        </div>
+                        {formData.notifyOnFailure && (
+                            <>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Email Template</label>
+                                        <select
+                                            name="emailTemplateId"
+                                            value={formData.emailTemplateId}
+                                            onChange={handleInputChange}
+                                            className="form-input"
+                                            disabled={modalMode === 'view'}
+                                        >
+                                            <option value="">-- Select Template --</option>
+                                            {emailTemplates.map(t => (
+                                                <option key={t.templateId} value={t.templateId}>
+                                                    {t.templateName} ({t.templateType})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <small className="form-help">
+                                            {emailTemplates.length === 0 ? (
+                                                <span style={{ color: 'var(--danger)' }}>No templates found. </span>
+                                            ) : ''}
+                                            <a href="#/system/email-templates" onClick={(e) => {
+                                                e.preventDefault();
+                                                window.location.href = '/#/system/email-templates';
+                                            }}>Manage Templates</a>
+                                        </small>
+                                    </div>
+                                    <FormInput
+                                        label="Notification Emails (comma-separated)"
+                                        name="notificationEmails"
+                                        value={formData.notificationEmails}
+                                        onChange={handleInputChange}
+                                        placeholder="admin@example.com, user@example.com"
+                                        disabled={modalMode === 'view'}
+                                    />
+                                </div>
+                                <FormInput
+                                    label="Webhook URL"
+                                    name="webhookUrl"
+                                    value={formData.webhookUrl}
+                                    onChange={handleInputChange}
+                                    placeholder="https://hooks.slack.com/..."
+                                    disabled={modalMode === 'view'}
+                                />
+                            </>
+                        )}
+                    </div>
+
+                    {/* Dependencies */}
+                    <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                        <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Link size={16} /> Job Dependencies
+                        </h4>
+                        <FormInput
+                            label="Dependent Job IDs (comma-separated)"
+                            name="dependentJobIds"
+                            value={formData.dependentJobIds}
+                            onChange={handleInputChange}
+                            placeholder="1, 2, 3"
+                            disabled={modalMode === 'view'}
+                        />
+                        <small className="form-help">Jobs to trigger after this job completes successfully</small>
+                    </div>
+
+                    {/* Additional Settings */}
                     <div className="form-row">
                         <FormInput
-                            label="Job Name"
-                            name="jobName"
-                            value={formData.jobName}
+                            label="Time Zone"
+                            name="timeZone"
+                            value={formData.timeZone}
                             onChange={handleInputChange}
-                            placeholder="Enter job name"
-                            required
+                            placeholder="UTC"
                             disabled={modalMode === 'view'}
                         />
-                        <FormInput
-                            label="Job Group"
-                            name="jobGroup"
-                            value={formData.jobGroup}
-                            onChange={handleInputChange}
-                            placeholder="e.g., system, user"
-                            required
-                            disabled={modalMode === 'view'}
-                        />
+                        <div className="form-group">
+                            <label className="form-label">Allow Holiday Execution</label>
+                            <select
+                                name="allowHoliday"
+                                value={formData.allowHoliday ? 'true' : 'false'}
+                                onChange={(e) => setFormData(prev => ({ ...prev, allowHoliday: e.target.value === 'true' }))}
+                                className="form-input"
+                                disabled={modalMode === 'view'}
+                            >
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Invoke Target</label>
-                        <FormInput
-                            name="invokeTarget"
-                            value={formData.invokeTarget}
+                        <label className="form-label">Remark</label>
+                        <textarea
+                            name="remark"
+                            value={formData.remark}
                             onChange={handleInputChange}
-                            placeholder="e.g., ryTask.ryMultipleParams('ry', 'test')"
-                            required
+                            placeholder="Optional notes about this job"
+                            rows={3}
+                            className="form-input"
                             disabled={modalMode === 'view'}
+                            style={{ resize: 'vertical' }}
                         />
-                        <small className="form-help">Method to invoke for this scheduled job</small>
-                    </div>
-
-                    <div className="form-row">
-                        <FormInput
-                            label="Cron Expression"
-                            name="cronExpression"
-                            value={formData.cronExpression}
-                            onChange={handleInputChange}
-                            placeholder="e.g., 0/5 * * * * ?"
-                            required
-                            disabled={modalMode === 'view'}
-                        />
-                        <div className="form-group">
-                            <label className="form-label">Status</label>
-                            <select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleInputChange}
-                                className="form-input"
-                                disabled={modalMode === 'view'}
-                            >
-                                <option value="0">Running</option>
-                                <option value="1">Paused</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label className="form-label">Misfire Policy</label>
-                            <select
-                                name="misfirePolicy"
-                                value={formData.misfirePolicy}
-                                onChange={handleInputChange}
-                                className="form-input"
-                                disabled={modalMode === 'view'}
-                            >
-                                <option value="1">Fire Now</option>
-                                <option value="2">Do Nothing</option>
-                                <option value="3">Fire Once</option>
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Concurrent</label>
-                            <select
-                                name="concurrent"
-                                value={formData.concurrent}
-                                onChange={handleInputChange}
-                                className="form-input"
-                                disabled={modalMode === 'view'}
-                            >
-                                <option value="1">Allow</option>
-                                <option value="0">Disallow</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
+            </Modal>
+
+            {/* Job Logs Modal */}
+            <Modal
+                isOpen={isLogsModalOpen}
+                onClose={() => setIsLogsModalOpen(false)}
+                title="Job Execution Logs"
+                size="large"
+            >
+                <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    {jobLogs.length === 0 ? (
+                        <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>No execution logs found</p>
+                    ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Time</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Duration</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Retries</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {jobLogs.map((log, idx) => (
+                                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '10px' }}>{log.startTime?.replace('T', ' ')}</td>
+                                        <td style={{ padding: '10px' }}>
+                                            <span className={`status-pill ${log.status === '0' ? 'active' : 'inactive'}`}>
+                                                {log.status === '0' ? 'Success' : 'Failed'}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '10px' }}>{log.executionDuration} ms</td>
+                                        <td style={{ padding: '10px' }}>{log.retryCount || 0}</td>
+                                        <td style={{ padding: '10px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {log.jobMessage}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </Modal>
+
+            {/* Templates Modal */}
+            <Modal
+                isOpen={isTemplatesModalOpen}
+                onClose={() => setIsTemplatesModalOpen(false)}
+                title="Job Templates"
+                size="medium"
+            >
+                <div style={{ display: 'grid', gap: '12px' }}>
+                    {jobTemplates.map((template, idx) => (
+                        <div 
+                            key={idx} 
+                            style={{ 
+                                padding: '16px', 
+                                border: '1px solid var(--border-color)', 
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                            onClick={() => handleTemplateSelect(template.name)}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--primary)';
+                                e.currentTarget.style.background = 'var(--bg-secondary)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--border-color)';
+                                e.currentTarget.style.background = 'transparent';
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <h4 style={{ margin: '0 0 4px', fontSize: '14px' }}>{template.jobName}</h4>
+                                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>{template.description}</p>
+                                    <code style={{ fontSize: '11px', color: 'var(--primary)', fontFamily: 'monospace' }}>{template.cronExpression}</code>
+                                </div>
+                                <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '12px' }}>
+                                    Use Template
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Modal>
+
+            {/* Metrics Modal */}
+            <Modal
+                isOpen={isMetricsModalOpen}
+                onClose={() => setIsMetricsModalOpen(false)}
+                title="Job Dashboard Metrics"
+                size="medium"
+            >
+                {metrics ? (
+                    <div style={{ display: 'grid', gap: '16px' }}>
+                        <div style={{ padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                            <h4 style={{ margin: '0 0 12px', fontSize: '14px' }}>Execution Statistics (Last 30 Days)</h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total Executions</div>
+                                    <div style={{ fontSize: '24px', fontWeight: 700 }}>{metrics.totalExecutions}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Successful</div>
+                                    <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--success)' }}>{metrics.successfulExecutions}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Failed</div>
+                                    <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--danger)' }}>{metrics.failedExecutions}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Avg Duration</div>
+                                    <div style={{ fontSize: '24px', fontWeight: 700 }}>{(metrics.avgExecutionDuration / 1000).toFixed(2)}s</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {metrics.recentFailures && metrics.recentFailures.length > 0 && (
+                            <div style={{ padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                                <h4 style={{ margin: '0 0 12px', fontSize: '14px' }}>Recent Failures</h4>
+                                {metrics.recentFailures.map((failure, idx) => (
+                                    <div key={idx} style={{ padding: '8px 0', borderBottom: idx < metrics.recentFailures.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                                        <div style={{ fontWeight: 600, fontSize: '13px' }}>{failure.jobName}</div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{failure.message}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>Loading metrics...</p>
+                )}
             </Modal>
         </div>
     );

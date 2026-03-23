@@ -12,10 +12,16 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
 
+        console.log('=== LOGIN ATTEMPT ===');
+        console.log('Username:', username);
+        console.log('Password:', password);
+
         try {
             const formData = new URLSearchParams();
-            formData.append('username', username);
+            formData.append('username', username || 'admin');
             formData.append('password', password);
+
+            console.log('Sending request to /api/login with username:', username || 'admin');
 
             const response = await fetch('/api/login', {
                 method: 'POST',
@@ -25,9 +31,13 @@ const Login = () => {
                 body: formData
             });
 
+            console.log('Response status:', response.status);
+
             if (response.ok) {
                 navigate('/dashboard');
             } else {
+                const errorText = await response.text();
+                console.error('Login failed:', errorText);
                 alert('Invalid credentials');
             }
         } catch (error) {
@@ -66,6 +76,7 @@ const Login = () => {
                             placeholder="Username (e.g. admin)"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                            defaultValue="admin"
                             required
                             style={{ paddingLeft: '44px' }}
                         />
@@ -79,6 +90,7 @@ const Login = () => {
                             className="input"
                             placeholder="Password (e.g. 123456)"
                             value={password}
+                            defaultValue="123456"
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             style={{ paddingLeft: '44px' }}

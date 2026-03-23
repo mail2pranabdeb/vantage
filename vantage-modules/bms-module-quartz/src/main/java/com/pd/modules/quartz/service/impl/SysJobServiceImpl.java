@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.pd.modules.quartz.domain.SysJob;
 import com.pd.modules.quartz.infrastructure.repository.SysJobRepository;
 import com.pd.modules.quartz.service.ISysJobService;
+import com.pd.modules.quartz.service.JobWebSocketService;
 import com.pd.modules.quartz.util.CronUtils;
 import com.pd.modules.quartz.util.ScheduleUtils;
 
@@ -23,6 +24,9 @@ public class SysJobServiceImpl implements ISysJobService {
     @Autowired
     private Scheduler scheduler;
 
+    @Autowired
+    private JobWebSocketService webSocketService;
+
     @Override
     public List<SysJob> selectJobList(SysJob job) {
         return jobRepository.findAllActive();
@@ -37,18 +41,22 @@ public class SysJobServiceImpl implements ISysJobService {
     public void pauseJob(SysJob job) throws SchedulerException {
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
+        String oldStatus = job.getStatus();
         job.setStatus("1");
         jobRepository.save(job);
         scheduler.pauseJob(ScheduleUtils.getJobKey(jobId, jobGroup));
+        webSocketService.sendJobStatusChanged(jobId, job.getJobName(), oldStatus, "1");
     }
 
     @Override
     public void resumeJob(SysJob job) throws SchedulerException {
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
+        String oldStatus = job.getStatus();
         job.setStatus("0");
         jobRepository.save(job);
         scheduler.resumeJob(ScheduleUtils.getJobKey(jobId, jobGroup));
+        webSocketService.sendJobStatusChanged(jobId, job.getJobName(), oldStatus, "0");
     }
 
     @Override
@@ -58,6 +66,7 @@ public class SysJobServiceImpl implements ISysJobService {
             if (job != null) {
                 scheduler.deleteJob(ScheduleUtils.getJobKey(jobId, job.getJobGroup()));
                 jobRepository.deleteById(jobId);
+                webSocketService.sendJobDeleted(jobId, job.getJobName());
             }
         }
     }
@@ -91,6 +100,7 @@ public class SysJobServiceImpl implements ISysJobService {
         }
         String jobGroup = sysJob.getJobGroup();
         scheduler.triggerJob(ScheduleUtils.getJobKey(jobId, jobGroup));
+        webSocketService.sendJobStarted(jobId, sysJob.getJobName());
     }
 
     @Override
@@ -98,11 +108,13 @@ public class SysJobServiceImpl implements ISysJobService {
         job.setCreateTime(java.time.LocalDateTime.now());
         job.setCreateBy("admin");
         jobRepository.save(job);
-        
+
         // Check if cron expression is valid
         if (CronUtils.isValid(job.getCronExpression())) {
             ScheduleUtils.createScheduleJob(scheduler, job);
         }
+        
+        webSocketService.sendJobCreated(job.getJobId(), job.getJobName());
     }
 
     @Override
@@ -111,15 +123,15 @@ public class SysJobServiceImpl implements ISysJobService {
         if (existingJob == null) {
             return;
         }
-        
+
         job.setUpdateTime(java.time.LocalDateTime.now());
         job.setUpdateBy("admin");
-        
+
         // Delete old scheduler job
         scheduler.deleteJob(ScheduleUtils.getJobKey(existingJob.getJobId(), existingJob.getJobGroup()));
-        
+
         jobRepository.save(job);
-        
+
         // Create new scheduler job
         if (CronUtils.isValid(job.getCronExpression())) {
             ScheduleUtils.createScheduleJob(scheduler, job);

@@ -1,5 +1,6 @@
 package com.pd.modules.quartz.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,13 @@ public class SysJobLogServiceImpl implements ISysJobLogService {
 
     @Override
     public List<SysJobLog> selectJobLogList(SysJobLog jobLog) {
-        return jobLogRepository.findByCondition(jobLog.getJobName(), jobLog.getJobGroup(), jobLog.getStatus());
+        return jobLogRepository.findByCondition(
+            jobLog.getJobName(), 
+            jobLog.getJobGroup(), 
+            jobLog.getStatus(),
+            null,
+            null
+        );
     }
 
     @Override
@@ -28,7 +35,7 @@ public class SysJobLogServiceImpl implements ISysJobLogService {
 
     @Override
     public void addJobLog(SysJobLog jobLog) {
-        jobLogRepository.insert(jobLog);
+        jobLogRepository.save(jobLog);
     }
 
     @Override
@@ -38,11 +45,15 @@ public class SysJobLogServiceImpl implements ISysJobLogService {
 
     @Override
     public int deleteJobLogById(Long jobLogId) {
-        return jobLogRepository.deleteById(jobLogId);
+        jobLogRepository.deleteById(jobLogId);
+        return 1;
     }
 
     @Override
     public void cleanJobLog() {
-        jobLogRepository.clean();
+        List<SysJobLog> logs = jobLogRepository.findAll();
+        for (SysJobLog log : logs) {
+            jobLogRepository.deleteById(log.getJobLogId());
+        }
     }
 }

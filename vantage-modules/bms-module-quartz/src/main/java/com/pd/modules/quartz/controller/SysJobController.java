@@ -1,5 +1,6 @@
 package com.pd.modules.quartz.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.quartz.domain.SysJob;
 import com.pd.modules.quartz.infrastructure.repository.SysJobRepository;
+import com.pd.modules.quartz.service.ISysJobService;
 
 /**
  * Scheduled job controller
@@ -20,7 +22,7 @@ public class SysJobController extends BaseController {
     private SysJobRepository jobRepository;
 
     @Autowired
-    private com.pd.modules.quartz.service.ISysJobService sysJobService;
+    private ISysJobService sysJobService;
 
     /**
      * Get list of jobs
@@ -68,6 +70,15 @@ public class SysJobController extends BaseController {
     }
 
     /**
+     * Delete jobs in bulk
+     */
+    @DeleteMapping("/batch")
+    public AjaxResult batchRemove(@RequestBody Long[] ids) throws SchedulerException {
+        sysJobService.deleteJobByIds(ids);
+        return success("Deleted " + ids.length + " job(s)");
+    }
+
+    /**
      * Change job status
      */
     @PutMapping("/changeStatus")
@@ -101,5 +112,102 @@ public class SysJobController extends BaseController {
     public AjaxResult resume(@RequestBody SysJob job) throws SchedulerException {
         sysJobService.resumeJob(job);
         return success("Job resumed successfully");
+    }
+
+    /**
+     * Pause jobs in bulk
+     */
+    @PutMapping("/batch/pause")
+    public AjaxResult batchPause(@RequestBody Long[] ids) throws SchedulerException {
+        for (Long id : ids) {
+            SysJob job = jobRepository.findById(id).orElse(null);
+            if (job != null) {
+                job.setStatus("1");
+                sysJobService.pauseJob(job);
+            }
+        }
+        return success("Paused " + ids.length + " job(s)");
+    }
+
+    /**
+     * Resume jobs in bulk
+     */
+    @PutMapping("/batch/resume")
+    public AjaxResult batchResume(@RequestBody Long[] ids) throws SchedulerException {
+        for (Long id : ids) {
+            SysJob job = jobRepository.findById(id).orElse(null);
+            if (job != null) {
+                job.setStatus("0");
+                sysJobService.resumeJob(job);
+            }
+        }
+        return success("Resumed " + ids.length + " job(s)");
+    }
+
+    /**
+     * Run jobs in bulk
+     */
+    @PostMapping("/batch/run")
+    public AjaxResult batchRun(@RequestBody Long[] ids) throws SchedulerException {
+        int successCount = 0;
+        for (Long id : ids) {
+            try {
+                SysJob job = jobRepository.findById(id).orElse(null);
+                if (job != null) {
+                    sysJobService.run(job);
+                    successCount++;
+                }
+            } catch (Exception e) {
+                // Continue with other jobs
+            }
+        }
+        return success("Executed " + successCount + "/" + ids.length + " job(s)");
+    }
+
+    /**
+     * Export jobs as JSON
+     */
+    @GetMapping("/export")
+    public AjaxResult export(@RequestParam(required = false) Long[] ids) {
+        List<SysJob> jobs;
+        if (ids != null && ids.length > 0) {
+            jobs = new ArrayList<>();
+            for (Long id : ids) {
+                jobRepository.findById(id).ifPresent(jobs::add);
+            }
+        } else {
+            jobs = jobRepository.findAllActive();
+        }
+        return success(jobs);
+    }
+
+    /**
+     * Import jobs from JSON
+     */
+    @PostMapping("/import")
+    public AjaxResult importJobs(@RequestBody List<SysJob> jobs) throws SchedulerException {
+        int successCount = 0;
+        for (SysJob job : jobs) {
+            try {
+                job.setJobId(null); // Reset ID for new job
+                sysJobService.insertJob(job);
+                successCount++;
+            } catch (Exception e) {
+                // Continue with other jobs
+            }
+        }
+        return success("Imported " + successCount + "/" + jobs.size() + " job(s)");
+    }
+
+    /**
+     * Get available job groups
+     */
+    @GetMapping("/groups")
+    public AjaxResult getGroups() {
+        List<String> groups = jobRepository.findAllActive().stream()
+                .map(SysJob::getJobGroup)
+                .distinct()
+                .toList();
+        return success(groups);
     }
 }
