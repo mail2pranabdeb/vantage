@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -21,6 +22,9 @@ public class MissingMenuInitializer {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @Bean
     @Order(2)
@@ -87,6 +91,16 @@ public class MissingMenuInitializer {
             
             if (addedCount > 0) {
                 log.info("=== Added {} missing menu items ===", addedCount);
+                // Clear menu cache so new menus appear immediately
+                try {
+                    var menuCache = cacheManager.getCache("menuTree");
+                    if (menuCache != null) {
+                        menuCache.clear();
+                        log.info("=== Menu cache cleared ===");
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not clear menu cache: {}", e.getMessage());
+                }
             } else {
                 log.info("=== All menu items exist - No changes needed ===");
             }
