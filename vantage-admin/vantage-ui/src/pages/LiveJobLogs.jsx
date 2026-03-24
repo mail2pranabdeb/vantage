@@ -196,7 +196,9 @@ const LiveJobLogs = () => {
         <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            height: '100%', 
+            height: '100vh',
+            maxHeight: '100vh',
+            overflow: 'hidden',
             background: 'var(--bg-primary)' 
         }}>
             {/* Header */}
@@ -405,9 +407,11 @@ const LiveJobLogs = () => {
             {/* Logs List */}
             <div style={{ 
                 flex: 1, 
-                overflowY: 'auto', 
+                overflowY: 'auto',
+                overflowX: 'hidden',
                 padding: '16px',
-                background: 'var(--bg-primary)'
+                background: 'var(--bg-primary)',
+                minHeight: 0
             }}>
                 {filteredLogs.length === 0 ? (
                     <div style={{ 

@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* ========== COMPACT MODE - Zoom out effect ========== */
+:root {
+  font-size: 13px; /* Reduced from default 16px */
+}
+
 /* ========== THEME SYSTEM ========== */
 :root,
 [data-theme="light"] {
@@ -351,8 +356,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
-  padding: 8px 12px;
+  margin-bottom: 6px;
+  padding: 6px 10px;
   background: var(--bg-secondary);
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -360,7 +365,7 @@ body {
 }
 
 .page-header h2 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
