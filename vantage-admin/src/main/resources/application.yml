@@ -17,6 +17,17 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+
+# Module initialization flags
+# Set to false to skip data initialization for specific modules
+module:
+  init:
+    system:
+      enabled: true
+    quartz:
+      enabled: true
+    generator:
+      enabled: true
   tracing:
     sampling:
       probability: 1.0  # Sample all traces (reduce in production)
