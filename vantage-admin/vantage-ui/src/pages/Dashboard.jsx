@@ -1,4 +1,5 @@
-import { Users, Shield, Settings, Activity, TrendingUp, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Users, Shield, Settings, Activity, TrendingUp, Clock, CheckCircle, AlertTriangle, Calendar, Play, Pause, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
     <div className="glass-panel" style={{
@@ -62,6 +63,20 @@ const QuickAction = ({ label, icon: Icon, color }) => (
 );
 
 const Dashboard = () => {
+    const [jobMetrics, setJobMetrics] = useState(null);
+
+    useEffect(() => {
+        // Fetch job dashboard metrics
+        fetch('/api/system/job-dashboard/metrics')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setJobMetrics(data.data);
+                }
+            })
+            .catch(err => console.error("Failed to fetch job metrics:", err));
+    }, []);
+
     return (
         <div className="animate-fade-in">
             <div style={{ marginBottom: '20px' }}>
@@ -76,6 +91,19 @@ const Dashboard = () => {
                 <StatCard title="Configs" value="48" icon={Settings} color="#f59e0b" />
                 <StatCard title="Uptime" value="99.9%" icon={Activity} color="#8b5cf6" trend="Healthy" />
             </div>
+
+            {/* Job Metrics */}
+            {jobMetrics && (
+                <div style={{ marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '12px', color: 'var(--text-primary)' }}>Job Scheduling Overview</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                        <StatCard title="Total Jobs" value={jobMetrics.totalJobs || 0} icon={Calendar} color="#667eea" />
+                        <StatCard title="Active Jobs" value={jobMetrics.activeJobs || 0} icon={Play} color="#10b981" />
+                        <StatCard title="Paused Jobs" value={jobMetrics.pausedJobs || 0} icon={Pause} color="#f59e0b" />
+                        <StatCard title="Success Rate" value={`${(jobMetrics.successRate || 0).toFixed(1)}%`} icon={CheckCircle} color="#10b981" />
+                    </div>
+                </div>
+            )}
 
             {/* Bottom row: Activity + Quick Actions */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '16px' }}>

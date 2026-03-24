@@ -18,6 +18,7 @@ import EmailTemplateManager from '../pages/EmailTemplateManager';
 import EmailConfig from '../pages/EmailConfig';
 import SystemSettings from '../pages/SystemSettings';
 import CacheManagement from '../pages/CacheManagement';
+import DictDataView from '../pages/DictDataView';
 
 // Map URLs to components
 const pageComponents = {
@@ -27,6 +28,7 @@ const pageComponents = {
     '/system/menu': MenuList,
     '/system/config': SystemSettings,
     '/system/dict': DictList,
+    '/system/dict/data/:dictId': DictDataView,
     '/system/post': PostList,
     '/system/logininfor': LogininforList,
     '/system/operlog': OperlogList,

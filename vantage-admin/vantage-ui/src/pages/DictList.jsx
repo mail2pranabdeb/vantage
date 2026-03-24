@@ -82,6 +82,11 @@ const DictList = () => {
         setIsModalOpen(true);
     };
 
+    const handleViewDataClick = (row) => {
+        // Open dictionary data in new tab
+        window.open(`/#/system/dict/data/${row.dictId}?dictType=${row.dictType}`, '_blank');
+    };
+
     const handleDeleteClick = (row) => {
         if (window.confirm(`Are you sure you want to delete dictionary "${row.dictName}"?`)) {
             fetch(`/api/system/dict/type/${row.dictId}`, {
@@ -194,6 +199,7 @@ const DictList = () => {
     ];
 
     const actions = [
+        { label: 'View Data', icon: Database, onClick: handleViewDataClick },
         { label: 'View', icon: Eye, onClick: handleViewClick },
         { label: 'Edit', icon: Edit, onClick: handleEditClick },
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
