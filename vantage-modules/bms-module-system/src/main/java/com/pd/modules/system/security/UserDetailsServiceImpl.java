@@ -132,6 +132,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
+        // Fix: Convert 0:0:0:0:0:0:0:1 or 0.0.0.0 to 127.0.0.1
+        if ("0:0:0:0:0:0:0:1".equals(ip) || "0.0.0.0".equals(ip)) {
+            ip = "127.0.0.1";
+        }
         return ip;
     }
 

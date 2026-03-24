@@ -17,6 +17,7 @@ import LiveJobLogs from '../pages/LiveJobLogs';
 import EmailTemplateManager from '../pages/EmailTemplateManager';
 import EmailConfig from '../pages/EmailConfig';
 import SystemSettings from '../pages/SystemSettings';
+import CacheManagement from '../pages/CacheManagement';
 
 // Map URLs to components
 const pageComponents = {
@@ -38,6 +39,7 @@ const pageComponents = {
     '/system/job-logs': LiveJobLogs,
     '/system/email-templates': EmailTemplateManager,
     '/system/email-config': EmailConfig,
+    '/system/cache': CacheManagement,
 };
 
 const TabContent = ({ tab, isActive }) => {
