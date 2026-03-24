@@ -5,12 +5,10 @@ spring:
   application:
     name: vantage
   datasource:
-    url: jdbc:h2:mem:vantage;MODE=Oracle;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./data/vantage;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
     driverClassName: org.h2.Driver
     username: sa
     password:
-  flyway:
-    enabled: false
   h2:
     console:
       enabled: true
