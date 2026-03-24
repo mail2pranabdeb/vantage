@@ -428,3 +428,10 @@ VALUES(1034, 'Email Config', 103, 4, '/system/email-config', '', 'C', '0', '1', 
 
 -- Add menu permissions for admin role
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 1034);
+  
+-- Role-Menu permissions for new menus  
+MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 2020);  
+MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 2021);  
+MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 2022);  
+MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 2023);  
+MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 1034);  
