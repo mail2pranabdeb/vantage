@@ -83,8 +83,9 @@ const DictList = () => {
     };
 
     const handleViewDataClick = (row) => {
-        // Open dictionary data in new tab
-        window.open(`/#/system/dict/data/${row.dictId}?dictType=${row.dictType}`, '_blank');
+        // Navigate to dictionary data view within app
+        const url = `#/system/dict/data?dictType=${row.dictType}`;
+        window.location.href = url;
     };
 
     const handleDeleteClick = (row) => {

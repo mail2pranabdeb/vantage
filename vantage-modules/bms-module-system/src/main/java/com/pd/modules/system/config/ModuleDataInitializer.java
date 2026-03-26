@@ -9,17 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 
 /**
  * Module-based database initialization with flags
- * Each module can be enabled/disabled via application.yml
  */
 @Configuration
 public class ModuleDataInitializer {
@@ -32,88 +29,76 @@ public class ModuleDataInitializer {
     @Value("${module.init.system.enabled:true}")
     private boolean systemModuleEnabled;
 
-    @Value("${module.init.quartz.enabled:true}")
-    private boolean quartzModuleEnabled;
-
-    @Value("${module.init.generator.enabled:true}")
-    private boolean generatorModuleEnabled;
+    @Value("${module.init-on-fresh-db:true}")
+    private boolean initOnFreshDb;
 
     @Bean
-    @Order(1)
-    public CommandLineRunner initializeModuleData() {
+    @Order(0)  // Run BEFORE Hibernate
+    public CommandLineRunner initializeSchema() {
         return args -> {
-            log.info("=== Module Data Initialization Started ===");
-            log.info("System Module: {}", systemModuleEnabled ? "ENABLED" : "DISABLED");
-            log.info("Quartz Module: {}", quartzModuleEnabled ? "ENABLED" : "DISABLED");
-            log.info("Generator Module: {}", generatorModuleEnabled ? "ENABLED" : "DISABLED");
-
-            // Initialize schema first (always runs)
-            if (!isTableCreated("SYS_CONFIG")) {
-                log.info("=== First startup - Initializing base schema ===");
-                runScript("schema.sql");
+            log.info("=== Schema Initialization Started ===");
+            log.info("Init on Fresh DB: {}", initOnFreshDb);
+            
+            if (!initOnFreshDb) {
+                log.info("=== Skipping schema initialization ===");
+                return;
             }
 
-            // Initialize system module data
-            if (systemModuleEnabled && !isTableCreated("SYS_USER")) {
-                log.info("=== Initializing System Module Data ===");
-                runScript("data.sql");
-            }
-
-            // Initialize quartz module data
-            if (quartzModuleEnabled && !isTableCreated("SYS_JOB")) {
-                log.info("=== Initializing Quartz Module Data ===");
-                runScript("data-quartz.sql");
-            }
-
-            // Initialize generator module data
-            if (generatorModuleEnabled && !isTableCreated("GEN_TABLE")) {
-                log.info("=== Initializing Generator Module Data ===");
-                runScript("data-generator.sql");
-            }
-
-            // Initialize pending features (always runs if tables don't exist)
-            if (!isTableCreated("SYS_JOB_EMAIL_TEMPLATE")) {
-                log.info("=== Initializing Pending Features Data ===");
-                runScript("data-pending-features.sql");
-            }
-
-            log.info("=== Module Data Initialization Completed ===");
+            // Run schema.sql FIRST to create all tables
+            log.info("=== Running schema.sql to create all tables ===");
+            runScript("schema.sql");
+            log.info("=== Schema initialization completed ===");
         };
     }
 
-    /**
-     * Run SQL script from classpath
-     */
+    @Bean
+    @Order(1)  // Run AFTER Hibernate
+    public CommandLineRunner initializeModuleData() {
+        return args -> {
+            log.info("=== Data Initialization Started ===");
+            
+            if (!initOnFreshDb) {
+                log.info("=== Skipping data initialization ===");
+                return;
+            }
+
+            // Wait for Hibernate to enhance tables
+            log.info("=== Waiting 3 seconds for Hibernate ===");
+            Thread.sleep(3000);
+            
+            // Check if admin user exists
+            if (!hasAdminUser()) {
+                log.info("=== No admin user - Running data.sql ===");
+                runScript("data.sql");
+            } else {
+                log.info("=== Admin user exists - Skipping data.sql ===");
+            }
+
+            log.info("=== Data Initialization Completed ===");
+        };
+    }
+
     private void runScript(String scriptName) {
         try {
-            Resource resource = new ClassPathResource(scriptName);
-            if (resource.exists()) {
-                ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-                populator.addScript(resource);
-                populator.setContinueOnError(true);
-                populator.setSeparator(";");
-                populator.execute(dataSource);
-                log.info("Executed script: {}", scriptName);
-            } else {
-                log.warn("Script not found: {}", scriptName);
-            }
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+            populator.addScript(new ClassPathResource(scriptName));
+            populator.setContinueOnError(true);
+            populator.setSeparator(";");
+            populator.execute(dataSource);
+            log.info("Executed script: {}", scriptName);
         } catch (Exception e) {
             log.error("Failed to execute script: {}", scriptName, e);
         }
     }
 
-    /**
-     * Check if a table exists in the database
-     */
-    private boolean isTableCreated(String tableName) {
-        try (Connection conn = dataSource.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet tables = metaData.getTables(null, null, tableName.toUpperCase(), new String[]{"TABLE"});
-            boolean exists = tables.next();
-            tables.close();
-            return exists;
+    private boolean hasAdminUser() {
+        try (Connection conn = dataSource.getConnection();
+             ResultSet rs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM sys_user WHERE login_name='admin'")) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
         } catch (Exception e) {
-            log.warn("Error checking if table {} exists: {}", tableName, e.getMessage());
             return false;
         }
     }

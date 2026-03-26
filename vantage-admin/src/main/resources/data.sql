@@ -1,10 +1,9 @@
 -- 1. Initial Data
 
 -- Using BCrypt hash for 123456 as default for Spring Security
-insert into sys_user (user_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, del_flag, login_ip, login_date, pwd_update_date, create_by, create_time, update_by, update_time, remark)
-values(1, 'admin', 'Admin', '00', 'admin@bms.vip', '15888888888', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Administrator');
-insert into sys_user (user_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, del_flag, login_ip, login_date, pwd_update_date, create_by, create_time, update_by, update_time, remark)
-values(2, 'prihan',    'Prihan', '00', 'prihan@qq.com',  '15666666666', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Tester');
+-- MERGE works in H2 Oracle mode
+MERGE INTO sys_user KEY(login_name) VALUES(1, 'admin', 'Admin', '00', 'admin@bms.vip', '15888888888', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Administrator');
+MERGE INTO sys_user KEY(login_name) VALUES(2, 'prihan', 'Prihan', '00', 'prihan@qq.com', '15666666666', '1', '', '$2a$10$CUmdVx1.RaVkRGu.pISr3.8/iPWinkuYQb.Jk7G2b4FVnk7qbUJsa', '', '0', '0', '127.0.0.1', null, null, 'admin', current_timestamp, '', null, 'Tester');
 
 insert into sys_role (role_id, role_name, role_key, role_sort, data_scope, status, del_flag, create_by, create_time, update_by, update_time, remark)
 values(1, 'Super Admin', 'admin',  1, '1', '0', '0', 'admin', current_timestamp, '', null, 'Super Administrator');
@@ -308,78 +307,6 @@ DELETE FROM sys_logininfor;
 -- =====================================================
 -- PENDING JOB FEATURES IMPLEMENTATION
 -- =====================================================
-
--- 1. JOB VERSIONING TABLE
-CREATE TABLE IF NOT EXISTS sys_job_version (
-    version_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    job_id BIGINT NOT NULL,
-    version_number INT NOT NULL,
-    job_name VARCHAR(64),
-    job_group VARCHAR(64),
-    invoke_target VARCHAR(500),
-    cron_expression VARCHAR(255),
-    misfire_policy VARCHAR(20),
-    concurrent VARCHAR(1),
-    status VARCHAR(1),
-    max_retry_count INT,
-    retry_interval INT,
-    timeout_seconds INT,
-    notify_on_failure BOOLEAN,
-    notification_emails VARCHAR(500),
-    webhook_url VARCHAR(500),
-    dependent_job_ids VARCHAR(500),
-    time_zone VARCHAR(50),
-    allow_holiday BOOLEAN,
-    remark VARCHAR(500),
-    changed_by VARCHAR(64),
-    change_reason VARCHAR(500),
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_job_id (job_id),
-    INDEX idx_version_number (version_number)
-);
-
--- 2. HOLIDAY CALENDAR TABLE
-CREATE TABLE IF NOT EXISTS sys_holiday (
-    holiday_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    holiday_name VARCHAR(100) NOT NULL,
-    holiday_date DATE NOT NULL,
-    holiday_type VARCHAR(1) DEFAULT '1', -- 1=National, 2=Company, 3=Optional
-    is_recurring BOOLEAN DEFAULT FALSE,
-    description VARCHAR(500),
-    status VARCHAR(1) DEFAULT '0', -- 0=Active, 1=Inactive
-    create_by VARCHAR(64),
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_by VARCHAR(64),
-    update_time TIMESTAMP,
-    UNIQUE KEY uk_holiday_date (holiday_date)
-);
-
--- 3. JOB ACCESS CONTROL TABLE
-CREATE TABLE IF NOT EXISTS sys_job_role (
-    job_id BIGINT NOT NULL,
-    role_id BIGINT NOT NULL,
-    PRIMARY KEY (job_id, role_id),
-    INDEX idx_job_id (job_id),
-    INDEX idx_role_id (role_id)
-);
-
--- 4. JOB EXECUTION HISTORY (for Gantt/Timeline)
-CREATE TABLE IF NOT EXISTS sys_job_execution (
-    execution_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    job_id BIGINT NOT NULL,
-    job_name VARCHAR(64),
-    job_group VARCHAR(64),
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP,
-    duration_ms BIGINT,
-    status VARCHAR(1), -- 0=Success, 1=Failed, 2=Running
-    trigger_type VARCHAR(20), -- CRON, MANUAL, DEPENDENT
-    retry_count INT DEFAULT 0,
-    error_message VARCHAR(2000),
-    INDEX idx_job_id (job_id),
-    INDEX idx_start_time (start_time),
-    INDEX idx_status (status)
-);
 
 -- Insert sample holidays
 INSERT INTO sys_holiday (holiday_name, holiday_date, holiday_type, description, status) VALUES

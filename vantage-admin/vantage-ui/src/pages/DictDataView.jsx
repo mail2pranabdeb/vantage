@@ -10,8 +10,8 @@ const DictDataView = () => {
 
     useEffect(() => {
         // Get dictType from URL query params
-        const params = new URLSearchParams(window.location.search);
-        const type = params.get('dictType');
+        const searchParams = new URLSearchParams(window.location.search);
+        const type = searchParams.get('dictType');
         if (type) {
             setDictType(type);
             fetchDictData(type);
@@ -94,8 +94,12 @@ const DictDataView = () => {
     ];
 
     return (
-        <div className="page-container">
-            <div className="page-header">
+        <div style={{
+            height: 'calc(100vh - 70px)',
+            overflow: 'auto',
+            padding: '8px'
+        }}>
+            <div className="page-header" style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
                         width: '40px',

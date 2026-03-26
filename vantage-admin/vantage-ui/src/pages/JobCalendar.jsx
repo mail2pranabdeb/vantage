@@ -43,8 +43,12 @@ const JobCalendar = () => {
         'July', 'August', 'September', 'October', 'November', 'December'];
 
     return (
-        <div className="page-container">
-            <div className="page-header">
+        <div style={{
+            height: 'calc(100vh - 70px)',
+            overflow: 'auto',
+            padding: '8px'
+        }}>
+            <div className="page-header" style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
                         width: '40px', height: '40px', borderRadius: '10px',
