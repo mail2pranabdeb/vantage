@@ -1,12 +1,12 @@
-20:27:17,001 |-WARN in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Missing watchable .xml or .properties files.
-20:27:17,003 |-WARN in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Watching .xml files requires that the main configuration file is reachable as a URL
-20:27:17,075 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
-20:27:17,108 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
-20:27:17,159 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
-20:27:17,159 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
-20:27:17,159 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
-20:27:17,177 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
-20:27:17,180 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
+23:07:21,846 |-WARN in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Missing watchable .xml or .properties files.
+23:07:21,846 |-WARN in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Watching .xml files requires that the main configuration file is reachable as a URL
+23:07:21,892 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
+23:07:21,914 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - SizeAndTimeBasedFNATP class was renamed as SizeAndTimeBasedFileNamingAndTriggeringPolicy.
+23:07:21,943 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - Direct use of either SizeAndTimeBasedFNATP or SizeAndTimeBasedFileNamingAndTriggeringPolicy 
+23:07:21,943 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - is deprecated. Please use SizeAndTimeBasedRollingPolicy instead.
+23:07:21,943 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@63648ee9 - For more information see https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+23:07:21,952 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
+23:07:21,954 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_FILE] not referenced. Skipping further processing.
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -17,110 +17,34 @@
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-26 20:27:17.389 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication v0.0.1-SNAPSHOT using Java 25.0.1 with PID 23120 (D:\Projects\vantage-master\vantage-admin\target\vantage-admin-0.0.1-SNAPSHOT.jar started by Admin in D:\Projects\vantage-master\vantage-admin)
-2026-03-26 20:27:17.393 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
-2026-03-26 20:27:17.394 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
-2026-03-26 20:27:19.250 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-26 20:27:19.428 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 158 ms. Found 12 JPA repository interfaces.
-2026-03-26 20:27:23.566 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-03-26 20:27:23.596 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2026-03-26 20:27:23.596 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-26 20:27:23.659 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 6109 ms
-2026-03-26 20:27:23.845 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
-2026-03-26 20:27:24.304 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-26 20:27:24.823 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn0: url=jdbc:h2:file:../data/vantage user=SA
-2026-03-26 20:27:24.825 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-26 20:27:26.595 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-26 20:27:29.232 [main] [,] WARN  o.h.t.s.i.ExceptionHandlerLoggedImpl - GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists sys_logininfor alter column browser set data type varchar(50)" via JDBC [Value too long for column "BROWSER CHARACTER VARYING(50)": "'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko... (111)";]
-org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table if exists sys_logininfor alter column browser set data type varchar(50)" via JDBC [Value too long for column "BROWSER CHARACTER VARYING(50)": "'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko... (111)";]
-	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:81)
-	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlString(AbstractSchemaMigrator.java:566)
-	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlStrings(AbstractSchemaMigrator.java:506)
-	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.migrateTable(AbstractSchemaMigrator.java:324)
-	at org.hibernate.tool.schema.internal.GroupedSchemaMigratorImpl.performTablesMigration(GroupedSchemaMigratorImpl.java:84)
-	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.performMigration(AbstractSchemaMigrator.java:220)
-	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.doMigration(AbstractSchemaMigrator.java:96)
-	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:269)
-	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$1(SchemaManagementToolCoordinator.java:101)
-	at java.base/java.util.HashMap.forEach(HashMap.java:1430)
-	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:100)
-	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:35)
-	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:33)
-	at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:323)
-	at org.hibernate.internal.SessionFactoryRegistry.instantiateSessionFactory(SessionFactoryRegistry.java:64)
-	at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:437)
-	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1456)
-	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:93)
-	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:443)
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:436)
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:411)
-	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:419)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1864)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1813)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:603)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:201)
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:977)
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
-	at org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:143)
-	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
-	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365)
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354)
-	at com.pd.VantageAdminApplication.main(VantageAdminApplication.java:21)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
-	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106)
-	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
-	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40)
-Caused by: org.h2.jdbc.JdbcSQLDataException: Value too long for column "BROWSER CHARACTER VARYING(50)": "'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko... (111)"; SQL statement:
-INSERT INTO "PUBLIC"."SYS_LOGININFOR_COPY_3_2"("INFO_ID", "LOGIN_NAME", "STATUS", "IPADDR", "LOGIN_LOCATION", "BROWSER", "OS", "MSG", "LOGIN_TIME") OVERRIDING SYSTEM VALUE SELECT "INFO_ID", "LOGIN_NAME", "STATUS", "IPADDR", "LOGIN_LOCATION", "BROWSER", "OS", "MSG", "LOGIN_TIME" FROM "PUBLIC"."SYS_LOGININFOR" [22001-224]
-	at org.h2.message.DbException.getJdbcSQLException(DbException.java:518)
-	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
-	at org.h2.message.DbException.get(DbException.java:223)
-	at org.h2.message.DbException.getValueTooLongException(DbException.java:334)
-	at org.h2.value.Value.getValueTooLongException(Value.java:2594)
-	at org.h2.value.Value.convertToVarchar(Value.java:1282)
-	at org.h2.value.Value.convertTo(Value.java:1138)
-	at org.h2.value.Value.convertForAssignTo(Value.java:1113)
-	at org.h2.table.Column.validateConvertUpdateSequence(Column.java:369)
-	at org.h2.table.Table.convertInsertRow(Table.java:936)
-	at org.h2.command.dml.Insert.addRow(Insert.java:229)
-	at org.h2.command.dml.Insert.insertRows(Insert.java:203)
-	at org.h2.command.dml.Insert.update(Insert.java:135)
-	at org.h2.command.dml.DataChangeStatement.update(DataChangeStatement.java:74)
-	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
-	at org.h2.command.Command.executeUpdate(Command.java:256)
-	at org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:649)
-	at org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:561)
-	at org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:343)
-	at org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:229)
-	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
-	at org.h2.command.Command.executeUpdate(Command.java:256)
-	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
-	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
-	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95)
-	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java)
-	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:76)
-	... 43 common frames omitted
-2026-03-26 20:27:29.261 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-26 23:07:22.073 [main] [,] INFO  com.pd.VantageAdminApplication - Starting VantageAdminApplication v0.0.1-SNAPSHOT using Java 25.0.1 with PID 29184 (D:\Projects\vantage-master\vantage-admin\target\vantage-admin-0.0.1-SNAPSHOT.jar started by Admin in D:\Projects\vantage-master\vantage-admin)
+2026-03-26 23:07:22.076 [main] [,] DEBUG com.pd.VantageAdminApplication - Running with Spring Boot v4.0.3, Spring v7.0.5
+2026-03-26 23:07:22.076 [main] [,] INFO  com.pd.VantageAdminApplication - No active profile set, falling back to 1 default profile: "default"
+2026-03-26 23:07:23.154 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-26 23:07:23.272 [main] [,] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 104 ms. Found 13 JPA repository interfaces.
+2026-03-26 23:07:25.609 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-03-26 23:07:25.633 [main] [,] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-26 23:07:25.633 [main] [,] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-26 23:07:25.693 [main] [,] INFO  o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 3535 ms
+2026-03-26 23:07:25.801 [main] [,] DEBUG i.m.c.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
+2026-03-26 23:07:26.105 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-03-26 23:07:26.663 [main] [,] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn0: url=jdbc:h2:file:../data/vantage user=SA
+2026-03-26 23:07:26.665 [main] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-03-26 23:07:28.906 [main] [,] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-26 23:07:30.752 [main] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
 WARNING: A restricted method in java.lang.System has been called
 WARNING: java.lang.System::load has been called by ai.onnxruntime.OnnxRuntime in an unnamed module (jar:nested:/D:/Projects/vantage-master/vantage-admin/target/vantage-admin-0.0.1-SNAPSHOT.jar/!BOOT-INF/lib/onnxruntime-1.17.1.jar!/)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-2026-03-26 20:27:34.158 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:nested:/D:/Projects/vantage-master/vantage-admin/target/vantage-admin-0.0.1-SNAPSHOT.jar/!BOOT-INF/lib/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
-2026-03-26 20:27:34.751 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-26 20:27:38.225 [main] [,] INFO  c.p.m.s.l.OperationLogListener - === OperationLogListener instance 1 created ===
-2026-03-26 20:27:38.636 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
-2026-03-26 20:27:38.652 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
-2026-03-26 20:27:38.652 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
-2026-03-26 20:27:38.653 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
-2026-03-26 20:27:38.654 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
+2026-03-26 23:07:35.397 [main] [,] INFO  ai.djl.util.Platform - Found matching platform from: jar:nested:/D:/Projects/vantage-master/vantage-admin/target/vantage-admin-0.0.1-SNAPSHOT.jar/!BOOT-INF/lib/tokenizers-0.28.0.jar!/native/lib/tokenizers.properties
+2026-03-26 23:07:35.717 [main] [,] INFO  o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-26 23:07:37.332 [main] [,] INFO  c.p.m.s.l.OperationLogListener - === OperationLogListener instance 1 created ===
+2026-03-26 23:07:37.547 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Using default implementation for ThreadExecutor
+2026-03-26 23:07:37.558 [main] [,] INFO  o.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-03-26 23:07:37.558 [main] [,] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v2.5.0 created.
+2026-03-26 23:07:37.559 [main] [,] INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-03-26 23:07:37.559 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.5.0) 'schedulerFactoryBean' with instanceId 'NON_CLUSTERED'
   Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
   NOT STARTED.
   Currently in standby mode.
@@ -128,50 +52,50 @@ WARNING: Restricted methods will be blocked in a future release unless native ac
   Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.
   Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
 
-2026-03-26 20:27:38.654 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
-2026-03-26 20:27:38.654 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
-2026-03-26 20:27:38.654 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@2e9d1b66
-2026-03-26 20:27:39.259 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-26 20:27:39.512 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-03-26 20:27:39.512 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-03-26 20:27:39.889 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2026-03-26 20:27:40.850 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
-2026-03-26 20:27:40.865 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
-2026-03-26 20:27:40.888 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:../data/vantage'
-2026-03-26 20:27:41.059 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-2026-03-26 20:27:41.196 [main] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
-2026-03-26 20:27:41.197 [main] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@7fb7b0de]]
-2026-03-26 20:27:41.198 [main] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
-2026-03-26 20:27:41.226 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
-2026-03-26 20:27:41.228 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
-2026-03-26 20:27:41.228 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
-2026-03-26 20:27:41.249 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 25.229 seconds (process running for 26.438)
-2026-03-26 20:27:41.399 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Schema Initialization Started ===
-2026-03-26 20:27:41.400 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - Init on Fresh DB: true
-2026-03-26 20:27:41.400 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Running schema.sql to create all tables ===
-2026-03-26 20:27:41.501 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - Executed script: schema.sql
-2026-03-26 20:27:41.502 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Schema initialization completed ===
-2026-03-26 20:27:41.502 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Data Initialization Started ===
-2026-03-26 20:27:41.502 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Waiting 3 seconds for Hibernate ===
-2026-03-26 20:27:44.507 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === No admin user - Running data.sql ===
-2026-03-26 20:27:44.601 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - Executed script: data.sql
-2026-03-26 20:27:44.602 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Data Initialization Completed ===
-2026-03-26 20:27:44.602 [main] [,] INFO  c.p.m.quartz.config.JobInitializer - === Initializing scheduled jobs from database ===
-2026-03-26 20:27:44.806 [main] [,] INFO  c.p.m.quartz.config.JobInitializer - No active jobs found in database
-2026-03-26 20:27:44.806 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Initializing dictionary cache...
-2026-03-26 20:27:44.849 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Dictionary cache refreshed: 4 types loaded
-2026-03-26 20:27:44.884 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
-2026-03-26 20:27:44.974 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 13 knowledge documents
-2026-03-26 20:27:45.109 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
-2026-03-26 20:27:45.181 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
-2026-03-26 20:27:45.229 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
-2026-03-26 20:27:45.268 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
-2026-03-26 20:27:45.307 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
-2026-03-26 20:27:45.360 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
-2026-03-26 20:27:45.413 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
-2026-03-26 20:27:45.458 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
-2026-03-26 20:27:45.519 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
-2026-03-26 20:27:45.562 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
-2026-03-26 20:27:45.593 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Security Best Practices with 4 segments
-2026-03-26 20:27:45.636 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Troubleshooting Guide with 4 segments
-2026-03-26 20:27:45.681 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: API Documentation with 3 segments
+2026-03-26 23:07:37.559 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler 'schedulerFactoryBean' initialized from an externally provided properties instance.
+2026-03-26 23:07:37.559 [main] [,] INFO  o.s.s.q.SchedulerFactoryBean$LocalSchedulerFactory - Quartz scheduler version: 2.5.0
+2026-03-26 23:07:37.559 [main] [,] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: com.pd.framework.config.QuartzConfig$AutowireCapableJobFactory@4aa16b76
+2026-03-26 23:07:37.854 [main] [,] WARN  o.s.b.j.a.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-26 23:07:37.981 [main] [,] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-03-26 23:07:37.982 [main] [,] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-03-26 23:07:38.229 [main] [,] INFO  o.s.b.w.a.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2026-03-26 23:07:38.733 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'userRoles' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-26 23:07:38.742 [main] [,] WARN  i.m.c.i.b.cache.CaffeineCacheMetrics - The cache 'menuTree' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-03-26 23:07:38.757 [main] [,] INFO  o.s.b.h.a.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:../data/vantage'
+2026-03-26 23:07:38.872 [main] [,] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
+2026-03-26 23:07:38.982 [main] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2026-03-26 23:07:38.983 [main] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2af59846]]
+2026-03-26 23:07:38.984 [main] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2026-03-26 23:07:39.006 [main] [,] INFO  o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path '/'
+2026-03-26 23:07:39.007 [main] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-03-26 23:07:39.007 [main] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED started.
+2026-03-26 23:07:39.019 [main] [,] INFO  com.pd.VantageAdminApplication - Started VantageAdminApplication in 17.707 seconds (process running for 18.386)
+2026-03-26 23:07:39.112 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Schema Initialization Started ===
+2026-03-26 23:07:39.112 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - Init on Fresh DB: true
+2026-03-26 23:07:39.112 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Running schema.sql to create all tables ===
+2026-03-26 23:07:39.192 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - Executed script: schema.sql
+2026-03-26 23:07:39.192 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Schema initialization completed ===
+2026-03-26 23:07:39.192 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Data Initialization Started ===
+2026-03-26 23:07:39.192 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Waiting 3 seconds for Hibernate ===
+2026-03-26 23:07:42.199 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === No admin user - Running data.sql ===
+2026-03-26 23:07:42.252 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - Executed script: data.sql
+2026-03-26 23:07:42.252 [main] [,] INFO  c.p.m.s.config.ModuleDataInitializer - === Data Initialization Completed ===
+2026-03-26 23:07:42.252 [main] [,] INFO  c.p.m.quartz.config.JobInitializer - === Initializing scheduled jobs from database ===
+2026-03-26 23:07:42.372 [main] [,] INFO  c.p.m.quartz.config.JobInitializer - No active jobs found in database
+2026-03-26 23:07:42.373 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Initializing dictionary cache...
+2026-03-26 23:07:42.403 [main] [,] INFO  c.p.m.system.cache.DictCacheService - Dictionary cache refreshed: 4 types loaded
+2026-03-26 23:07:42.429 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Initializing AI knowledge base with system documentation...
+2026-03-26 23:07:42.475 [main] [,] INFO  c.p.f.a.service.KnowledgeBaseService - Saved 13 knowledge documents
+2026-03-26 23:07:42.528 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: User Management Overview with 3 segments
+2026-03-26 23:07:42.551 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: How to Create a User with 4 segments
+2026-03-26 23:07:42.573 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Role Management Overview with 3 segments
+2026-03-26 23:07:42.592 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Menu Management with 3 segments
+2026-03-26 23:07:42.610 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Operation Logging with 4 segments
+2026-03-26 23:07:42.633 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Job Scheduling with Quartz with 5 segments
+2026-03-26 23:07:42.654 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: System Configuration with 4 segments
+2026-03-26 23:07:42.677 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Dictionary Management with 4 segments
+2026-03-26 23:07:42.706 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Code Generation with 6 segments
+2026-03-26 23:07:42.726 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Login Monitoring with 3 segments
+2026-03-26 23:07:42.744 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Security Best Practices with 4 segments
+2026-03-26 23:07:42.762 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: Troubleshooting Guide with 4 segments
+2026-03-26 23:07:42.784 [main] [,] INFO  c.p.f.ai.service.AiChatService - Added knowledge: API Documentation with 3 segments

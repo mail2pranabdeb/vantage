@@ -19,6 +19,7 @@ import EmailConfig from '../pages/EmailConfig';
 import SystemSettings from '../pages/SystemSettings';
 import CacheManagement from '../pages/CacheManagement';
 import DictDataView from '../pages/DictDataView';
+import ReportList from '../pages/ReportList';
 
 // Map URLs to components
 const pageComponents = {
@@ -35,6 +36,7 @@ const pageComponents = {
     '/system/notice': NoticeList,
     '/system/job': JobList,
     '/system/jobLog': JobLogList,
+    '/system/report': ReportList,
     '/tool/gen': GenList,
     '/system/job-calendar': JobCalendar,
     '/system/holiday-calendar': HolidayCalendar,
