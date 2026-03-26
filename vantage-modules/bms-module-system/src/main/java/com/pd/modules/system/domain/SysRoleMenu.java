@@ -1,25 +1,34 @@
 package com.pd.modules.system.domain;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 
 /**
- * Role-Menu relationship entity - sys_role_menu
+ * Role-Menu association entity
  */
+@Entity
+@Table(name = "sys_role_menu")
 public class SysRoleMenu implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Role ID */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "role_id")
     private Long roleId;
 
-    /** Menu ID */
+    @Column(name = "menu_id")
     private Long menuId;
 
-    public SysRoleMenu() {
+    // Getters and Setters
+    public Long getId() {
+        return id;
     }
 
-    public SysRoleMenu(Long roleId, Long menuId) {
-        this.roleId = roleId;
-        this.menuId = menuId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getRoleId() {

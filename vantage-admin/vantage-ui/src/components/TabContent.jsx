@@ -28,6 +28,7 @@ const pageComponents = {
     '/system/menu': MenuList,
     '/system/config': SystemSettings,
     '/system/dict': DictList,
+    '/system/dict/data': DictDataView,
     '/system/post': PostList,
     '/system/logininfor': LogininforList,
     '/system/operlog': OperlogList,
@@ -41,7 +42,6 @@ const pageComponents = {
     '/system/email-templates': EmailTemplateManager,
     '/system/email-config': EmailConfig,
     '/system/cache': CacheManagement,
-    '/system/dict/data': DictDataView,
 };
 
 const TabContent = ({ tab, isActive }) => {

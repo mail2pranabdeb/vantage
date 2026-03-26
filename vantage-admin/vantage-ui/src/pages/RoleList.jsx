@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
-import DataGrid from '../components/DataGrid';
+import { Shield, Plus, Edit, Trash2, RefreshCw, Check, X, ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
-import { useToast } from '../components/Toast';
 
 const RoleList = () => {
     const { addToast } = useToast();
     const [roles, setRoles] = useState([]);
+    const [menus, setMenus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [currentRole, setCurrentRole] = useState(null);
+    const [expandedNodes, setExpandedNodes] = useState({});
+    const [checkedMenus, setCheckedMenus] = useState([]);
     const [formData, setFormData] = useState({
         roleName: '',
         roleKey: '',
-        roleSort: '0',
+        roleSort: '1',
+        dataScope: '1',
         status: '0',
         remark: ''
     });
@@ -30,20 +34,47 @@ const RoleList = () => {
         fetch('/api/system/role/list')
             .then(res => res.json())
             .then(data => {
+                setLoading(false);
                 if (data.code === 200) {
                     setRoles(data.data || []);
-                    if (data.data && data.data.length > 0) {
-                        addToast('success', `Loaded ${data.data.length} role(s)`, 2000);
-                    }
+                    addToast('success', `Loaded ${data.data.length} role(s)`, 2000);
                 } else {
                     addToast('error', data.msg || 'Failed to load roles', 4000);
                 }
-                setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch roles:", err);
-                addToast('error', 'Failed to load roles. Please refresh.', 5000);
                 setLoading(false);
+                addToast('error', 'Failed to load roles', 5000);
+            });
+    };
+
+    const fetchMenus = () => {
+        return fetch('/api/system/menu/list')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    return buildMenuTree(data.data || []);
+                }
+                return [];
+            });
+    };
+
+    const buildMenuTree = (menuItems, parentId = '0') => {
+        const filtered = menuItems.filter(m => String(m.parentId) === String(parentId));
+        return filtered.map(m => ({
+            ...m,
+            children: buildMenuTree(menuItems, String(m.menuId))
+        }));
+    };
+
+    const fetchRoleMenus = (roleId) => {
+        fetch(`/api/system/role/menuIds/${roleId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setCheckedMenus(data.data || []);
+                }
             });
     };
 
@@ -53,7 +84,8 @@ const RoleList = () => {
         setFormData({
             roleName: '',
             roleKey: '',
-            roleSort: '0',
+            roleSort: '1',
+            dataScope: '1',
             status: '0',
             remark: ''
         });
@@ -66,24 +98,40 @@ const RoleList = () => {
         setFormData({
             roleName: row.roleName || '',
             roleKey: row.roleKey || '',
-            roleSort: String(row.roleSort || '0'),
+            roleSort: row.roleSort?.toString() || '1',
+            dataScope: row.dataScope || '1',
             status: row.status || '0',
             remark: row.remark || ''
         });
         setIsModalOpen(true);
     };
 
-    const handleViewClick = (row) => {
-        setModalMode('view');
+    const handlePermissionClick = async (row) => {
         setCurrentRole(row);
-        setFormData({
-            roleName: row.roleName || '',
-            roleKey: row.roleKey || '',
-            roleSort: String(row.roleSort || '0'),
-            status: row.status || '0',
-            remark: row.remark || ''
-        });
-        setIsModalOpen(true);
+        const menuTree = await fetchMenus();
+        setMenus(menuTree);
+        
+        // Fetch role menus
+        fetchRoleMenus(row.roleId);
+        
+        // If admin role, check all menus by default
+        if (row.roleKey === 'admin') {
+            const allMenuIds = getAllMenuIds(menuTree);
+            setCheckedMenus(allMenuIds);
+        }
+        
+        setIsPermissionModalOpen(true);
+    };
+
+    const getAllMenuIds = (menuList) => {
+        let ids = [];
+        for (const menu of menuList) {
+            ids.push(menu.menuId);
+            if (menu.children && menu.children.length > 0) {
+                ids = ids.concat(getAllMenuIds(menu.children));
+            }
+        }
+        return ids;
     };
 
     const handleDeleteClick = (row) => {
@@ -94,8 +142,8 @@ const RoleList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    setRoles(roles.filter(r => r.roleId !== row.roleId));
                     addToast('success', `Role "${row.roleName}" deleted successfully`, 3000);
+                    fetchRoles();
                 } else {
                     addToast('error', data.msg || 'Failed to delete role', 5000);
                 }
@@ -116,22 +164,24 @@ const RoleList = () => {
     };
 
     const handleSubmit = () => {
+        if (!formData.roleName || !formData.roleKey) {
+            addToast('error', 'Role name and key are required', 3000);
+            return;
+        }
+
         setSubmitting(true);
 
-        const url = modalMode === 'add'
-            ? '/api/system/role'
-            : '/api/system/role';
-
+        const url = modalMode === 'add' ? '/api/system/role' : '/api/system/role';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = modalMode === 'add'
-            ? { ...formData, roleSort: parseInt(formData.roleSort) }
-            : { ...formData, roleId: currentRole.roleId, roleSort: parseInt(formData.roleSort) };
+        const body = { 
+            ...formData, 
+            roleId: modalMode === 'edit' ? currentRole.roleId : null,
+            roleSort: parseInt(formData.roleSort)
+        };
 
         fetch(url, {
             method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         })
         .then(res => res.json())
@@ -139,7 +189,7 @@ const RoleList = () => {
             setSubmitting(false);
             if (data.code === 200) {
                 setIsModalOpen(false);
-                addToast('success', `Role "${formData.roleName}" ${modalMode === 'add' ? 'created' : 'updated'} successfully`, 3000);
+                addToast('success', data.msg || `Role ${modalMode === 'add' ? 'added' : 'updated'} successfully`, 3000);
                 fetchRoles();
             } else {
                 addToast('error', data.msg || `Failed to ${modalMode} role`, 5000);
@@ -152,161 +202,312 @@ const RoleList = () => {
         });
     };
 
-    const columns = [
-        {
-            key: 'roleId',
-            header: 'Role ID',
-            sortable: true
-        },
-        {
-            key: 'roleName',
-            header: 'Role Name',
-            sortable: true,
-            render: (value, row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    const handleSavePermissions = () => {
+        if (!currentRole) return;
+
+        setSubmitting(true);
+
+        fetch('/api/system/role/authDataScope', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                roleId: currentRole.roleId,
+                menuIds: checkedMenus
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setSubmitting(false);
+            if (data.code === 200) {
+                setIsPermissionModalOpen(false);
+                addToast('success', 'Permissions updated successfully', 3000);
+            } else {
+                addToast('error', data.msg || 'Failed to update permissions', 5000);
+            }
+        })
+        .catch(err => {
+            setSubmitting(false);
+            console.error("Failed to update permissions:", err);
+            addToast('error', 'Failed to update permissions', 5000);
+        });
+    };
+
+    const toggleExpand = (menuId) => {
+        setExpandedNodes(prev => ({
+            ...prev,
+            [menuId]: !prev[menuId]
+        }));
+    };
+
+    const toggleMenuCheck = (menuId, hasChildren) => {
+        if (checkedMenus.includes(menuId)) {
+            // Uncheck - remove from list
+            setCheckedMenus(prev => prev.filter(id => id !== menuId));
+            // If unchecking parent, uncheck all children recursively
+            if (hasChildren) {
+                uncheckChildren(menuId);
+            }
+        } else {
+            // Check - add to list
+            setCheckedMenus(prev => [...prev, menuId]);
+        }
+    };
+
+    const uncheckChildren = (menuId) => {
+        const menu = findMenuById(menus, menuId);
+        if (menu && menu.children) {
+            menu.children.forEach(child => {
+                setCheckedMenus(prev => prev.filter(id => id !== child.menuId));
+                uncheckChildren(child.menuId);
+            });
+        }
+    };
+
+    const findMenuById = (menuList, menuId) => {
+        for (const menu of menuList) {
+            if (menu.menuId === menuId) return menu;
+            if (menu.children) {
+                const found = findMenuById(menu.children, menuId);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    const getMenuIcon = (menuType) => {
+        switch(menuType) {
+            case 'M': return <Folder size={16} />;
+            case 'C': return <File size={16} />;
+            case 'F': return <File size={14} />;
+            default: return <Folder size={16} />;
+        }
+    };
+
+    const renderMenuTree = (menuItems, level = 0) => {
+        return menuItems.map(menu => {
+            const hasChildren = menu.children && menu.children.length > 0;
+            const isExpanded = expandedNodes[menu.menuId];
+            const isChecked = checkedMenus.includes(menu.menuId);
+
+            return (
+                <div key={menu.menuId}>
                     <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}>
-                        <Shield size={16} />
-                    </div>
-                    <div>
-                        <div style={{ fontWeight: 600 }}>{value}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{row.roleKey}</div>
-                    </div>
-                </div>
-            )
-        },
-        {
-            key: 'roleKey',
-            header: 'Role Key',
-            sortable: true
-        },
-        {
-            key: 'roleSort',
-            header: 'Sort',
-            sortable: true,
-            align: 'center'
-        },
-        {
-            key: 'status',
-            header: 'Status',
-            sortable: true,
-            render: (value) => (
-                <span className={`status-pill ${value === '0' ? 'active' : 'inactive'}`}>
-                    {value === '0' ? 'Normal' : 'Disabled'}
-                </span>
-            )
-        },
-        {
-            key: 'createTime',
-            header: 'Create Time',
-            sortable: true,
-            render: (value) => (
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    {value ? new Date(value).toLocaleDateString() : '-'}
-                </span>
-            )
-        }
-    ];
+                        gap: '8px',
+                        padding: '6px 10px',
+                        background: level === 0 ? 'var(--bg-secondary)' : 'transparent',
+                        borderBottom: '1px solid var(--border-color)',
+                        marginLeft: `${level * 20}px`,
+                        transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = level === 0 ? 'var(--bg-secondary)' : 'transparent'}
+                    >
+                        {/* Checkbox */}
+                        <button
+                            onClick={() => toggleMenuCheck(menu.menuId, hasChildren)}
+                            style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '4px',
+                                border: '2px solid ' + (isChecked ? 'var(--primary-color)' : 'var(--border-color)'),
+                                background: isChecked ? 'var(--primary-color)' : 'transparent',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                flexShrink: 0
+                            }}
+                        >
+                            {isChecked && <Check size={12} />}
+                        </button>
 
-    const actions = [
-        {
-            label: 'View',
-            icon: Eye,
-            onClick: handleViewClick
-        },
-        {
-            label: 'Edit',
-            icon: Edit,
-            onClick: handleEditClick
-        },
-        {
-            label: 'Delete',
-            icon: Trash2,
-            danger: true,
-            onClick: handleDeleteClick
-        }
-    ];
+                        {/* Expand/Collapse */}
+                        {hasChildren ? (
+                            <button
+                                onClick={() => toggleExpand(menu.menuId)}
+                                style={{ 
+                                    background: 'none', 
+                                    border: 'none', 
+                                    cursor: 'pointer',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    color: 'var(--text-secondary)'
+                                }}
+                            >
+                                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                            </button>
+                        ) : (
+                            <span style={{ width: '24px', flexShrink: 0 }} />
+                        )}
+                        
+                        {/* Menu Icon */}
+                        <span style={{ color: 'var(--primary-color)', flexShrink: 0 }}>
+                            {getMenuIcon(menu.menuType)}
+                        </span>
+                        
+                        {/* Menu Name */}
+                        <div style={{ flex: 1, fontSize: '13px' }}>
+                            {menu.menuName}
+                        </div>
+                    </div>
+
+                    {hasChildren && isExpanded && renderMenuTree(menu.children, level + 1)}
+                </div>
+            );
+        });
+    };
 
     const toolbarActions = [
         {
             label: 'Refresh',
             icon: RefreshCw,
             onClick: fetchRoles
+        },
+        {
+            label: 'Add Role',
+            icon: Plus,
+            onClick: handleAddClick
         }
     ];
 
     return (
-        <div className="page-container">
-            <div className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{
+            height: 'calc(100vh - 50px)',
+            overflow: 'auto',
+            padding: '8px'
+        }}>
+            <div className="page-header" style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white'
                     }}>
-                        <Shield size={16} />
+                        <Shield size={20} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Role Management</h2>
-                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                            Manage user roles
+                        <h2 style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>Role Management</h2>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+                            Manage roles and permissions
                         </p>
                     </div>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={handleAddClick}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 14px',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        fontSize: '13px'
-                    }}
-                >
-                    <Plus size={16} />
-                    Add Role
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    {toolbarActions.map((action, idx) => (
+                        <button
+                            key={idx}
+                            className="btn btn-primary"
+                            onClick={action.onClick}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            <action.icon size={16} />
+                            {action.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <DataGrid
-                data={roles}
-                columns={columns}
-                actions={actions}
-                toolbarActions={toolbarActions}
-                loading={loading}
-                searchable={true}
-                sortable={true}
-                filterable={true}
-                selectable={true}
-                pagination={true}
-                pageSize={10}
-                emptyMessage="No roles found. Create your first role to get started."
-            />
+            {/* Roles Table */}
+            <div style={{
+                background: 'var(--bg-secondary)',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                overflow: 'hidden'
+            }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)' }}>
+                            <th style={{ padding: '10px', textAlign: 'left' }}>Role Name</th>
+                            <th style={{ padding: '10px', textAlign: 'left' }}>Role Key</th>
+                            <th style={{ padding: '10px', textAlign: 'center' }}>Sort</th>
+                            <th style={{ padding: '10px', textAlign: 'center' }}>Status</th>
+                            <th style={{ padding: '10px', textAlign: 'center' }}>Create Time</th>
+                            <th style={{ padding: '10px', textAlign: 'center', width: '280px' }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    Loading roles...
+                                </td>
+                            </tr>
+                        ) : roles.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    No roles found. Click "Add Role" to create one.
+                                </td>
+                            </tr>
+                        ) : (
+                            roles.map(role => (
+                                <tr key={role.roleId} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '10px', fontWeight: 500 }}>{role.roleName}</td>
+                                    <td style={{ padding: '10px', fontFamily: 'monospace', fontSize: '12px' }}>{role.roleKey}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{role.roleSort}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                                        <span className={`status-pill ${role.status === '0' ? 'active' : 'inactive'}`}>
+                                            {role.status === '0' ? 'Normal' : 'Disabled'}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '10px', textAlign: 'center', fontSize: '12px' }}>
+                                        {role.createTime?.replace('T', ' ')}
+                                    </td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                            <button
+                                                onClick={() => handlePermissionClick(role)}
+                                                className="btn btn-secondary"
+                                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                                title="Permissions"
+                                            >
+                                                <Shield size={14} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEditClick(role)}
+                                                className="btn btn-secondary"
+                                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                                title="Edit"
+                                            >
+                                                <Edit size={14} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteClick(role)}
+                                                className="btn btn-secondary"
+                                                style={{ 
+                                                    padding: '4px 8px', 
+                                                    fontSize: '11px',
+                                                    color: 'var(--danger)',
+                                                    borderColor: 'var(--danger)'
+                                                }}
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
-            {/* Add/Edit Modal */}
+            {/* Add/Edit Role Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={modalMode === 'add' ? 'Add Role' : modalMode === 'edit' ? 'Edit Role' : 'View Role'}
-                size="small"
-                compact={true}
-                footer={modalMode !== 'view' && (
+                title={modalMode === 'add' ? 'Add Role' : 'Edit Role'}
+                size="medium"
+                footer={
                     <>
                         <button
                             className="btn btn-secondary"
@@ -319,11 +520,7 @@ const RoleList = () => {
                             className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                             {submitting && (
                                 <div style={{
@@ -338,27 +535,25 @@ const RoleList = () => {
                             {modalMode === 'add' ? 'Create' : 'Save'}
                         </button>
                     </>
-                )}
+                }
             >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
                     <div className="form-row">
                         <FormInput
-                            label="Role Name"
+                            label="Role Name *"
                             name="roleName"
                             value={formData.roleName}
                             onChange={handleInputChange}
-                            placeholder="Enter role name"
-                            required
-                            disabled={modalMode === 'view'}
+                            placeholder="e.g., Administrator"
+                            disabled={submitting}
                         />
                         <FormInput
-                            label="Role Key"
+                            label="Role Key *"
                             name="roleKey"
                             value={formData.roleKey}
                             onChange={handleInputChange}
-                            placeholder="e.g., admin, user"
-                            required
-                            disabled={modalMode === 'view' || modalMode === 'edit'}
+                            placeholder="e.g., admin"
+                            disabled={submitting}
                         />
                     </div>
 
@@ -369,9 +564,28 @@ const RoleList = () => {
                             type="number"
                             value={formData.roleSort}
                             onChange={handleInputChange}
-                            placeholder="Enter sort order"
-                            disabled={modalMode === 'view'}
+                            placeholder="1"
+                            disabled={submitting}
                         />
+                        <div className="form-group">
+                            <label className="form-label">Data Scope</label>
+                            <select
+                                name="dataScope"
+                                value={formData.dataScope}
+                                onChange={handleInputChange}
+                                className="form-input"
+                                disabled={submitting}
+                            >
+                                <option value="1">All Data</option>
+                                <option value="2">Custom Data</option>
+                                <option value="3">Department Data</option>
+                                <option value="4">Department and Below</option>
+                                <option value="5">Only Self Data</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Status</label>
                             <select
@@ -379,26 +593,83 @@ const RoleList = () => {
                                 value={formData.status}
                                 onChange={handleInputChange}
                                 className="form-input"
-                                disabled={modalMode === 'view'}
+                                disabled={submitting}
                             >
                                 <option value="0">Normal</option>
                                 <option value="1">Disabled</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label">Remark</label>
-                        <textarea
+                        <FormInput
+                            label="Remark"
                             name="remark"
                             value={formData.remark}
                             onChange={handleInputChange}
-                            placeholder="Enter any remarks"
-                            className="form-input"
-                            rows={3}
-                            disabled={modalMode === 'view'}
+                            placeholder="Optional notes"
+                            disabled={submitting}
                         />
                     </div>
+                </div>
+            </Modal>
+
+            {/* Permissions Modal */}
+            <Modal
+                isOpen={isPermissionModalOpen}
+                onClose={() => setIsPermissionModalOpen(false)}
+                title={`Permissions: ${currentRole?.roleName || ''}`}
+                size="large"
+                footer={
+                    <>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setIsPermissionModalOpen(false)}
+                            disabled={submitting}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleSavePermissions}
+                            disabled={submitting}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            {submitting && (
+                                <div style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    border: '2px solid white',
+                                    borderBottomColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                            )}
+                            <Check size={16} />
+                            Save Permissions
+                        </button>
+                    </>
+                }
+            >
+                <div style={{ 
+                    maxHeight: '60vh', 
+                    overflowY: 'auto',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px'
+                }}>
+                    {menus.length > 0 ? (
+                        renderMenuTree(menus)
+                    ) : (
+                        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            Loading menus...
+                        </div>
+                    )}
+                </div>
+                <div style={{ 
+                    marginTop: '12px', 
+                    padding: '10px', 
+                    background: 'var(--bg-tertiary)', 
+                    borderRadius: '6px',
+                    fontSize: '12px'
+                }}>
+                    <strong>Selected:</strong> {checkedMenus.length} menu(s)
                 </div>
             </Modal>
         </div>
