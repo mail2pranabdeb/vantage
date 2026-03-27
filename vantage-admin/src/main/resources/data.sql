@@ -86,20 +86,6 @@ values(1043, 'Dict Delete', 104, 4, '#', '', 'F', '0', '1', 'system:dict:remove'
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
 values(1044, 'Dict Export', 104, 5, '#', '', 'F', '0', '1', 'system:dict:export', '#', '0', 'admin', current_timestamp, '', null, '');
 
--- Post Management
-insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(105, 'Post Mgmt', 1, 6, '/system/post', '', 'C', '0', '1', 'system:post:view', 'fa fa-address-card-o', '0', 'admin', current_timestamp, '', null, '');
-insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(1050, 'Post Query', 105, 1, '#', '', 'F', '0', '1', 'system:post:list', '#', '0', 'admin', current_timestamp, '', null, '');
-insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(1051, 'Post Add', 105, 2, '#', '', 'F', '0', '1', 'system:post:add', '#', '0', 'admin', current_timestamp, '', null, '');
-insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(1052, 'Post Update', 105, 3, '#', '', 'F', '0', '1', 'system:post:edit', '#', '0', 'admin', current_timestamp, '', null, '');
-insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(1053, 'Post Delete', 105, 4, '#', '', 'F', '0', '1', 'system:post:remove', '#', '0', 'admin', current_timestamp, '', null, '');
-insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(1054, 'Post Export', 105, 5, '#', '', 'F', '0', '1', 'system:post:export', '#', '0', 'admin', current_timestamp, '', null, '');
-
 -- Login Info (Monitor)
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
 values(106, 'Login Info', 1, 7, '/system/logininfor', '', 'C', '0', '1', 'system:logininfor:view', 'fa fa-file-image-o', '0', 'admin', current_timestamp, '', null, '');
@@ -230,12 +216,6 @@ insert into sys_role_menu (role_id, menu_id) values (1, 1041);
 insert into sys_role_menu (role_id, menu_id) values (1, 1042);
 insert into sys_role_menu (role_id, menu_id) values (1, 1043);
 insert into sys_role_menu (role_id, menu_id) values (1, 1044);
-insert into sys_role_menu (role_id, menu_id) values (1, 105);
-insert into sys_role_menu (role_id, menu_id) values (1, 1050);
-insert into sys_role_menu (role_id, menu_id) values (1, 1051);
-insert into sys_role_menu (role_id, menu_id) values (1, 1052);
-insert into sys_role_menu (role_id, menu_id) values (1, 1053);
-insert into sys_role_menu (role_id, menu_id) values (1, 1054);
 insert into sys_role_menu (role_id, menu_id) values (1, 106);
 insert into sys_role_menu (role_id, menu_id) values (1, 1060);
 insert into sys_role_menu (role_id, menu_id) values (1, 1061);
