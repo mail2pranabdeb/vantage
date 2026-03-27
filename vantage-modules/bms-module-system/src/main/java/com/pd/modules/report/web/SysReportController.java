@@ -11,7 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/system/report")
@@ -76,10 +79,24 @@ public class SysReportController extends BaseController {
     @PostMapping("/execute/{reportId}")
     public AjaxResult execute(@PathVariable Long reportId, @RequestBody(required = false) String params) {
         try {
-            List<Object> results = reportService.executeReport(reportId, params);
+            List<Map<String, Object>> results = reportService.executeReport(reportId, params);
             return success(results);
         } catch (Exception e) {
             return error("Failed to execute report: " + e.getMessage());
         }
+    }
+
+    @PreAuthorize("hasAuthority('system:report:execute')")
+    @Log(title = "Report Management", businessType = BusinessType.EXPORT)
+    @GetMapping("/download/{reportId}")
+    public void download(@PathVariable Long reportId, 
+                         @RequestParam(required = false) String params,
+                         @RequestParam(required = false, defaultValue = "EXCEL") String format,
+                         HttpServletResponse response) throws Exception {
+        List<Map<String, Object>> data = reportService.executeReport(reportId, params);
+        SysReport report = reportService.findById(reportId)
+            .orElseThrow(() -> new RuntimeException("Report not found"));
+        
+        reportService.downloadReport(response, report, data, format);
     }
 }

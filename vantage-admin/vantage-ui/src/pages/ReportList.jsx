@@ -21,7 +21,12 @@ const ReportList = () => {
         columnsConfig: '',
         outputFormat: 'EXCEL',
         status: '0',
-        remark: ''
+        remark: '',
+        scheduleEnabled: false,
+        scheduleCron: '',
+        emailEnabled: false,
+        emailRecipients: '',
+        emailSubject: ''
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -80,7 +85,12 @@ const ReportList = () => {
             columnsConfig: row.columnsConfig || '',
             outputFormat: row.outputFormat || 'EXCEL',
             status: row.status || '0',
-            remark: row.remark || ''
+            remark: row.remark || '',
+            scheduleEnabled: row.scheduleEnabled || false,
+            scheduleCron: row.scheduleCron || '',
+            emailEnabled: row.emailEnabled || false,
+            emailRecipients: row.emailRecipients || '',
+            emailSubject: row.emailSubject || ''
         });
         setIsModalOpen(true);
     };
@@ -107,7 +117,36 @@ const ReportList = () => {
     };
 
     const handleExecuteClick = (row) => {
-        addToast('info', 'Report execution - coming soon', 3000);
+        // Show execution dialog
+        const params = prompt('Enter parameters (JSON format, optional):', '{}');
+        if (params === null) return; // Cancelled
+        
+        try {
+            const paramsObj = JSON.parse(params || '{}');
+            fetch(`/api/system/report/execute/${row.reportId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(paramsObj)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    addToast('success', `Report executed successfully! ${data.data?.length || 0} rows returned`, 5000);
+                    // Show download option
+                    if (window.confirm('Download results as Excel?')) {
+                        window.open(`/api/system/report/download/${row.reportId}?format=EXCEL`, '_blank');
+                    }
+                } else {
+                    addToast('error', data.msg || 'Failed to execute report', 5000);
+                }
+            })
+            .catch(err => {
+                console.error("Failed to execute report:", err);
+                addToast('error', 'Failed to execute report', 5000);
+            });
+        } catch (e) {
+            addToast('error', 'Invalid JSON format for parameters', 3000);
+        }
     };
 
     const handleInputChange = (e) => {
