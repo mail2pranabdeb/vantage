@@ -60,6 +60,21 @@ public class SysReport implements Serializable {
     @Column(name = "remark", length = 500)
     private String remark;
 
+    @Column(name = "schedule_enabled")
+    private Boolean scheduleEnabled = false;
+
+    @Column(name = "schedule_cron", length = 50)
+    private String scheduleCron;
+
+    @Column(name = "email_enabled")
+    private Boolean emailEnabled = false;
+
+    @Column(name = "email_recipients", length = 1000)
+    private String emailRecipients;
+
+    @Column(name = "email_subject", length = 255)
+    private String emailSubject;
+
     // Getters and Setters
     public Long getReportId() { return reportId; }
     public void setReportId(Long reportId) { this.reportId = reportId; }
@@ -91,4 +106,14 @@ public class SysReport implements Serializable {
     public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
     public String getRemark() { return remark; }
     public void setRemark(String remark) { this.remark = remark; }
+    public Boolean getScheduleEnabled() { return scheduleEnabled; }
+    public void setScheduleEnabled(Boolean scheduleEnabled) { this.scheduleEnabled = scheduleEnabled; }
+    public String getScheduleCron() { return scheduleCron; }
+    public void setScheduleCron(String scheduleCron) { this.scheduleCron = scheduleCron; }
+    public Boolean getEmailEnabled() { return emailEnabled; }
+    public void setEmailEnabled(Boolean emailEnabled) { this.emailEnabled = emailEnabled; }
+    public String getEmailRecipients() { return emailRecipients; }
+    public void setEmailRecipients(String emailRecipients) { this.emailRecipients = emailRecipients; }
+    public String getEmailSubject() { return emailSubject; }
+    public void setEmailSubject(String emailSubject) { this.emailSubject = emailSubject; }
 }

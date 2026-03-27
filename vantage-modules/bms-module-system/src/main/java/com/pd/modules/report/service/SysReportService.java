@@ -3,6 +3,8 @@ package com.pd.modules.report.service;
 import com.pd.modules.report.domain.SysReport;
 import com.pd.modules.report.infrastructure.repository.SysReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,9 @@ public class SysReportService {
 
     @Autowired
     private SysReportRepository reportRepository;
+
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     public List<SysReport> findAll() {
         return reportRepository.findAllActive();
@@ -47,12 +52,48 @@ public class SysReportService {
     }
 
     /**
-     * Execute report and return results as list of maps
+     * Execute report and send via email if configured
+     */
+    @Transactional
+    public void executeAndEmail(Long reportId) {
+        Optional<SysReport> reportOpt = reportRepository.findById(reportId);
+        if (!reportOpt.isPresent()) return;
+
+        SysReport report = reportOpt.get();
+        
+        // Execute report
+        List<Object> results = executeReport(reportId, null);
+        
+        // Send email if enabled
+        if (report.getEmailEnabled() && report.getEmailRecipients() != null && mailSender != null) {
+            sendReportEmail(report, results);
+        }
+    }
+
+    /**
+     * Execute report (placeholder - would integrate with JdbcTemplate)
      */
     @Transactional(readOnly = true)
     public List<Object> executeReport(Long reportId, String params) {
-        // TODO: Implement report execution with JdbcTemplate
-        // This would execute the SQL and return results
+        // TODO: Implement actual SQL execution with JdbcTemplate
         return List.of();
+    }
+
+    /**
+     * Send report via email
+     */
+    private void sendReportEmail(SysReport report, List<Object> results) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("reports@vantage.com");
+            message.setTo(report.getEmailRecipients().split(","));
+            message.setSubject(report.getEmailSubject() != null ? 
+                report.getEmailSubject() : "Report: " + report.getReportName());
+            message.setText("Report executed successfully.\n\nResults: " + results.size() + " rows");
+            
+            mailSender.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -12,7 +12,7 @@ values(2, 'Common User', 'common', 2, '2', '0', '0', 'admin', current_timestamp,
 
 -- ==================== SYSTEM MODULE MENUS ====================
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(1, 'System Mgmt', 0, 1, '#', '', 'M', '0', '1', '', 'fa fa-gear', '0', 'admin', current_timestamp, '', null, 'System Management');
+values(1, 'System Management', 0, 1, '#', '', 'M', '0', '1', '', 'fa fa-gear', '0', 'admin', current_timestamp, '', null, 'System Management');
 
 -- User Management
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
@@ -138,7 +138,7 @@ values(1083, 'Notice Delete', 108, 4, '#', '', 'F', '0', '1', 'system:notice:rem
 
 -- ==================== QUARTZ MODULE MENUS ====================
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(2, 'Job Mgmt', 0, 2, '#', '', 'M', '0', '1', '', 'fa fa-tasks', '0', 'admin', current_timestamp, '', null, 'Scheduled Job Management');
+values(2, 'Job Management', 0, 2, '#', '', 'M', '0', '1', '', 'fa fa-tasks', '0', 'admin', current_timestamp, '', null, 'Scheduled Job Management');
 
 -- Job Management
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
@@ -174,7 +174,7 @@ values(2013, 'Job Log Export', 201, 4, '#', '', 'F', '0', '1', 'system:jobLog:ex
 
 -- ==================== GENERATOR MODULE MENUS ====================
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
-values(3, 'Generator', 0, 3, '#', '', 'M', '0', '1', '', 'fa fa-code', '0', 'admin', current_timestamp, '', null, 'Code Generator');
+values(3, 'Code Gen Management', 0, 3, '#', '', 'M', '0', '1', '', 'fa fa-code', '0', 'admin', current_timestamp, '', null, 'Code Generator');
 
 -- Code Generation
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)

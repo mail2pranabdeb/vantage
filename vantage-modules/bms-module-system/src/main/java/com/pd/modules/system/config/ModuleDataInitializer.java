@@ -56,23 +56,22 @@ public class ModuleDataInitializer {
     public CommandLineRunner initializeModuleData() {
         return args -> {
             log.info("=== Data Initialization Started ===");
-            
-            if (!initOnFreshDb) {
-                log.info("=== Skipping data initialization ===");
-                return;
-            }
 
             // Wait for Hibernate to enhance tables
             log.info("=== Waiting 3 seconds for Hibernate ===");
             Thread.sleep(3000);
-            
-            // Check if admin user exists
-            if (!hasAdminUser()) {
+
+            // Check if admin user exists and initOnFreshDb is true
+            if (initOnFreshDb && !hasAdminUser()) {
                 log.info("=== No admin user - Running data.sql ===");
                 runScript("data.sql");
-            } else {
+            } else if (initOnFreshDb) {
                 log.info("=== Admin user exists - Skipping data.sql ===");
             }
+
+            // Always initialize report module menu (use SQL file with unique IDs: 5000+)
+            log.info("=== Adding Report Management menu ===");
+            runScript("data-reports.sql");
 
             log.info("=== Data Initialization Completed ===");
         };
@@ -94,6 +93,18 @@ public class ModuleDataInitializer {
     private boolean hasAdminUser() {
         try (Connection conn = dataSource.getConnection();
              ResultSet rs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM sys_user WHERE login_name='admin'")) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean menuExists(Long menuId) {
+        try (Connection conn = dataSource.getConnection();
+             ResultSet rs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM sys_menu WHERE menu_id=" + menuId)) {
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
