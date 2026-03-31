@@ -61,17 +61,13 @@ public class ModuleDataInitializer {
             log.info("=== Waiting 3 seconds for Hibernate ===");
             Thread.sleep(3000);
 
-            // Check if admin user exists and initOnFreshDb is true
+            // Initialize data (users, roles, menus, etc.)
             if (initOnFreshDb && !hasAdminUser()) {
                 log.info("=== No admin user - Running data.sql ===");
                 runScript("data.sql");
             } else if (initOnFreshDb) {
                 log.info("=== Admin user exists - Skipping data.sql ===");
             }
-
-            // Always initialize report module menu (use SQL file with unique IDs: 5000+)
-            log.info("=== Adding Report Management menu ===");
-            runScript("data-reports.sql");
 
             log.info("=== Data Initialization Completed ===");
         };

@@ -6,19 +6,22 @@ import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.report.domain.SysReport;
 import com.pd.modules.report.service.SysReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 @RestController
 @RequestMapping("/api/system/report")
 public class SysReportController extends BaseController {
+
+    private static final Logger log = LoggerFactory.getLogger(SysReportController.class);
 
     @Autowired
     private SysReportService reportService;
@@ -77,11 +80,19 @@ public class SysReportController extends BaseController {
     @PreAuthorize("hasAuthority('system:report:execute')")
     @Log(title = "Report Management", businessType = BusinessType.OTHER)
     @PostMapping("/execute/{reportId}")
-    public AjaxResult execute(@PathVariable Long reportId, @RequestBody(required = false) String params) {
+    public AjaxResult execute(@PathVariable Long reportId, @RequestBody(required = false) Map<String, Object> params) {
         try {
-            List<Map<String, Object>> results = reportService.executeReport(reportId, params);
+            // Convert params Map to JSON string for parameter substitution
+            String paramsJson = "{}";
+            if (params != null && !params.isEmpty()) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                paramsJson = mapper.writeValueAsString(params);
+            }
+            
+            List<Map<String, Object>> results = reportService.executeReport(reportId, paramsJson);
             return success(results);
         } catch (Exception e) {
+            log.error("Report execution failed", e);
             return error("Failed to execute report: " + e.getMessage());
         }
     }
