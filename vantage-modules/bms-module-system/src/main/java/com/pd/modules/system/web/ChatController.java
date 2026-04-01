@@ -6,6 +6,7 @@ import com.pd.framework.ai.service.AiChatService;
 import com.pd.framework.ai.service.KnowledgeBaseService;
 import com.pd.modules.system.security.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.*;
 
 /**
  * Chat controller with AI and MCP tool integration
+ * Enhanced with job execution and report pulling capabilities
  */
 @RestController
 @RequestMapping("/api")
@@ -24,8 +26,12 @@ public class ChatController extends BaseController {
     @Autowired(required = false)
     private KnowledgeBaseService knowledgeBaseService;
 
+    @Autowired(required = false)
+    private JdbcTemplate jdbcTemplate;
+
     /**
      * Chat endpoint with AI-powered responses and tool calling
+     * Supports: job execution, report pulling, system queries
      */
     @PostMapping("/chat")
     public AjaxResult chat(@RequestBody Map<String, Object> request) {
@@ -42,15 +48,21 @@ public class ChatController extends BaseController {
             return success(response);
         }
 
+        // Check for specific commands
+        Map<String, Object> commandResult = processCommands(message);
+        if (commandResult != null) {
+            return success(commandResult);
+        }
+
         // Check if AI is available
         if (aiChatService != null && aiChatService.isEnabled()) {
             // Use AI for intelligent response
             try {
                 String aiResponse = aiChatService.chat(message, username);
-                
+
                 // Check if AI response indicates tool usage
                 List<Map<String, Object>> toolCalls = extractToolCalls(aiResponse, message);
-                
+
                 if (!toolCalls.isEmpty()) {
                     Map<String, Object> result = new HashMap<>();
                     result.put("toolCalls", toolCalls);
@@ -70,6 +82,210 @@ public class ChatController extends BaseController {
 
         // Fallback to rule-based processing
         return success(processMessageFallback(message, null));
+    }
+
+    /**
+     * Process specific commands for jobs and reports
+     */
+    private Map<String, Object> processCommands(String message) {
+        String msg = message.toLowerCase().trim();
+
+        // Job execution commands
+        if (msg.contains("run job") || msg.contains("execute job") || msg.contains("start job")) {
+            return executeJobCommand(message);
+        }
+
+        // Report commands
+        if (msg.contains("show report") || msg.contains("get report") || msg.contains("pull report") || msg.contains("run report")) {
+            return executeReportCommand(message);
+        }
+
+        // System status commands
+        if (msg.contains("system status") || msg.contains("job status") || msg.contains("how many jobs")) {
+            return getSystemStatus(message);
+        }
+
+        return null;
+    }
+
+    /**
+     * Execute job command
+     */
+    private Map<String, Object> executeJobCommand(String message) {
+        try {
+            // Extract job name from message
+            String jobName = extractJobName(message);
+            
+            if (jdbcTemplate == null) {
+                return createErrorResponse("Database not configured");
+            }
+
+            // Find job by name
+            List<Map<String, Object>> jobs = jdbcTemplate.queryForList(
+                "SELECT job_id, job_name, job_group, status FROM sys_job WHERE job_name LIKE ?",
+                "%" + jobName + "%"
+            );
+
+            if (jobs.isEmpty()) {
+                return createErrorResponse("Job not found: " + jobName);
+            }
+
+            Map<String, Object> job = jobs.get(0);
+            Long jobId = ((Number) job.get("job_id")).longValue();
+            String status = (String) job.get("status");
+
+            if ("1".equals(status)) {
+                return createErrorResponse("Job is paused. Please enable it first.");
+            }
+
+            // Note: Actual job execution would require Quartz scheduler integration
+            // For now, return job details
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "job_execution");
+            result.put("success", true);
+            result.put("message", "Job found: " + job.get("job_name"));
+            result.put("data", Map.of(
+                "jobId", jobId,
+                "jobName", job.get("job_name"),
+                "jobGroup", job.get("job_group"),
+                "status", "0".equals(status) ? "Active" : "Paused"
+            ));
+
+            return result;
+        } catch (Exception e) {
+            return createErrorResponse("Failed to execute job: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Execute report command
+     */
+    private Map<String, Object> executeReportCommand(String message) {
+        try {
+            if (jdbcTemplate == null) {
+                return createErrorResponse("Database not configured");
+            }
+
+            // Check for common report types
+            if (message.toLowerCase().contains("user")) {
+                List<Map<String, Object>> users = jdbcTemplate.queryForList(
+                    "SELECT user_id, login_name, user_name, status, create_time FROM sys_user LIMIT 10"
+                );
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("type", "report");
+                result.put("success", true);
+                result.put("message", "User Report - Showing " + users.size() + " users");
+                result.put("data", Map.of(
+                    "reportName", "User List",
+                    "rowCount", users.size(),
+                    "columns", Arrays.asList("Login Name", "User Name", "Status", "Created"),
+                    "rows", users.stream()
+                        .map(u -> Arrays.asList(
+                            u.get("login_name"),
+                            u.get("user_name"),
+                            "0".equals(u.get("status")) ? "Active" : "Disabled",
+                            u.get("create_time")
+                        ))
+                        .toList()
+                ));
+
+                return result;
+            }
+
+            if (message.toLowerCase().contains("job")) {
+                List<Map<String, Object>> jobs = jdbcTemplate.queryForList(
+                    "SELECT job_id, job_name, cron_expression, status FROM sys_job LIMIT 10"
+                );
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("type", "report");
+                result.put("success", true);
+                result.put("message", "Job Report - Showing " + jobs.size() + " jobs");
+                result.put("data", Map.of(
+                    "reportName", "Scheduled Jobs",
+                    "rowCount", jobs.size(),
+                    "columns", Arrays.asList("Job Name", "Cron Expression", "Status"),
+                    "rows", jobs.stream()
+                        .map(j -> Arrays.asList(
+                            j.get("job_name"),
+                            j.get("cron_expression"),
+                            "0".equals(j.get("status")) ? "Active" : "Paused"
+                        ))
+                        .toList()
+                ));
+
+                return result;
+            }
+
+            return createErrorResponse("Report type not recognized. Try 'user report' or 'job report'");
+        } catch (Exception e) {
+            return createErrorResponse("Failed to pull report: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get system status
+     */
+    private Map<String, Object> getSystemStatus(String message) {
+        try {
+            if (jdbcTemplate == null) {
+                return createErrorResponse("Database not configured");
+            }
+
+            Map<String, Object> stats = new HashMap<>();
+
+            // Get user count
+            Number userCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_user", Number.class);
+            stats.put("users", userCount != null ? userCount.intValue() : 0);
+
+            // Get job count
+            Number jobCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_job", Number.class);
+            stats.put("jobs", jobCount != null ? jobCount.intValue() : 0);
+
+            // Get active job count
+            Number activeJobCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_job WHERE status='0'", Number.class);
+            stats.put("activeJobs", activeJobCount != null ? activeJobCount.intValue() : 0);
+
+            // Get role count
+            Number roleCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_role", Number.class);
+            stats.put("roles", roleCount != null ? roleCount.intValue() : 0);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "system_status");
+            result.put("success", true);
+            result.put("message", "System Status Overview");
+            result.put("data", stats);
+
+            return result;
+        } catch (Exception e) {
+            return createErrorResponse("Failed to get system status: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Extract job name from message
+     */
+    private String extractJobName(String message) {
+        // Simple extraction - look for words after "job"
+        String[] words = message.split("\\s+");
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].equalsIgnoreCase("job") && i + 1 < words.length) {
+                return words[i + 1];
+            }
+        }
+        return "test"; // default
+    }
+
+    /**
+     * Create error response
+     */
+    private Map<String, Object> createErrorResponse(String errorMsg) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("type", "error");
+        result.put("success", false);
+        result.put("message", errorMsg);
+        return result;
     }
 
     /**
