@@ -83,8 +83,8 @@ const DictList = () => {
     };
 
     const handleViewDataClick = (row) => {
-        // Navigate to dictionary data view using hash routing
-        window.location.hash = `/system/dict/data?dictType=${row.dictType}`;
+        // Open dictionary data view in new tab
+        window.open(`${window.location.origin}/#/system/dict/data?dictType=${row.dictType}`, '_blank');
     };
 
     const handleDeleteClick = (row) => {
