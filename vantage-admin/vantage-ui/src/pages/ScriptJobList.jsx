@@ -25,10 +25,10 @@ const ScriptJobList = () => {
     });
 
     const scriptTypes = [
-        { value: 'javascript', label: 'JavaScript (Nashorn)' },
-        { value: 'groovy', label: 'Groovy' },
-        { value: 'python', label: 'Python (Jython)' },
-        { value: 'sql', label: 'SQL Script' }
+        { value: 'sql', label: 'SQL Script' },
+        { value: 'javascript', label: 'JavaScript (Requires Nashorn)' },
+        { value: 'groovy', label: 'Groovy (Requires Groovy JSR-223)' },
+        { value: 'python', label: 'Python (Requires Jython)' }
     ];
 
     useEffect(() => {
