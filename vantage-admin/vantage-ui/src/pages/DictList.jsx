@@ -11,7 +11,17 @@ const DictList = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+    const [isDataFormModalOpen, setIsDataFormModalOpen] = useState(false);
     const [dictData, setDictData] = useState([]);
+    const [dataModalMode, setDataModalMode] = useState('add');
+    const [currentDictData, setCurrentDictData] = useState(null);
+    const [dataFormData, setDataFormData] = useState({
+        dictLabel: '',
+        dictValue: '',
+        dictSort: 0,
+        status: '0',
+        remark: ''
+    });
     const [modalMode, setModalMode] = useState('add');
     const [currentDict, setCurrentDict] = useState(null);
     const [formData, setFormData] = useState({
@@ -91,6 +101,7 @@ const DictList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setDictData(data.data || []);
+                    setCurrentDict(row);
                     setIsDataModalOpen(true);
                 } else {
                     addToast('error', data.msg || 'Failed to load dictionary data', 4000);
@@ -100,6 +111,90 @@ const DictList = () => {
                 console.error("Failed to fetch dict data:", err);
                 addToast('error', 'Failed to load dictionary data', 5000);
             });
+    };
+
+    const handleAddDataClick = () => {
+        setDataModalMode('add');
+        setCurrentDictData(null);
+        setDataFormData({
+            dictLabel: '',
+            dictValue: '',
+            dictSort: 0,
+            status: '0',
+            remark: ''
+        });
+        setIsDataFormModalOpen(true);
+    };
+
+    const handleEditDataClick = (row) => {
+        setDataModalMode('edit');
+        setCurrentDictData(row);
+        setDataFormData({
+            dictLabel: row.dictLabel || '',
+            dictValue: row.dictValue || '',
+            dictSort: row.dictSort || 0,
+            status: row.status || '0',
+            remark: row.remark || ''
+        });
+        setIsDataFormModalOpen(true);
+    };
+
+    const handleDeleteDataClick = (row) => {
+        if (window.confirm(`Delete dictionary data "${row.dictLabel}"?`)) {
+            fetch(`/api/system/dict/data/${row.dictCode}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    addToast('success', 'Dictionary data deleted successfully', 3000);
+                    // Refresh data
+                    handleViewDataClick(currentDict);
+                } else {
+                    addToast('error', data.msg || 'Failed to delete', 5000);
+                }
+            })
+            .catch(err => {
+                console.error("Failed to delete:", err);
+                addToast('error', 'Failed to delete', 5000);
+            });
+        }
+    };
+
+    const handleSaveData = () => {
+        if (!dataFormData.dictLabel || !dataFormData.dictValue) {
+            addToast('error', 'Label and Value are required', 3000);
+            return;
+        }
+
+        const url = dataModalMode === 'add' ? '/api/system/dict/data' : '/api/system/dict/data';
+        const method = dataModalMode === 'add' ? 'POST' : 'PUT';
+        const body = {
+            ...dataFormData,
+            dictType: currentDict.dictType,
+            dictCode: dataModalMode === 'edit' ? currentDictData.dictCode : null
+        };
+
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                setIsDataFormModalOpen(false);
+                addToast('success', data.msg || `Dictionary data ${dataModalMode === 'add' ? 'added' : 'updated'} successfully`, 3000);
+                // Refresh data
+                handleViewDataClick(currentDict);
+            } else {
+                addToast('error', data.msg || `Failed to ${dataModalMode} dictionary data`, 5000);
+            }
+        })
+        .catch(err => {
+            console.error(`Failed to ${dataModalMode} dictionary data:`, err);
+            addToast('error', `Failed to ${dataModalMode} dictionary data`, 5000);
+        });
     };
 
     const handleDeleteClick = (row) => {
@@ -382,15 +477,25 @@ const DictList = () => {
             <Modal
                 isOpen={isDataModalOpen}
                 onClose={() => setIsDataModalOpen(false)}
-                title="Dictionary Data"
+                title={`Dictionary Data: ${currentDict?.dictName || ''}`}
                 size="large"
                 footer={
-                    <button
-                        className="btn btn-secondary"
-                        onClick={() => setIsDataModalOpen(false)}
-                    >
-                        Close
-                    </button>
+                    <>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleAddDataClick}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            <Plus size={16} />
+                            Add Data
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setIsDataModalOpen(false)}
+                        >
+                            Close
+                        </button>
+                    </>
                 }
             >
                 <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
@@ -406,6 +511,7 @@ const DictList = () => {
                                     <th style={{ padding: '10px', textAlign: 'left' }}>Value</th>
                                     <th style={{ padding: '10px', textAlign: 'left' }}>Sort</th>
                                     <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
+                                    <th style={{ padding: '10px', textAlign: 'center', width: '120px' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -419,11 +525,127 @@ const DictList = () => {
                                                 {item.status === '0' ? 'Normal' : 'Disabled'}
                                             </span>
                                         </td>
+                                        <td style={{ padding: '10px', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    onClick={() => handleEditDataClick(item)}
+                                                    style={{ padding: '4px 8px', fontSize: '11px' }}
+                                                    title="Edit"
+                                                >
+                                                    <Edit size={14} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    onClick={() => handleDeleteDataClick(item)}
+                                                    style={{ 
+                                                        padding: '4px 8px', 
+                                                        fontSize: '11px',
+                                                        color: 'var(--danger)',
+                                                        borderColor: 'var(--danger)'
+                                                    }}
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     )}
+                </div>
+            </Modal>
+
+            {/* Dictionary Data Form Modal */}
+            <Modal
+                isOpen={isDataFormModalOpen}
+                onClose={() => setIsDataFormModalOpen(false)}
+                title={dataModalMode === 'add' ? 'Add Dictionary Data' : 'Edit Dictionary Data'}
+                size="medium"
+                footer={
+                    <>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setIsDataFormModalOpen(false)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleSaveData}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            {dataModalMode === 'add' ? 'Create' : 'Save'}
+                        </button>
+                    </>
+                }
+            >
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
+                    <div className="form-row">
+                        <FormInput
+                            label="Data Label *"
+                            name="dictLabel"
+                            value={dataFormData.dictLabel}
+                            onChange={(e) => setDataFormData(prev => ({ ...prev, dictLabel: e.target.value }))}
+                            placeholder="e.g., Normal"
+                        />
+                        <FormInput
+                            label="Data Value *"
+                            name="dictValue"
+                            value={dataFormData.dictValue}
+                            onChange={(e) => setDataFormData(prev => ({ ...prev, dictValue: e.target.value }))}
+                            placeholder="e.g., 0"
+                        />
+                    </div>
+
+                    <div className="form-row">
+                        <FormInput
+                            label="Sort Order"
+                            name="dictSort"
+                            type="number"
+                            value={dataFormData.dictSort}
+                            onChange={(e) => setDataFormData(prev => ({ ...prev, dictSort: parseInt(e.target.value) || 0 }))}
+                            placeholder="0"
+                        />
+                        <div className="form-group">
+                            <label className="form-label">Status</label>
+                            <select
+                                name="status"
+                                value={dataFormData.status}
+                                onChange={(e) => setDataFormData(prev => ({ ...prev, status: e.target.value }))}
+                                className="form-input"
+                            >
+                                <option value="0">Normal</option>
+                                <option value="1">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Remark</label>
+                        <textarea
+                            name="remark"
+                            value={dataFormData.remark}
+                            onChange={(e) => setDataFormData(prev => ({ ...prev, remark: e.target.value }))}
+                            placeholder="Optional description"
+                            rows={3}
+                            className="form-input"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Dictionary Type</label>
+                        <input
+                            type="text"
+                            className="form-input"
+                            value={currentDict?.dictType || ''}
+                            disabled
+                            style={{ background: 'var(--bg-tertiary)' }}
+                        />
+                        <small className="form-help">Data will be added to this dictionary type</small>
+                    </div>
                 </div>
             </Modal>
         </div>
