@@ -362,3 +362,36 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 285);
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
 VALUES (36, 'Script Jobs', 2, 6, '/system/script-job', '', 'C', '0', '1', 'system:scriptJob:list', 'fa fa-file-code', '0', 'admin', CURRENT_TIMESTAMP, 'GLUE-like Script Jobs');
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 36);  
+  
+  
+-- =====================================================  
+-- REPORT MANAGEMENT MENU  
+-- =====================================================  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (4, 'Report Management', 0, 4, '#', '', 'M', '0', '1', '', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Report Management');  
+  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (41, 'Report List', 4, 1, '/system/report', '', 'C', '0', '1', 'system:report:list', 'fa fa-list', '0', 'admin', CURRENT_TIMESTAMP, 'Report List');  
+  
+-- Report Management Permissions  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 4);  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 41);  
+  
+-- Report button permissions  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (411, 'Report Query', 41, 1, '#', '', 'F', '1', '1', 'system:report:query', '', '0', 'admin', CURRENT_TIMESTAMP, 'Query report');  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (412, 'Report Add', 41, 2, '#', '', 'F', '1', '1', 'system:report:add', '', '0', 'admin', CURRENT_TIMESTAMP, 'Add report');  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (413, 'Report Edit', 41, 3, '#', '', 'F', '1', '1', 'system:report:edit', '', '0', 'admin', CURRENT_TIMESTAMP, 'Edit report');  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (414, 'Report Remove', 41, 4, '#', '', 'F', '1', '1', 'system:report:remove', '', '0', 'admin', CURRENT_TIMESTAMP, 'Delete report');  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (415, 'Report Execute', 41, 5, '#', '', 'F', '1', '1', 'system:report:execute', '', '0', 'admin', CURRENT_TIMESTAMP, 'Execute report');  
+  
+-- Report button permissions for admin role  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 411);  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 412);  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 413);  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 414);  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 415);  
