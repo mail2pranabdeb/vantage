@@ -10,6 +10,8 @@ const DictList = () => {
     const [dicts, setDicts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+    const [dictData, setDictData] = useState([]);
     const [modalMode, setModalMode] = useState('add');
     const [currentDict, setCurrentDict] = useState(null);
     const [formData, setFormData] = useState({
@@ -83,8 +85,21 @@ const DictList = () => {
     };
 
     const handleViewDataClick = (row) => {
-        // Open dictionary data view in new tab
-        window.open(`${window.location.origin}/#/system/dict/data?dictType=${row.dictType}`, '_blank');
+        // Fetch dictionary data and open in modal
+        fetch(`/api/system/dict/data/list?dictType=${row.dictType}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setDictData(data.data || []);
+                    setIsDataModalOpen(true);
+                } else {
+                    addToast('error', data.msg || 'Failed to load dictionary data', 4000);
+                }
+            })
+            .catch(err => {
+                console.error("Failed to fetch dict data:", err);
+                addToast('error', 'Failed to load dictionary data', 5000);
+            });
     };
 
     const handleDeleteClick = (row) => {
@@ -360,6 +375,55 @@ const DictList = () => {
                             disabled={modalMode === 'view'}
                         />
                     </div>
+                </div>
+            </Modal>
+
+            {/* Dictionary Data Modal */}
+            <Modal
+                isOpen={isDataModalOpen}
+                onClose={() => setIsDataModalOpen(false)}
+                title="Dictionary Data"
+                size="large"
+                footer={
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => setIsDataModalOpen(false)}
+                    >
+                        Close
+                    </button>
+                }
+            >
+                <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                    {dictData.length === 0 ? (
+                        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            No data found
+                        </div>
+                    ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)' }}>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Label</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Value</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Sort</th>
+                                    <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dictData.map((item, idx) => (
+                                    <tr key={item.dictCode || idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '10px' }}>{item.dictLabel}</td>
+                                        <td style={{ padding: '10px' }}>{item.dictValue}</td>
+                                        <td style={{ padding: '10px' }}>{item.dictSort}</td>
+                                        <td style={{ padding: '10px' }}>
+                                            <span className={`status-pill ${item.status === '0' ? 'active' : 'inactive'}`}>
+                                                {item.status === '0' ? 'Normal' : 'Disabled'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </Modal>
         </div>

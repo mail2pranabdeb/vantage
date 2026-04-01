@@ -345,7 +345,7 @@ INSERT INTO sys_job_role (job_id, role_id) VALUES
 
   
 -- Multi-Datasource Menu  
-INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark) VALUES (28, 'Multi-Datasource', 2, 8, '/system/datasource', '', 'C', '0', '1', 'system:datasource:list', 'fa fa-database', '0', 'admin', CURRENT_TIMESTAMP, 'Multi-Datasource Management');  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark) VALUES (28, 'Multi-Datasource', 1, 10, '/system/datasource', '', 'C', '0', '1', 'system:datasource:list', 'fa fa-database', '0', 'admin', CURRENT_TIMESTAMP, 'Multi-Datasource Management');
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark) VALUES (281, 'Datasource Query', 28, 1, '#', '', 'F', '1', '1', 'system:datasource:query', '', '0', 'admin', CURRENT_TIMESTAMP, 'Query datasource');  
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark) VALUES (282, 'Datasource Add', 28, 2, '#', '', 'F', '1', '1', 'system:datasource:add', '', '0', 'admin', CURRENT_TIMESTAMP, 'Add datasource');  
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark) VALUES (283, 'Datasource Edit', 28, 3, '#', '', 'F', '1', '1', 'system:datasource:edit', '', '0', 'admin', CURRENT_TIMESTAMP, 'Edit datasource');  
