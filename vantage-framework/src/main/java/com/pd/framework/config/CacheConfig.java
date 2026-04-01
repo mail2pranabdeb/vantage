@@ -15,11 +15,18 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("menuTree", "userRoles");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        cacheManager.setCacheNames(java.util.Set.of(
+            "menuTree", 
+            "userRoles",
+            "dictData",
+            "dictLabel"
+        ));
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .initialCapacity(100)
                 .maximumSize(500)
-                .expireAfterWrite(10, TimeUnit.MINUTES));
+                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .recordStats());
         return cacheManager;
     }
 }

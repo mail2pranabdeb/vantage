@@ -4,12 +4,15 @@ import com.pd.common.annotation.Log;
 import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
+import com.pd.modules.system.domain.SysDictData;
 import com.pd.modules.system.domain.SysDictType;
+import com.pd.modules.system.infrastructure.repository.SysDictDataRepository;
 import com.pd.modules.system.infrastructure.repository.SysDictTypeRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -17,15 +20,24 @@ import java.util.Optional;
 public class SysDictController extends BaseController {
 
     private final SysDictTypeRepository dictTypeRepository;
+    private final SysDictDataRepository dictDataRepository;
 
-    public SysDictController(SysDictTypeRepository dictTypeRepository) {
+    public SysDictController(SysDictTypeRepository dictTypeRepository, SysDictDataRepository dictDataRepository) {
         this.dictTypeRepository = dictTypeRepository;
+        this.dictDataRepository = dictDataRepository;
     }
 
     @PreAuthorize("hasAuthority('system:dict:list')")
     @GetMapping("/type/list")
     public AjaxResult listType() {
         return success(dictTypeRepository.findAllActive());
+    }
+
+    @PreAuthorize("hasAuthority('system:dict:list')")
+    @GetMapping("/data/list")
+    public AjaxResult listData(@RequestParam String dictType) {
+        List<SysDictData> dictData = dictDataRepository.findByDictTypeOrderBySort(dictType);
+        return success(dictData);
     }
 
     @PreAuthorize("hasAuthority('system:dict:query')")

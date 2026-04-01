@@ -20,6 +20,8 @@ import SystemSettings from '../pages/SystemSettings';
 import CacheManagement from '../pages/CacheManagement';
 import DictDataView from '../pages/DictDataView';
 import ReportList from '../pages/ReportList';
+import DatasourceList from '../pages/DatasourceList';
+import ScriptJobList from '../pages/ScriptJobList';
 
 // Map URLs to components
 const pageComponents = {
@@ -28,6 +30,7 @@ const pageComponents = {
     '/system/role': RoleList,
     '/system/menu': MenuList,
     '/system/config': SystemSettings,
+    '/system/datasource': DatasourceList,
     '/system/dict': DictList,
     '/system/dict/data': DictDataView,
     '/system/post': PostList,
@@ -37,6 +40,7 @@ const pageComponents = {
     '/system/job': JobList,
     '/system/jobLog': JobLogList,
     '/system/report': ReportList,
+    '/system/script-job': ScriptJobList,
     '/tool/gen': GenList,
     '/system/job-calendar': JobCalendar,
     '/system/holiday-calendar': HolidayCalendar,
