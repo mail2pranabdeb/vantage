@@ -359,5 +359,6 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 284);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 285);  
   
 -- GLUE Job Script Menu  
-INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark) VALUES (36, 'Script Jobs', 3, 6, '/system/script-job', '', 'C', '0', '1', 'system:scriptJob:list', 'fa fa-file-code', '0', 'admin', CURRENT_TIMESTAMP, 'GLUE-like Script Jobs');  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES (36, 'Script Jobs', 3, 6, '/system/script-job', '', 'C', '0', '1', 'system:scriptJob:list', 'fa fa-file-code', '0', 'admin', CURRENT_TIMESTAMP, 'GLUE-like Script Jobs');
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 36);  

@@ -83,9 +83,8 @@ const DictList = () => {
     };
 
     const handleViewDataClick = (row) => {
-        // Navigate to dictionary data view within app
-        const url = `#/system/dict/data?dictType=${row.dictType}`;
-        window.location.href = url;
+        // Navigate to dictionary data view using hash routing
+        window.location.hash = `/system/dict/data?dictType=${row.dictType}`;
     };
 
     const handleDeleteClick = (row) => {
