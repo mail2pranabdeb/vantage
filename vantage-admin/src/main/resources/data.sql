@@ -427,3 +427,35 @@ INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, men
 VALUES (29, 'Audit Trail', 2, 9, '/system/audit', '', 'C', '0', '1', 'system:audit:list', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Audit Trail Management');  
   
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 29);  
+  
+  
+-- =====================================================  
+-- NOTIFICATION SYSTEM  
+-- =====================================================  
+CREATE SEQUENCE IF NOT EXISTS sys_notification_seq START WITH 100 INCREMENT BY 1;  
+  
+CREATE TABLE IF NOT EXISTS sys_notification (  
+    notification_id   BIGINT PRIMARY KEY,  
+    user_id         BIGINT,  
+    title           VARCHAR(200) NOT NULL,  
+    content         TEXT,  
+    notification_type VARCHAR(50),  
+    channel         VARCHAR(50),  
+    status          VARCHAR(1) DEFAULT '0',  
+    link_url        VARCHAR(500),  
+    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
+    read_time       TIMESTAMP NULL,  
+    expiry_time     TIMESTAMP  
+);  
+  
+CREATE INDEX IF NOT EXISTS idx_notification_user ON sys_notification(user_id, status);  
+CREATE INDEX IF NOT EXISTS idx_notification_time ON sys_notification(create_time);  
+  
+CREATE TABLE IF NOT EXISTS sys_notification_settings (  
+    setting_id      BIGINT PRIMARY KEY,  
+    user_id         BIGINT,  
+    email_enabled   BOOLEAN DEFAULT true,  
+    sms_enabled     BOOLEAN DEFAULT false,  
+    push_enabled    BOOLEAN DEFAULT true,  
+    in_app_enabled  BOOLEAN DEFAULT true  
+);  
