@@ -22,6 +22,7 @@ import DictDataView from '../pages/DictDataView';
 import ReportList from '../pages/ReportList';
 import DatasourceList from '../pages/DatasourceList';
 import ScriptJobList from '../pages/ScriptJobList';
+import AuditLogList from '../pages/AuditLogList';
 
 // Map URLs to components
 const pageComponents = {
@@ -36,6 +37,7 @@ const pageComponents = {
     '/system/post': PostList,
     '/system/logininfor': LogininforList,
     '/system/operlog': OperlogList,
+    '/system/audit': AuditLogList,
     '/system/notice': NoticeList,
     '/system/job': JobList,
     '/system/jobLog': JobLogList,
