@@ -20,6 +20,7 @@ import SystemSettings from '../pages/SystemSettings';
 import CacheManagement from '../pages/CacheManagement';
 import DictDataView from '../pages/DictDataView';
 import ReportList from '../pages/ReportList';
+import ReportDesigner from '../pages/ReportDesigner';
 import DatasourceList from '../pages/DatasourceList';
 import ScriptJobList from '../pages/ScriptJobList';
 import DashboardBuilder from '../pages/DashboardBuilder';
@@ -42,6 +43,7 @@ const pageComponents = {
     '/system/job': JobList,
     '/system/jobLog': JobLogList,
     '/system/report': ReportList,
+    '/system/report-designer': ReportDesigner,
     '/system/script-job': ScriptJobList,
     '/tool/gen': GenList,
     '/system/job-calendar': JobCalendar,
