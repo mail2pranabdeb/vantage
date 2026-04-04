@@ -3,6 +3,7 @@ package com.pd.modules.system.service.impl;
 import com.pd.common.event.user.UserCreatedEvent;
 import com.pd.common.event.user.UserDeletedEvent;
 import com.pd.modules.system.api.SystemUserService;
+import com.pd.modules.system.context.UserAuditContextHolder;
 import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -68,8 +70,14 @@ public class SystemUserServiceImpl implements SystemUserService {
     @Override
     @Transactional
     public SysUser updateUser(SysUser user) {
+        // Update the user
         user.setUpdateTime(LocalDateTime.now());
-        return userRepository.save(user);
+        SysUser updatedUser = userRepository.save(user);
+        
+        // Store after state in thread-local for AOP to capture
+        UserAuditContextHolder.setAfterEntity(updatedUser);
+        
+        return updatedUser;
     }
 
     @Override

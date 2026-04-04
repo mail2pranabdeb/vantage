@@ -396,37 +396,37 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 413);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 414);  
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 415);  
   
-  
--- =====================================================  
--- AUDIT LOG TABLE  
--- =====================================================  
-CREATE SEQUENCE IF NOT EXISTS sys_audit_log_seq START WITH 100 INCREMENT BY 1;  
-  
-CREATE TABLE IF NOT EXISTS sys_audit_log (  
-    audit_id        BIGINT PRIMARY KEY,  
-    table_name      VARCHAR(100) NOT NULL,  
-    record_id       BIGINT NOT NULL,  
-    operation_type  VARCHAR(20) NOT NULL,  
-    old_values      TEXT,  
-    new_values      TEXT,  
-    changed_fields  VARCHAR(1000),  
-    operator        VARCHAR(100),  
-    operator_ip     VARCHAR(50),  
-    operation_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
-    module          VARCHAR(50),  
-    remarks         VARCHAR(500)  
-);  
-  
-CREATE INDEX IF NOT EXISTS idx_audit_table ON sys_audit_log(table_name, record_id);  
-CREATE INDEX IF NOT EXISTS idx_audit_time ON sys_audit_log(operation_time);  
-CREATE INDEX IF NOT EXISTS idx_operator ON sys_audit_log(operator);  
-  
-  
--- Audit Trail Menu  
-INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
-VALUES (29, 'Audit Trail', 2, 9, '/system/audit', '', 'C', '0', '1', 'system:audit:list', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Audit Trail Management');  
-  
-INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 29);  
+ /*
+-- =====================================================
+-- AUDIT LOG TABLE
+-- =====================================================
+CREATE SEQUENCE IF NOT EXISTS sys_audit_log_seq START WITH 100 INCREMENT BY 1;
+
+CREATE TABLE IF NOT EXISTS sys_audit_log (
+    audit_id        BIGINT PRIMARY KEY,
+    table_name      VARCHAR(100) NOT NULL,
+    record_id       BIGINT NOT NULL,
+    operation_type  VARCHAR(20) NOT NULL,
+    old_values      TEXT,
+    new_values      TEXT,
+    changed_fields  VARCHAR(1000),
+    operator        VARCHAR(100),
+    operator_ip     VARCHAR(50),
+    operation_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    module          VARCHAR(50),
+    remarks         VARCHAR(500)
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_table ON sys_audit_log(table_name, record_id);
+CREATE INDEX IF NOT EXISTS idx_audit_time ON sys_audit_log(operation_time);
+CREATE INDEX IF NOT EXISTS idx_operator ON sys_audit_log(operator);
+
+
+-- Audit Trail Menu
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES (29, 'Audit Trail', 2, 9, '/system/audit', '', 'C', '0', '1', 'system:audit:list', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Audit Trail Management');
+
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 29);  */
   
   
 -- =====================================================  
@@ -491,8 +491,14 @@ CREATE TABLE IF NOT EXISTS sys_dashboard_widget (
     create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
 );  
   
--- Dashboard Menu  
-INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
-VALUES (30, 'Dashboards', 0, 5, '/system/dashboards', '', 'M', '0', '1', '', 'fa fa-bar-chart', '0', 'admin', CURRENT_TIMESTAMP, 'Advanced Dashboards');  
+-- -- Dashboard Menu
+-- INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+-- VALUES (30, 'Dashboards', 0, 5, '/system/dashboards', '', 'M', '0', '1', '', 'fa fa-bar-chart', '0', 'admin', CURRENT_TIMESTAMP, 'Advanced Dashboards');
+--
+-- INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 30);
   
-INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 30);  
+  
+-- Add before/after columns to sys_oper_log  
+ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS old_values TEXT;  
+ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS new_values TEXT;  
+ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS changed_fields VARCHAR(2000);  

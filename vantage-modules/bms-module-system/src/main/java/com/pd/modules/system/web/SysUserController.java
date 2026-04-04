@@ -5,6 +5,7 @@ import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.api.SystemUserService;
+import com.pd.modules.system.context.UserAuditContextHolder;
 import com.pd.modules.system.domain.SysUser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -67,14 +68,19 @@ public class SysUserController extends BaseController {
     @Log(title = "User Management", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysUser user) {
+        // Capture BEFORE state from database
         Optional<SysUser> existing = userService.findById(user.getUserId());
         if (!existing.isPresent()) {
             return error("User not found");
         }
+        
+        // Store before state for audit trail
+        UserAuditContextHolder.setBeforeEntity(existing.get());
 
         user.setUpdateBy("admin");
-        userService.updateUser(user);
-        return success("User updated successfully");
+        SysUser updated = userService.updateUser(user);
+        
+        return success("User updated successfully", updated);
     }
 
     @PreAuthorize("hasAuthority('system:user:remove')")

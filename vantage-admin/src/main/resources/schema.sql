@@ -153,7 +153,9 @@ create table sys_user_post (
 drop table if exists sys_logininfor;
 drop sequence if exists sys_logininfor_seq;
 create sequence sys_logininfor_seq start with 100 increment by 1;
-create table sys_logininfor (
+create table
+
+(
   info_id         bigint          not null,
   login_name      varchar(50)     default '',
   status          varchar(1)         default '0',

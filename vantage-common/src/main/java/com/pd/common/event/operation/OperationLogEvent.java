@@ -23,11 +23,25 @@ public class OperationLogEvent extends DomainEvent {
     private final Integer status;
     private final String errorMsg;
     private final Long costTime;
+    
+    // Audit trail fields
+    private final String oldValues; // JSON - values before change
+    private final String newValues; // JSON - values after change
+    private final String changedFields; // Comma-separated field names
 
     public OperationLogEvent(String title, Integer businessType, String method, String requestMethod,
                              Integer operatorType, String operName, String deptName, String operUrl,
                              String operIp, String operLocation, String operParam, String jsonResult,
                              Integer status, String errorMsg, Long costTime) {
+        this(title, businessType, method, requestMethod, operatorType, operName, deptName, operUrl,
+             operIp, operLocation, operParam, jsonResult, status, errorMsg, costTime, null, null, null);
+    }
+    
+    public OperationLogEvent(String title, Integer businessType, String method, String requestMethod,
+                             Integer operatorType, String operName, String deptName, String operUrl,
+                             String operIp, String operLocation, String operParam, String jsonResult,
+                             Integer status, String errorMsg, Long costTime,
+                             String oldValues, String newValues, String changedFields) {
         super("OPERATION_LOG");
         this.title = title;
         this.businessType = businessType;
@@ -44,6 +58,9 @@ public class OperationLogEvent extends DomainEvent {
         this.status = status;
         this.errorMsg = errorMsg;
         this.costTime = costTime;
+        this.oldValues = oldValues;
+        this.newValues = newValues;
+        this.changedFields = changedFields;
     }
 
     // Getters
@@ -106,5 +123,17 @@ public class OperationLogEvent extends DomainEvent {
 
     public Long getCostTime() {
         return costTime;
+    }
+    
+    public String getOldValues() {
+        return oldValues;
+    }
+    
+    public String getNewValues() {
+        return newValues;
+    }
+    
+    public String getChangedFields() {
+        return changedFields;
     }
 }

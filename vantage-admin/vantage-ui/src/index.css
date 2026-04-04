@@ -1307,18 +1307,116 @@ select.form-input {
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .grid-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .grid-search {
     max-width: 100%;
   }
-  
+
   .grid-pagination {
     flex-direction: column;
     gap: 12px;
   }
+}
+
+/* ========== DATE INPUT STYLING ========== */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+input[type="month"]:focus,
+input[type="week"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Date picker popup styling */
+::-webkit-calendar-picker-indicator {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 2px;
+  cursor: pointer;
+  filter: none;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+::-webkit-calendar-picker-indicator:hover {
+  background: var(--border-color);
+  opacity: 1;
+}
+
+/* Style the date picker popup */
+input[type="date"]::-webkit-calendar-picker,
+input[type="time"]::-webkit-calendar-picker,
+input[type="datetime-local"]::-webkit-calendar-picker {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+/* Calendar popup container */
+::-webkit-datetime-edit,
+::-webkit-datetime-edit-year-field,
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-week-field,
+::-webkit-datetime-edit-hour-field,
+::-webkit-datetime-edit-minute-field,
+::-webkit-datetime-edit-second-field,
+::-webkit-datetime-edit-millisecond-field,
+::-webkit-datetime-edit-ampm-field {
+  color: var(--text-primary);
+  padding: 0;
+  background: transparent;
+}
+
+::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+  margin: 0;
+}
+
+::-webkit-datetime-edit-text {
+  padding: 0 2px;
+  color: var(--text-secondary);
+}
+
+/* Chrome/Edge date picker popup */
+::-webkit-calendar-picker:active {
+  background: var(--bg-secondary);
+}
+
+input[type="date"]:focus::-webkit-calendar-picker {
+  border-color: var(--primary-color);
+}
+
+/* Dark theme adjustments for date picker */
+[data-theme="dark"] ::-webkit-calendar-picker-indicator,
+[data-theme="midnight"] ::-webkit-calendar-picker-indicator,
+[data-theme="emerald"] ::-webkit-calendar-picker-indicator,
+[data-theme="rose"] ::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }

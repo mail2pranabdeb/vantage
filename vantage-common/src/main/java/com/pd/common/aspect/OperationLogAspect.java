@@ -2,6 +2,7 @@ package com.pd.common.aspect;
 
 import com.pd.common.annotation.Log;
 import com.pd.common.event.operation.OperationLogEvent;
+import com.pd.common.util.EntityDiffUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -19,6 +20,11 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -38,9 +44,19 @@ import java.util.UUID;
 public class OperationLogAspect {
 
     private static final Logger log = LoggerFactory.getLogger(OperationLogAspect.class);
+    private static final ObjectMapper objectMapper;
+    
+    static {
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    }
 
     private final ApplicationEventPublisher eventPublisher;
     private final ThreadLocal<Long> startTimeHolder = new ThreadLocal<>();
+    private final ThreadLocal<Object> beforeEntityHolder = new ThreadLocal<>();
+    private final ThreadLocal<Object> afterEntityHolder = new ThreadLocal<>();
 
     public OperationLogAspect(ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
@@ -53,11 +69,21 @@ public class OperationLogAspect {
     public void before(JoinPoint joinPoint, Log logAnnotation) {
         // Skip GET requests - only log write operations
         if (isGetRequest()) {
-            log.debug("=== Skipping operation log for GET request: {} ===", 
+            log.debug("=== Skipping operation log for GET request: {} ===",
                 joinPoint.getSignature().toShortString());
             return;
         }
         startTimeHolder.set(System.currentTimeMillis());
+        
+        // Capture entity state BEFORE modification for UPDATE/DELETE operations
+        if (shouldCaptureBeforeState(logAnnotation)) {
+            Object beforeEntity = extractEntityFromArgs(joinPoint);
+            if (beforeEntity != null) {
+                beforeEntityHolder.set(beforeEntity);
+                log.debug("=== Captured before-state entity for: {} ===", joinPoint.getSignature().toShortString());
+            }
+        }
+        
         log.info("=== AOP BEFORE: {} ===", joinPoint.getSignature().toShortString());
     }
 
@@ -68,7 +94,22 @@ public class OperationLogAspect {
     public void afterReturning(JoinPoint joinPoint, Log logAnnotation, Object result) {
         if (!isGetRequest()) {
             log.info("=== @AfterReturning TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
+            
+            // Capture entity state AFTER modification for INSERT/UPDATE operations
+            Object afterEntity = null;
+            if (shouldCaptureAfterState(logAnnotation)) {
+                afterEntity = extractEntityFromResult(result);
+                if (afterEntity != null) {
+                    afterEntityHolder.set(afterEntity);
+                    log.debug("=== Captured after-state entity for: {} ===", joinPoint.getSignature().toShortString());
+                }
+            }
+            
             publishOperationLog(joinPoint, logAnnotation, result, null, 0);
+            
+            // Clean up ThreadLocals
+            beforeEntityHolder.remove();
+            afterEntityHolder.remove();
         }
     }
 
@@ -80,6 +121,10 @@ public class OperationLogAspect {
         if (!isGetRequest() && logAnnotation.isLogError()) {
             log.info("=== @AfterThrowing TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
             publishOperationLog(joinPoint, logAnnotation, null, e, 1);
+            
+            // Clean up ThreadLocals
+            beforeEntityHolder.remove();
+            afterEntityHolder.remove();
         }
     }
 
@@ -118,7 +163,50 @@ public class OperationLogAspect {
             log.info("=== Building OperationLogEvent: title={}, method={}, url={} ===",
                 extractTitle(joinPoint, logAnnotation), method, request.getRequestURI());
 
+            // Compute before/after values for audit trail
+            String oldValues = null;
+            String newValues = null;
+            String changedFields = null;
+
+            // First, try to get from service-layer context (preferred)
+            Object beforeEntity = null;
+            Object afterEntity = null;
+            
+            try {
+                Class<?> contextHolderClass = Class.forName("com.pd.modules.system.context.UserAuditContextHolder");
+                beforeEntity = contextHolderClass.getMethod("getBeforeEntity").invoke(null);
+                afterEntity = contextHolderClass.getMethod("getAfterEntity").invoke(null);
+            } catch (ClassNotFoundException ex) {
+                // UserAuditContextHolder not found, fall back to AOP-captured state
+                beforeEntity = beforeEntityHolder.get();
+                afterEntity = afterEntityHolder.get();
+            } catch (Exception ex) {
+                log.debug("=== Failed to read from UserAuditContextHolder, falling back ===", ex);
+                beforeEntity = beforeEntityHolder.get();
+                afterEntity = afterEntityHolder.get();
+            }
+            
+            // Serialize if we have data
+            if (beforeEntity != null || afterEntity != null) {
+                oldValues = EntityDiffUtil.serializeEntity(beforeEntity);
+                newValues = EntityDiffUtil.serializeEntity(afterEntity);
+                changedFields = EntityDiffUtil.computeChangedFields(beforeEntity, afterEntity);
+                log.debug("=== Computed audit trail: oldValues={}, newValues={}, changedFields={} ===",
+                    oldValues != null ? oldValues.length() : 0,
+                    newValues != null ? newValues.length() : 0,
+                    changedFields);
+            }
+
             // Build operation log event
+            String jsonResult = "";
+            if (logAnnotation.isSaveResponseData() && result != null) {
+                try {
+                    jsonResult = objectMapper.writeValueAsString(result);
+                } catch (Exception ex) {
+                    jsonResult = result.toString();
+                }
+            }
+
             OperationLogEvent event = new OperationLogEvent(
                 extractTitle(joinPoint, logAnnotation),           // title
                 logAnnotation.businessType().value(),             // businessType
@@ -131,15 +219,26 @@ public class OperationLogAspect {
                 getClientIp(request),                             // operIp
                 "",                                               // operLocation
                 logAnnotation.isSaveRequestData() ? paramsToString(joinPoint.getArgs()) : "", // operParam
-                (logAnnotation.isSaveResponseData() && result != null) ? result.toString() : "", // jsonResult
+                jsonResult,                                       // jsonResult
                 status,                                           // status
                 e != null ? e.getMessage() : "",                  // errorMsg
-                costTime                                          // costTime
+                costTime,                                         // costTime
+                oldValues,                                        // oldValues
+                newValues,                                        // newValues
+                changedFields                                     // changedFields
             );
 
             log.info("=== Publishing OperationLogEvent ===");
             eventPublisher.publishEvent(event);
             log.info("=== OperationLogEvent published successfully ===");
+
+            // Clean up service-layer context holders
+            try {
+                Class<?> contextHolderClass = Class.forName("com.pd.modules.system.context.UserAuditContextHolder");
+                contextHolderClass.getMethod("clear").invoke(null);
+            } catch (Exception ex) {
+                // Ignore - context holder may not exist
+            }
 
         } catch (Exception ex) {
             log.error("=== Failed to publish operation log event ===", ex);
@@ -196,17 +295,118 @@ public class OperationLogAspect {
     }
 
     /**
-     * Convert parameters to string
+     * Convert parameters to JSON string
      */
     private String paramsToString(Object[] args) {
         if (args == null || args.length == 0) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < args.length; i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(args[i] != null ? args[i].toString() : "null");
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < args.length; i++) {
+                if (i > 0) sb.append(", ");
+                if (args[i] != null) {
+                    sb.append(objectMapper.writeValueAsString(args[i]));
+                } else {
+                    sb.append("null");
+                }
+            }
+            return sb.length() > 4000 ? sb.substring(0, 4000) + "..." : sb.toString();
+        } catch (Exception ex) {
+            // Fallback to toString() if JSON serialization fails
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < args.length; i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(args[i] != null ? args[i].toString() : "null");
+            }
+            return sb.length() > 4000 ? sb.substring(0, 4000) + "..." : sb.toString();
         }
-        return sb.length() > 4000 ? sb.substring(0, 4000) + "..." : sb.toString();
+    }
+
+    /**
+     * Determine if we should capture entity state BEFORE modification.
+     * Returns true for UPDATE and DELETE operations.
+     */
+    private boolean shouldCaptureBeforeState(Log logAnnotation) {
+        int businessType = logAnnotation.businessType().value();
+        return businessType == Log.BusinessType.UPDATE.value() 
+            || businessType == Log.BusinessType.DELETE.value();
+    }
+
+    /**
+     * Determine if we should capture entity state AFTER modification.
+     * Returns true for INSERT and UPDATE operations.
+     */
+    private boolean shouldCaptureAfterState(Log logAnnotation) {
+        int businessType = logAnnotation.businessType().value();
+        return businessType == Log.BusinessType.INSERT.value() 
+            || businessType == Log.BusinessType.UPDATE.value();
+    }
+
+    /**
+     * Extract entity from method arguments.
+     * Looks for the first non-primitive, non-exception argument that is not a standard web type.
+     */
+    private Object extractEntityFromArgs(JoinPoint joinPoint) {
+        Object[] args = joinPoint.getArgs();
+        if (args == null || args.length == 0) {
+            return null;
+        }
+        for (Object arg : args) {
+            if (arg != null && isEntityCandidate(arg)) {
+                return arg;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extract entity from method result.
+     * For operations that return AjaxResult, tries to extract the data field.
+     * Otherwise returns the result itself if it's an entity candidate.
+     */
+    private Object extractEntityFromResult(Object result) {
+        if (result == null) {
+            return null;
+        }
+        // Try to extract entity from common response wrappers
+        try {
+            // If result is AjaxResult (extends HashMap), try to get data field
+            if (result instanceof HashMap) {
+                HashMap<?, ?> map = (HashMap<?, ?>) result;
+                Object data = map.get("data");
+                if (data != null && isEntityCandidate(data)) {
+                    return data;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("=== Could not extract entity from result wrapper ===");
+        }
+
+        // If result itself is an entity candidate, return it
+        if (isEntityCandidate(result)) {
+            return result;
+        }
+        return null;
+    }
+
+    /**
+     * Check if an object is a candidate for entity logging.
+     * Excludes primitive types, strings, exceptions, and common web types.
+     */
+    private boolean isEntityCandidate(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        String className = obj.getClass().getName();
+        // Exclude common non-entity types
+        return !className.startsWith("java.lang.") 
+            && !className.startsWith("jakarta.")
+            && !className.startsWith("javax.")
+            && !className.startsWith("org.springframework.")
+            && !(obj instanceof Exception)
+            && !(obj instanceof String)
+            && !(obj instanceof Number)
+            && !(obj instanceof Boolean);
     }
 }

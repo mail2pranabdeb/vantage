@@ -67,4 +67,13 @@ public class SysOperLog {
 
     @Column(name = "cost_time")
     private Long costTime;
+
+    @Column(name = "old_values", columnDefinition = "TEXT")
+    private String oldValues; // JSON format - values before change
+
+    @Column(name = "new_values", columnDefinition = "TEXT")
+    private String newValues; // JSON format - values after change
+
+    @Column(name = "changed_fields", length = 2000)
+    private String changedFields; // Comma-separated field names that changed
 }

@@ -69,6 +69,11 @@ public class OperationLogListener {
             operLog.setErrorMsg(event.getErrorMsg());
             operLog.setOperTime(LocalDateTime.now());
             operLog.setCostTime(event.getCostTime());
+            
+            // Capture before/after values for audit trail
+            operLog.setOldValues(event.getOldValues());
+            operLog.setNewValues(event.getNewValues());
+            operLog.setChangedFields(event.getChangedFields());
 
             operLogRepository.save(operLog);
             log.info("=== Inserted operation log record into sys_oper_log ===");
