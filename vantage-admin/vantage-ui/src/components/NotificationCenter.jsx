@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Check, CheckCheck, Trash2, AlertCircle, Info, AlertTriangle, XCircle } from 'lucide-react';
+import { Bell, Check, CheckCheck, RefreshCw, AlertCircle, Info, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 const NotificationCenter = () => {

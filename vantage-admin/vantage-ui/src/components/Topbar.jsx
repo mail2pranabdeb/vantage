@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell as BellIcon, LogOut as LogOutIcon, Palette as PaletteIcon, Check } from 'lucide-react';
+import { LogOut as LogOutIcon, Palette as PaletteIcon, Check } from 'lucide-react';
+import NotificationCenter from './NotificationCenter';
 
 const themes = [
     { id: 'sap', label: 'SAP GUI', dot: '#0a6ed1' },
@@ -71,9 +72,7 @@ const Topbar = () => {
                     )}
                 </div>
 
-                <button style={iconBtn} title="Notifications">
-                    <BellIcon size={14} />
-                </button>
+                <NotificationCenter />
 
                 <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 4px' }} />
 
