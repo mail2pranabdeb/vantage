@@ -23,6 +23,7 @@ import ReportList from '../pages/ReportList';
 import DatasourceList from '../pages/DatasourceList';
 import ScriptJobList from '../pages/ScriptJobList';
 import AuditLogList from '../pages/AuditLogList';
+import DashboardBuilder from '../pages/DashboardBuilder';
 
 // Map URLs to components
 const pageComponents = {
@@ -38,6 +39,7 @@ const pageComponents = {
     '/system/logininfor': LogininforList,
     '/system/operlog': OperlogList,
     '/system/audit': AuditLogList,
+    '/system/dashboards': DashboardBuilder,
     '/system/notice': NoticeList,
     '/system/job': JobList,
     '/system/jobLog': JobLogList,

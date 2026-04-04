@@ -459,3 +459,40 @@ CREATE TABLE IF NOT EXISTS sys_notification_settings (
     push_enabled    BOOLEAN DEFAULT true,  
     in_app_enabled  BOOLEAN DEFAULT true  
 );  
+  
+  
+-- =====================================================  
+-- ADVANCED REPORTING DASHBOARD  
+-- =====================================================  
+CREATE SEQUENCE IF NOT EXISTS sys_dashboard_seq START WITH 100 INCREMENT BY 1;  
+  
+CREATE TABLE IF NOT EXISTS sys_dashboard (  
+    dashboard_id    BIGINT PRIMARY KEY,  
+    dashboard_name  VARCHAR(200) NOT NULL,  
+    layout_config   TEXT,  
+    user_id         BIGINT,  
+    is_default      BOOLEAN DEFAULT false,  
+    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
+    update_time     TIMESTAMP  
+);  
+  
+CREATE TABLE IF NOT EXISTS sys_dashboard_widget (  
+    widget_id       BIGINT PRIMARY KEY,  
+    dashboard_id    BIGINT,  
+    widget_type     VARCHAR(50),  
+    title           VARCHAR(200),  
+    query_sql       TEXT,  
+    chart_type      VARCHAR(50),  
+    position_x      INT,  
+    position_y      INT,  
+    width           INT,  
+    height          INT,  
+    refresh_interval INT,  
+    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
+);  
+  
+-- Dashboard Menu  
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)  
+VALUES (30, 'Dashboards', 0, 5, '/system/dashboards', '', 'M', '0', '1', '', 'fa fa-bar-chart', '0', 'admin', CURRENT_TIMESTAMP, 'Advanced Dashboards');  
+  
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 30);  
