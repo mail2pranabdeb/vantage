@@ -394,111 +394,33 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 411);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 412);  
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 413);  
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 414);  
-INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 415);  
-  
- /*
--- =====================================================
--- AUDIT LOG TABLE
--- =====================================================
-CREATE SEQUENCE IF NOT EXISTS sys_audit_log_seq START WITH 100 INCREMENT BY 1;
-
-CREATE TABLE IF NOT EXISTS sys_audit_log (
-    audit_id        BIGINT PRIMARY KEY,
-    table_name      VARCHAR(100) NOT NULL,
-    record_id       BIGINT NOT NULL,
-    operation_type  VARCHAR(20) NOT NULL,
-    old_values      TEXT,
-    new_values      TEXT,
-    changed_fields  VARCHAR(1000),
-    operator        VARCHAR(100),
-    operator_ip     VARCHAR(50),
-    operation_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    module          VARCHAR(50),
-    remarks         VARCHAR(500)
-);
-
-CREATE INDEX IF NOT EXISTS idx_audit_table ON sys_audit_log(table_name, record_id);
-CREATE INDEX IF NOT EXISTS idx_audit_time ON sys_audit_log(operation_time);
-CREATE INDEX IF NOT EXISTS idx_operator ON sys_audit_log(operator);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 415);
 
 
--- Audit Trail Menu
-INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
-VALUES (29, 'Audit Trail', 2, 9, '/system/audit', '', 'C', '0', '1', 'system:audit:list', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Audit Trail Management');
+-- Menu entries for Report Designer (parent_id=5000, URL starts with /)
+insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES (42, 'Report Designer', 4, 2, '/system/report-designer', '', 'C', '0', '1', 'system:report:designer', 'fa fa-wrench', '0', 'admin', CURRENT_TIMESTAMP, 'Visual report designer with drag-and-drop');
 
-INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 29);  */
-  
-  
--- =====================================================  
--- NOTIFICATION SYSTEM  
--- =====================================================  
-CREATE SEQUENCE IF NOT EXISTS sys_notification_seq START WITH 100 INCREMENT BY 1;  
-  
-CREATE TABLE IF NOT EXISTS sys_notification (  
-    notification_id   BIGINT PRIMARY KEY,  
-    user_id         BIGINT,  
-    title           VARCHAR(200) NOT NULL,  
-    content         TEXT,  
-    notification_type VARCHAR(50),  
-    channel         VARCHAR(50),  
-    status          VARCHAR(1) DEFAULT '0',  
-    link_url        VARCHAR(500),  
-    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
-    read_time       TIMESTAMP NULL,  
-    expiry_time     TIMESTAMP  
-);  
-  
-CREATE INDEX IF NOT EXISTS idx_notification_user ON sys_notification(user_id, status);  
-CREATE INDEX IF NOT EXISTS idx_notification_time ON sys_notification(create_time);  
-  
-CREATE TABLE IF NOT EXISTS sys_notification_settings (  
-    setting_id      BIGINT PRIMARY KEY,  
-    user_id         BIGINT,  
-    email_enabled   BOOLEAN DEFAULT true,  
-    sms_enabled     BOOLEAN DEFAULT false,  
-    push_enabled    BOOLEAN DEFAULT true,  
-    in_app_enabled  BOOLEAN DEFAULT true  
-);  
-  
-  
--- =====================================================  
--- ADVANCED REPORTING DASHBOARD  
--- =====================================================  
-CREATE SEQUENCE IF NOT EXISTS sys_dashboard_seq START WITH 100 INCREMENT BY 1;  
-  
-CREATE TABLE IF NOT EXISTS sys_dashboard (  
-    dashboard_id    BIGINT PRIMARY KEY,  
-    dashboard_name  VARCHAR(200) NOT NULL,  
-    layout_config   TEXT,  
-    user_id         BIGINT,  
-    is_default      BOOLEAN DEFAULT false,  
-    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
-    update_time     TIMESTAMP  
-);  
-  
-CREATE TABLE IF NOT EXISTS sys_dashboard_widget (  
-    widget_id       BIGINT PRIMARY KEY,  
-    dashboard_id    BIGINT,  
-    widget_type     VARCHAR(50),  
-    title           VARCHAR(200),  
-    query_sql       TEXT,  
-    chart_type      VARCHAR(50),  
-    position_x      INT,  
-    position_y      INT,  
-    width           INT,  
-    height          INT,  
-    refresh_interval INT,  
-    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
-);  
-  
--- -- Dashboard Menu
--- INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
--- VALUES (30, 'Dashboards', 0, 5, '/system/dashboards', '', 'M', '0', '1', '', 'fa fa-bar-chart', '0', 'admin', CURRENT_TIMESTAMP, 'Advanced Dashboards');
---
--- INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 30);
-  
-  
--- Add before/after columns to sys_oper_log  
-ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS old_values TEXT;  
-ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS new_values TEXT;  
-ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS changed_fields VARCHAR(2000);  
+insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES (43, 'Report Templates', 4, 3, '/system/report-templates', '', 'C', '0', '1', 'system:report:template', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Manage saved report templates');
+
+-- Permissions for report designer
+insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES
+    (421, 'Template Query', 42, 1, '#', '', 'F', '0', '1', 'system:report:template:query', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+    (422, 'Template Add', 42, 2, '#', '', 'F', '0', '1', 'system:report:template:add', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+    (423, 'Template Edit', 42, 3, '#', '', 'F', '0', '1', 'system:report:template:edit', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+    (424, 'Template Delete', 42, 4, '#', '', 'F', '0', '1', 'system:report:template:remove', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+    (425, 'Template Execute', 42, 5, '#', '', 'F', '0', '1', 'system:report:template:execute', '#', '0', 'admin', CURRENT_TIMESTAMP, '');
+
+-- Add role-menu permissions for admin role (role_id=1)
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 42);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 43);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 421);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 422);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 423);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 424);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 425);
+
+
+
