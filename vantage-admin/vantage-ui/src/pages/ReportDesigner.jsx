@@ -24,12 +24,24 @@ const ReportDesigner = () => {
     const [tablePage, setTablePage] = useState(1);
     const tablesPerPage = 5;
     
-    // System tables to exclude
-    const systemTables = ['sys_menu', 'sys_role', 'sys_user', 'sys_role_menu', 'sys_user_role', 
-                          'sys_oper_log', 'sys_logininfor', 'sys_config', 'sys_dict_type', 'sys_dict_data',
-                          'sys_post', 'sys_notice', 'sys_job', 'sys_job_log', 'sys_report', 'sys_report_exec',
-                          'sys_datasource', 'sys_report_template', 'sys_report_email_config', 'sys_datasource_meta',
-                          'sys_job_email_template', 'qrtz_', 'QRTZ_'];
+    // System metadata tables to exclude (database internal, not application tables)
+    const systemTables = [
+        'CONSTANT_CATALOG', 'CONSTANT_SCHEMA',
+        'INDEXES', 'INDEX_COLUMNS', 'INDEX_STATISTICS',
+        'INFORMATION_SCHEMA',
+        'RIGHTS', 'ROLES', 'SESSIONS', 'SESSION_STATE',
+        'SETTINGS', 'SYNONYMS', 'TABLE_PRIVILEGES',
+        'TABLE_TYPES', 'TYPE_INFO',
+        'USERS', 'QUERY_STATISTICS', 'LOCK_STATISTICS',
+        'CROSS_REFERENCE', 'DOMAINS', 'DOMAIN_CONSTRAINTS',
+        'KEY_COLUMN_USAGE', 'REFERENTIAL_CONSTRAINTS',
+        'SEQUENCES', 'CHECK_CONSTRAINTS', 'CONSTRAINTS',
+        'COLLATIONS', 'FUNCTIONS', 'FUNCTION_COLUMNS',
+        'METHODS', 'PARAMETERS', 'SCHEMATA',
+        'TABLE_CONSTRAINTS', 'VIEWS', 'TRIGGERS',
+        'CATALOGS', 'HELP',
+        'QRTZ_' // Quartz internal tables
+    ];
 
     useEffect(() => {
         fetch('/api/system/datasource/list')
