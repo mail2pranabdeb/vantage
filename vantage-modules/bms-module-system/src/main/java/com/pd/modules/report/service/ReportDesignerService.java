@@ -271,7 +271,7 @@ public class ReportDesignerService {
     /**
      * Execute SQL on a specific datasource
      */
-    private List<Map<String, Object>> executeQuery(String datasourceKey, String sql) {
+    public List<Map<String, Object>> executeQuery(String datasourceKey, String sql) {
         Optional<SysDatasource> dsOpt = datasourceRepository.findByDatasourceKey(datasourceKey);
         if (dsOpt.isEmpty()) {
             // Fallback to default JdbcTemplate

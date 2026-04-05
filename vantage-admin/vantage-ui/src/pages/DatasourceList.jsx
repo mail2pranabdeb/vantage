@@ -462,12 +462,12 @@ const DatasourceList = () => {
                             placeholder="Database username"
                         />
                         <FormInput
-                            label="Password *"
+                            label="Password"
                             name="password"
                             type="password"
                             value={formData.password}
                             onChange={handleInputChange}
-                            placeholder="Database password"
+                            placeholder="Leave empty if no password"
                         />
                     </div>
 

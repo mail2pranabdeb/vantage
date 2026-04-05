@@ -1,0 +1,13 @@
+2026-04-05 22:58:20.829 [SpringApplicationShutdownHook] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED paused.
+2026-04-05 22:58:20.831 [SpringApplicationShutdownHook] [,] INFO  o.s.boot.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-05 22:58:20.944 [tomcat-shutdown] [,] INFO  o.s.boot.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-04-05 22:58:20.946 [SpringApplicationShutdownHook] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Stopping...
+2026-04-05 22:58:20.947 [SpringApplicationShutdownHook] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@32ec4c8d]]
+2026-04-05 22:58:20.947 [SpringApplicationShutdownHook] [,] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Stopped.
+2026-04-05 22:58:20.953 [SpringApplicationShutdownHook] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED shutting down.
+2026-04-05 22:58:20.953 [SpringApplicationShutdownHook] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED paused.
+2026-04-05 22:58:20.953 [SpringApplicationShutdownHook] [,] INFO  org.quartz.core.QuartzScheduler - Scheduler schedulerFactoryBean_$_NON_CLUSTERED shutdown complete.
+2026-04-05 22:58:20.954 [SpringApplicationShutdownHook] [,] INFO  o.s.s.quartz.SchedulerFactoryBean - Shutting down Quartz Scheduler
+2026-04-05 22:58:20.957 [SpringApplicationShutdownHook] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-05 22:58:20.960 [SpringApplicationShutdownHook] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-05 22:58:20.962 [SpringApplicationShutdownHook] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

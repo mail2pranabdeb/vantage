@@ -137,14 +137,17 @@ public class ReportDesignerController extends BaseController {
     @PostMapping("/preview")
     public AjaxResult previewReport(@RequestBody SysReportTemplate template) {
         try {
-            // Temporarily save, execute, then return (don't persist)
+            // Build SQL from template (visual builder or manual SQL)
             String sql = reportDesignerService.buildSqlFromTemplate(template);
             logger.info("Preview SQL: {}", sql);
-            
-            // Execute with default datasource
-            List<Map<String, Object>> data = reportDesignerService.executeTemplate(
-                template.getTemplateId() != null ? template.getTemplateId() : 1L, "{}");
-            
+
+            // Replace parameters in SQL (for preview, use empty params)
+            String paramsJson = "{}";
+
+            // Execute the SQL directly (not from database)
+            List<Map<String, Object>> data = reportDesignerService.executeQuery(
+                template.getDatasourceKey(), sql);
+
             Map<String, Object> result = new java.util.LinkedHashMap<>();
             result.put("sql", sql);
             result.put("data", data);
