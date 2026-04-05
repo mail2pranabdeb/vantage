@@ -18,6 +18,18 @@ const ReportDesigner = () => {
     const [previewData, setPreviewData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('datasource'); // datasource, columns, sql, preview, email
+    
+    // Table filter and pagination state
+    const [tableSearch, setTableSearch] = useState('');
+    const [tablePage, setTablePage] = useState(1);
+    const tablesPerPage = 5;
+    
+    // System tables to exclude
+    const systemTables = ['sys_menu', 'sys_role', 'sys_user', 'sys_role_menu', 'sys_user_role', 
+                          'sys_oper_log', 'sys_logininfor', 'sys_config', 'sys_dict_type', 'sys_dict_data',
+                          'sys_post', 'sys_notice', 'sys_job', 'sys_job_log', 'sys_report', 'sys_report_exec',
+                          'sys_datasource', 'sys_report_template', 'sys_report_email_config', 'sys_datasource_meta',
+                          'sys_job_email_template', 'qrtz_', 'QRTZ_'];
 
     useEffect(() => {
         fetch('/api/system/datasource/list')
@@ -31,7 +43,16 @@ const ReportDesigner = () => {
         fetch(`/api/system/report-designer/datasource/${dsKey}/tables`)
             .then(res => res.json())
             .then(data => {
-                if (data.code === 200) setTables(data.data || []);
+                if (data.code === 200) {
+                    const allTables = data.data || [];
+                    // Filter out system tables
+                    const userTables = allTables.filter(t => {
+                        const name = t.tableName.toLowerCase();
+                        return !systemTables.some(sys => name.includes(sys.toLowerCase()));
+                    });
+                    setTables(userTables);
+                    setTablePage(1);
+                }
             });
     };
 
@@ -87,6 +108,16 @@ const ReportDesigner = () => {
         const selectCols = cols.map(c => c.alias ? `${c.tableName}.${c.columnName} AS ${c.alias}` : `${c.tableName}.${c.columnName}`);
         return `SELECT ${selectCols.join(', ')} FROM ${cols[0].tableName}`;
     };
+
+    // Filter and paginate tables
+    const filteredTables = tables.filter(t => 
+        !tableSearch || t.tableName.toLowerCase().includes(tableSearch.toLowerCase())
+    );
+    const totalPages = Math.ceil(filteredTables.length / tablesPerPage);
+    const paginatedTables = filteredTables.slice(
+        (tablePage - 1) * tablesPerPage,
+        tablePage * tablesPerPage
+    );
 
     const saveTemplate = () => {
         const isEdit = !!template.templateId;
@@ -190,62 +221,88 @@ const ReportDesigner = () => {
                 {/* Columns Tab */}
                 {activeTab === 'columns' && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', height: 'calc(100vh - 280px)', minHeight: '500px' }}>
-                        <div style={{ overflow: 'auto', paddingRight: '8px' }}>
-                            <h3 style={{ marginBottom: '16px', position: 'sticky', top: 0, background: 'var(--bg-secondary)', padding: '8px 0', zIndex: 1 }}>Available Tables & Columns</h3>
-                            {tables.length === 0 ? (
-                                <p style={{ color: 'var(--text-muted)' }}>Select a datasource first</p>
-                            ) : (
-                                tables.map(table => (
-                                    <div key={table.tableName} style={{ marginBottom: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                                        <div style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <Table size={14} /> {table.tableName}
-                                        </div>
-                                        {table.columns.map(col => (
-                                            <div key={col.columnName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', marginBottom: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px' }}>
-                                                <span>{col.columnName} <span style={{ color: 'var(--text-muted)' }}>({col.dataType})</span></span>
-                                                <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => addColumn(table.tableName, col)}>
-                                                    <Plus size={12} /> Add
-                                                </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '8px' }}>
+                            <div style={{ flexShrink: 0, marginBottom: '12px' }}>
+                                <h3 style={{ marginBottom: '8px' }}>Available Tables & Columns</h3>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input className="form-input" placeholder="Search tables..." value={tableSearch} onChange={e => { setTableSearch(e.target.value); setTablePage(1); }}
+                                        style={{ fontSize: '12px', padding: '6px 10px' }} />
+                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                        {filteredTables.length} tables
+                                    </span>
+                                </div>
+                            </div>
+                            <div style={{ flex: 1, overflow: 'auto' }}>
+                                {paginatedTables.length === 0 ? (
+                                    <p style={{ color: 'var(--text-muted)' }}>
+                                        {tables.length === 0 ? 'Select a datasource first' : 'No tables match your search'}
+                                    </p>
+                                ) : (
+                                    paginatedTables.map(table => (
+                                        <div key={table.tableName} style={{ marginBottom: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                                            <div style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Table size={14} /> {table.tableName}
+                                                {table.tableComment && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>({table.tableComment})</span>}
                                             </div>
-                                        ))}
-                                    </div>
-                                ))
+                                            {table.columns.map(col => (
+                                                <div key={col.columnName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', marginBottom: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px' }}>
+                                                    <span>{col.columnName} <span style={{ color: 'var(--text-muted)' }}>({col.dataType})</span></span>
+                                                    <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => addColumn(table.tableName, col)}>
+                                                        <Plus size={12} /> Add
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div style={{ flexShrink: 0, marginTop: '12px', display: 'flex', justifyContent: 'center', gap: '4px', alignItems: 'center' }}>
+                                    <button className="btn btn-secondary" disabled={tablePage === 1} onClick={() => setTablePage(p => p - 1)}
+                                        style={{ padding: '4px 8px', fontSize: '11px' }}>Prev</button>
+                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{tablePage} / {totalPages}</span>
+                                    <button className="btn btn-secondary" disabled={tablePage === totalPages} onClick={() => setTablePage(p => p + 1)}
+                                        style={{ padding: '4px 8px', fontSize: '11px' }}>Next</button>
+                                </div>
                             )}
                         </div>
-                        <div style={{ overflow: 'auto', borderLeft: '1px solid var(--border-color)', paddingLeft: '16px' }}>
-                            <h3 style={{ marginBottom: '16px', position: 'sticky', top: 0, background: 'var(--bg-secondary)', padding: '8px 0', zIndex: 1 }}>Selected Columns</h3>
-                            {JSON.parse(template.columnsConfig || '[]').length === 0 ? (
-                                <p style={{ color: 'var(--text-muted)' }}>No columns selected</p>
-                            ) : (
-                                <table className="ag-table" style={{ fontSize: '12px' }}>
-                                    <thead>
-                                        <tr>
-                                            <th>Column</th>
-                                            <th>Alias</th>
-                                            <th>Width</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {JSON.parse(template.columnsConfig || '[]').map((col, idx) => (
-                                            <tr key={idx}>
-                                                <td>{col.tableName}.{col.columnName}</td>
-                                                <td><input className="form-input" style={{ width: '80px', padding: '2px 4px', fontSize: '11px' }} value={col.alias || ''} onChange={e => {
-                                                    const cols = JSON.parse(template.columnsConfig);
-                                                    cols[idx].alias = e.target.value;
-                                                    setTemplate(prev => ({ ...prev, columnsConfig: JSON.stringify(cols) }));
-                                                }} /></td>
-                                                <td><input type="number" className="form-input" style={{ width: '50px', padding: '2px 4px', fontSize: '11px' }} value={col.width} onChange={e => {
-                                                    const cols = JSON.parse(template.columnsConfig);
-                                                    cols[idx].width = parseInt(e.target.value);
-                                                    setTemplate(prev => ({ ...prev, columnsConfig: JSON.stringify(cols) }));
-                                                }} /></td>
-                                                <td><button className="btn btn-secondary" style={{ padding: '2px 4px' }} onClick={() => removeColumn(idx)}><X size={12} /></button></td>
+                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', borderLeft: '1px solid var(--border-color)', paddingLeft: '16px' }}>
+                            <h3 style={{ marginBottom: '16px', flexShrink: 0 }}>Selected Columns ({JSON.parse(template.columnsConfig || '[]').length})</h3>
+                            <div style={{ flex: 1, overflow: 'auto' }}>
+                                {JSON.parse(template.columnsConfig || '[]').length === 0 ? (
+                                    <p style={{ color: 'var(--text-muted)' }}>No columns selected</p>
+                                ) : (
+                                    <table className="ag-table" style={{ fontSize: '12px' }}>
+                                        <thead>
+                                            <tr>
+                                                <th>Column</th>
+                                                <th>Alias</th>
+                                                <th>Width</th>
+                                                <th></th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
+                                        </thead>
+                                        <tbody>
+                                            {JSON.parse(template.columnsConfig || '[]').map((col, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{col.tableName}.{col.columnName}</td>
+                                                    <td><input className="form-input" style={{ width: '80px', padding: '2px 4px', fontSize: '11px' }} value={col.alias || ''} onChange={e => {
+                                                        const cols = JSON.parse(template.columnsConfig);
+                                                        cols[idx].alias = e.target.value;
+                                                        setTemplate(prev => ({ ...prev, columnsConfig: JSON.stringify(cols) }));
+                                                    }} /></td>
+                                                    <td><input type="number" className="form-input" style={{ width: '50px', padding: '2px 4px', fontSize: '11px' }} value={col.width} onChange={e => {
+                                                        const cols = JSON.parse(template.columnsConfig);
+                                                        cols[idx].width = parseInt(e.target.value);
+                                                        setTemplate(prev => ({ ...prev, columnsConfig: JSON.stringify(cols) }));
+                                                    }} /></td>
+                                                    <td><button className="btn btn-secondary" style={{ padding: '2px 4px' }} onClick={() => removeColumn(idx)}><X size={12} /></button></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
