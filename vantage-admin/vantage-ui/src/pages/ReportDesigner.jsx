@@ -189,9 +189,9 @@ const ReportDesigner = () => {
 
                 {/* Columns Tab */}
                 {activeTab === 'columns' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div>
-                            <h3 style={{ marginBottom: '16px' }}>Available Tables & Columns</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', height: 'calc(100vh - 280px)', minHeight: '500px' }}>
+                        <div style={{ overflow: 'auto', paddingRight: '8px' }}>
+                            <h3 style={{ marginBottom: '16px', position: 'sticky', top: 0, background: 'var(--bg-secondary)', padding: '8px 0', zIndex: 1 }}>Available Tables & Columns</h3>
                             {tables.length === 0 ? (
                                 <p style={{ color: 'var(--text-muted)' }}>Select a datasource first</p>
                             ) : (
@@ -212,12 +212,12 @@ const ReportDesigner = () => {
                                 ))
                             )}
                         </div>
-                        <div>
-                            <h3 style={{ marginBottom: '16px' }}>Selected Columns</h3>
+                        <div style={{ overflow: 'auto', borderLeft: '1px solid var(--border-color)', paddingLeft: '16px' }}>
+                            <h3 style={{ marginBottom: '16px', position: 'sticky', top: 0, background: 'var(--bg-secondary)', padding: '8px 0', zIndex: 1 }}>Selected Columns</h3>
                             {JSON.parse(template.columnsConfig || '[]').length === 0 ? (
                                 <p style={{ color: 'var(--text-muted)' }}>No columns selected</p>
                             ) : (
-                                <table className="ag-table">
+                                <table className="ag-table" style={{ fontSize: '12px' }}>
                                     <thead>
                                         <tr>
                                             <th>Column</th>
@@ -230,17 +230,17 @@ const ReportDesigner = () => {
                                         {JSON.parse(template.columnsConfig || '[]').map((col, idx) => (
                                             <tr key={idx}>
                                                 <td>{col.tableName}.{col.columnName}</td>
-                                                <td><input className="form-input" style={{ width: '100px', padding: '4px' }} value={col.alias || ''} onChange={e => {
+                                                <td><input className="form-input" style={{ width: '80px', padding: '2px 4px', fontSize: '11px' }} value={col.alias || ''} onChange={e => {
                                                     const cols = JSON.parse(template.columnsConfig);
                                                     cols[idx].alias = e.target.value;
                                                     setTemplate(prev => ({ ...prev, columnsConfig: JSON.stringify(cols) }));
                                                 }} /></td>
-                                                <td><input type="number" className="form-input" style={{ width: '60px', padding: '4px' }} value={col.width} onChange={e => {
+                                                <td><input type="number" className="form-input" style={{ width: '50px', padding: '2px 4px', fontSize: '11px' }} value={col.width} onChange={e => {
                                                     const cols = JSON.parse(template.columnsConfig);
                                                     cols[idx].width = parseInt(e.target.value);
                                                     setTemplate(prev => ({ ...prev, columnsConfig: JSON.stringify(cols) }));
                                                 }} /></td>
-                                                <td><button className="btn btn-secondary" style={{ padding: '4px' }} onClick={() => removeColumn(idx)}><X size={12} /></button></td>
+                                                <td><button className="btn btn-secondary" style={{ padding: '2px 4px' }} onClick={() => removeColumn(idx)}><X size={12} /></button></td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -303,30 +303,48 @@ const ReportDesigner = () => {
 
                 {/* Email & Schedule Tab */}
                 {activeTab === 'email' && (
-                    <div>
+                    <div style={{ maxHeight: 'calc(100vh - 280px)', overflow: 'auto' }}>
                         <h3 style={{ marginBottom: '16px' }}>Email & Scheduling</h3>
                         <p style={{ color: 'var(--text-muted)', marginBottom: '16px', fontSize: '12px' }}>
-                            To schedule this report with email delivery, create a Quartz job that calls this template.
+                            Configure how this report will be sent via email and scheduled.
                         </p>
-                        <div className="form-group">
-                            <label className="form-label">Output Format</label>
-                            <select className="form-input" value={template.outputFormat} onChange={e => setTemplate(prev => ({ ...prev, outputFormat: e.target.value }))}>
-                                <option value="EXCEL">Excel</option>
-                                <option value="CSV">CSV</option>
-                                <option value="PDF">PDF</option>
-                                <option value="HTML">HTML</option>
-                                <option value="JSON">JSON</option>
-                            </select>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <div className="form-group">
+                                    <label className="form-label">Output Format</label>
+                                    <select className="form-input" value={template.outputFormat} onChange={e => setTemplate(prev => ({ ...prev, outputFormat: e.target.value }))}>
+                                        <option value="EXCEL">Excel (.xls)</option>
+                                        <option value="CSV">CSV</option>
+                                        <option value="HTML">HTML</option>
+                                        <option value="JSON">JSON</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div style={{ marginTop: '24px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                            <h4 style={{ marginBottom: '12px' }}>How to Schedule:</h4>
-                            <ol style={{ fontSize: '13px', lineHeight: '1.8' }}>
-                                <li>Save this report template</li>
-                                <li>Go to Job Scheduling → Add Job</li>
-                                <li>Set invoke target: <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>reportExecutionJob.executeAndEmailTemplate(templateId, 'EXCEL', ['user@email.com'], null, 'Report', 'Please find attached', '{{}}')</code></li>
-                                <li>Set cron expression for schedule</li>
-                                <li>Enable the job</li>
+
+                        <div style={{ marginTop: '24px', padding: '20px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <h4 style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Settings size={16} /> How to Schedule this Report
+                            </h4>
+                            <ol style={{ fontSize: '13px', lineHeight: '2', paddingLeft: '20px' }}>
+                                <li><strong>Save this report template</strong> using the Save button above</li>
+                                <li>Note the <code style={{ background: 'var(--bg-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px' }}>Template ID</code> shown after saving</li>
+                                <li>Go to <strong>Job Scheduling → Add Job</strong></li>
+                                <li>Set invoke target:
+                                    <pre style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', fontSize: '11px', marginTop: '8px', overflow: 'auto' }}>
+reportExecutionJob.executeAndEmailTemplate(TEMPLATE_ID, 'EXCEL', ['user@email.com'], null, 'Daily Report', 'Please find the attached report.', '{}')</pre>
+                                </li>
+                                <li>Set cron expression (e.g., <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>0 9 * * *</code> for daily at 9 AM)</li>
+                                <li>Enable the job and the report will be emailed automatically</li>
                             </ol>
+                        </div>
+
+                        <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                            <h4 style={{ marginBottom: '8px', color: '#3b82f6' }}>Quick Test</h4>
+                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                                Click the Excel or CSV button above to download the current report and verify the output format.
+                            </p>
                         </div>
                     </div>
                 )}

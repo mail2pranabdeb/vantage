@@ -5,7 +5,7 @@ spring:
   application:
     name: vantage
   datasource:
-    url: jdbc:h2:file:../data/vantage;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:file:D:/Projects/vantage-master/data/vantage;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
     driverClassName: org.h2.Driver
     username: sa
     password:
@@ -16,7 +16,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update  # Create missing tables after schema.sql
-    show-sql: false
+    show-sql: true
 
 # Module initialization flags
 # Set to false to skip data initialization for specific modules

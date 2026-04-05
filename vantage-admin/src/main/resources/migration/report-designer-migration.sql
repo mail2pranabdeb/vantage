@@ -70,26 +70,26 @@ CREATE TABLE IF NOT EXISTS sys_datasource_meta (
 CREATE SEQUENCE IF NOT EXISTS sys_datasource_meta_seq START WITH 100 INCREMENT BY 1;
 
 -- Menu entries for Report Designer (parent_id=5000, URL starts with /)
-MERGE INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
-VALUES (5007, 'Report Designer', 5000, 2, '/system/report-designer', '', 'C', '0', '1', 'system:report:designer', 'fa fa-wrench', '0', 'admin', CURRENT_TIMESTAMP, 'Visual report designer with drag-and-drop');
+insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES (42, 'Report Designer', 4, 2, '/system/report-designer', '', 'C', '0', '1', 'system:report:designer', 'fa fa-wrench', '0', 'admin', CURRENT_TIMESTAMP, 'Visual report designer with drag-and-drop');
 
-MERGE INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
-VALUES (5008, 'Report Templates', 5000, 3, '/system/report-templates', '', 'C', '0', '1', 'system:report:template', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Manage saved report templates');
+insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+VALUES (43, 'Report Templates', 4, 3, '/system/report-templates', '', 'C', '0', '1', 'system:report:template', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Manage saved report templates');
 
 -- Permissions for report designer
-MERGE INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
+insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
 VALUES 
-(5009, 'Template Query', 5007, 1, '#', '', 'F', '0', '1', 'system:report:template:query', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
-(5010, 'Template Add', 5007, 2, '#', '', 'F', '0', '1', 'system:report:template:add', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
-(5011, 'Template Edit', 5007, 3, '#', '', 'F', '0', '1', 'system:report:template:edit', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
-(5012, 'Template Delete', 5007, 4, '#', '', 'F', '0', '1', 'system:report:template:remove', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
-(5013, 'Template Execute', 5007, 5, '#', '', 'F', '0', '1', 'system:report:template:execute', '#', '0', 'admin', CURRENT_TIMESTAMP, '');
+(421, 'Template Query', 42, 1, '#', '', 'F', '0', '1', 'system:report:template:query', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+(422, 'Template Add', 42, 2, '#', '', 'F', '0', '1', 'system:report:template:add', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+(423, 'Template Edit', 42, 3, '#', '', 'F', '0', '1', 'system:report:template:edit', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+(424, 'Template Delete', 42, 4, '#', '', 'F', '0', '1', 'system:report:template:remove', '#', '0', 'admin', CURRENT_TIMESTAMP, ''),
+(425, 'Template Execute', 42, 5, '#', '', 'F', '0', '1', 'system:report:template:execute', '#', '0', 'admin', CURRENT_TIMESTAMP, '');
 
 -- Add role-menu permissions for admin role (role_id=1)
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5007);
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5008);
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5009);
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5010);
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5011);
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5012);
-MERGE INTO sys_role_menu (role_id, menu_id) VALUES (1, 5013);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 42);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 43);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 421);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 422);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 423);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 424);
+insert INTO sys_role_menu (role_id, menu_id) VALUES (1, 425);
