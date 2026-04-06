@@ -61,6 +61,24 @@ function App() {
     }
   }, [location, authState]);
 
+  // Listen for navigation events from child components (e.g., ReportManagement opening ReportDesigner)
+  useEffect(() => {
+    const handleChildNavigate = (event) => {
+      const { pageConfig } = event.detail || {};
+      if (pageConfig && authState === 'authenticated') {
+        const existingTab = tabs.find(t => t.id === pageConfig.id);
+        if (existingTab) {
+          setActiveTabId(existingTab.id);
+        } else {
+          addTab(pageConfig);
+          setActiveTabId(pageConfig.id);
+        }
+      }
+    };
+    window.addEventListener('navigate-to-page', handleChildNavigate);
+    return () => window.removeEventListener('navigate-to-page', handleChildNavigate);
+  }, [authState, tabs]);
+
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
