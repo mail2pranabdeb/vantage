@@ -140,34 +140,41 @@ public class ReportDesignerService {
      * Build SQL from visual builder configuration
      */
     public String buildSqlFromTemplate(SysReportTemplate template) {
-        if ("SQL".equals(template.getReportMode()) || "HYBRID".equals(template.getReportMode())) {
-            return template.getSqlContent();
+        // If SQL mode has content, use it directly
+        if (("SQL".equals(template.getReportMode()) || "HYBRID".equals(template.getReportMode())) 
+                && template.getSqlContent() != null && !template.getSqlContent().trim().isEmpty()) {
+            return template.getSqlContent().trim();
         }
 
-        // VISUAL_BUILDER mode: generate SQL from configs
+        // Build SQL from visual column config
         try {
-            StringBuilder sql = new StringBuilder("SELECT ");
-
-            // Columns
-            if (template.getColumnsConfig() != null) {
-                JsonNode columns = objectMapper.readTree(template.getColumnsConfig());
-                List<String> selectCols = new ArrayList<>();
-                for (JsonNode col : columns) {
-                    String expr = col.has("expression") ? col.get("expression").asText() : col.get("columnName").asText();
-                    String alias = col.has("alias") && !col.get("alias").asText().isEmpty() ? col.get("alias").asText() : null;
-                    if (alias != null && !alias.equals(expr)) {
-                        selectCols.add(expr + " AS " + alias);
-                    } else {
-                        selectCols.add(expr);
-                    }
-                }
-                sql.append(String.join(", ", selectCols));
-            } else {
-                sql.append("*");
+            if (template.getColumnsConfig() == null || template.getColumnsConfig().equals("[]") || template.getColumnsConfig().trim().isEmpty()) {
+                throw new IllegalArgumentException("No columns configured. Please add columns in the Columns tab or write SQL in the SQL tab.");
             }
 
+            StringBuilder sql = new StringBuilder("SELECT ");
+            JsonNode columns = objectMapper.readTree(template.getColumnsConfig());
+            
+            if (columns.isEmpty()) {
+                throw new IllegalArgumentException("No columns configured. Please add columns in the Columns tab.");
+            }
+
+            List<String> selectCols = new ArrayList<>();
+            for (JsonNode col : columns) {
+                String expr = col.has("expression") && !col.get("expression").asText().isEmpty() 
+                    ? col.get("expression").asText() 
+                    : col.get("columnName").asText();
+                String alias = col.has("alias") && !col.get("alias").asText().isEmpty() ? col.get("alias").asText() : null;
+                if (alias != null && !alias.equals(expr)) {
+                    selectCols.add(expr + " AS " + alias);
+                } else {
+                    selectCols.add(expr);
+                }
+            }
+            sql.append(String.join(", ", selectCols));
+
             // FROM
-            if (template.getTablesConfig() != null) {
+            if (template.getTablesConfig() != null && !template.getTablesConfig().equals("[]")) {
                 JsonNode tables = objectMapper.readTree(template.getTablesConfig());
                 if (tables.isArray() && tables.size() > 0) {
                     sql.append(" FROM ").append(tables.get(0).get("tableName").asText());
@@ -180,10 +187,16 @@ public class ReportDesignerService {
                         }
                     }
                 }
+            } else {
+                // Use table from first column
+                JsonNode firstCol = columns.get(0);
+                if (firstCol.has("tableName")) {
+                    sql.append(" FROM ").append(firstCol.get("tableName").asText());
+                }
             }
 
             // WHERE
-            if (template.getFiltersConfig() != null) {
+            if (template.getFiltersConfig() != null && !template.getFiltersConfig().equals("[]")) {
                 JsonNode filters = objectMapper.readTree(template.getFiltersConfig());
                 List<String> conditions = new ArrayList<>();
                 for (JsonNode filter : filters) {
@@ -199,7 +212,7 @@ public class ReportDesignerService {
             }
 
             // GROUP BY
-            if (template.getGroupByConfig() != null) {
+            if (template.getGroupByConfig() != null && !template.getGroupByConfig().equals("[]")) {
                 JsonNode groups = objectMapper.readTree(template.getGroupByConfig());
                 List<String> groupCols = new ArrayList<>();
                 for (JsonNode g : groups) {
@@ -211,7 +224,7 @@ public class ReportDesignerService {
             }
 
             // ORDER BY
-            if (template.getOrderByConfig() != null) {
+            if (template.getOrderByConfig() != null && !template.getOrderByConfig().equals("[]")) {
                 JsonNode orders = objectMapper.readTree(template.getOrderByConfig());
                 List<String> orderParts = new ArrayList<>();
                 for (JsonNode o : orders) {
@@ -224,9 +237,11 @@ public class ReportDesignerService {
 
             log.info("Generated SQL from template: {}", sql);
             return sql.toString();
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to build SQL from template", e);
-            return "SELECT 1";
+            throw new RuntimeException("Failed to build SQL from visual configuration: " + e.getMessage());
         }
     }
 
