@@ -209,24 +209,24 @@ public class SysReportController extends BaseController {
     // ==================== Job Scheduling ====================
 
     /**
-     * Schedule a saved report as a Quartz job with email delivery
+     * Schedule a report/template as a Quartz job with email delivery
+     * Accepts both reportId and templateId (for backward compatibility)
      */
     @PreAuthorize("hasAuthority('system:report:edit')")
     @Log(title = "Schedule Report", businessType = BusinessType.OTHER)
-    @PostMapping("/schedule/{reportId}")
-    public AjaxResult scheduleReport(@PathVariable Long reportId, @RequestBody Map<String, Object> config) {
+    @PostMapping("/schedule/{templateId}")
+    public AjaxResult scheduleReport(@PathVariable Long templateId, @RequestBody Map<String, Object> config) {
         try {
-            Optional<SysReport> reportOpt = reportService.findById(reportId);
-            if (reportOpt.isEmpty()) {
-                return error("Report not found");
-            }
+            // Try to get as template first
+            var templateOpt = reportDesignerService.findById(templateId);
+            String reportName = templateOpt.map(t -> t.getTemplateName()).orElse("Report_" + templateId);
+            String defaultFormat = templateOpt.map(t -> t.getOutputFormat()).orElse("EXCEL");
 
-            SysReport report = reportOpt.get();
             String cronExpression = (String) config.get("cronExpression");
             String recipients = (String) config.get("recipients");
             String subject = (String) config.get("subject");
             String body = (String) config.get("body");
-            String format = (String) config.getOrDefault("format", report.getOutputFormat());
+            String format = (String) config.getOrDefault("format", defaultFormat);
             String params = (String) config.getOrDefault("params", "{}");
 
             if (cronExpression == null || cronExpression.isEmpty()) {
@@ -236,28 +236,20 @@ public class SysReportController extends BaseController {
                 return error("Email recipients are required");
             }
 
-            // Update report with schedule config
-            report.setScheduleEnabled(true);
-            report.setScheduleCron(cronExpression);
-            report.setEmailEnabled(true);
-            report.setEmailRecipients(recipients);
-            report.setEmailSubject(subject != null ? subject : report.getReportName());
-            reportService.save(report);
-
             // Create Quartz job
-            String jobName = "report_" + reportId;
+            String jobName = "report_" + templateId;
             String jobGroup = "reports";
 
             JobDetail jobDetail = JobBuilder.newJob(com.pd.modules.report.job.ReportScheduleJob.class)
                 .withIdentity(jobName, jobGroup)
-                .withDescription("Report: " + report.getReportName())
+                .withDescription("Report: " + reportName)
                 .build();
 
-            jobDetail.getJobDataMap().put("reportId", reportId);
+            jobDetail.getJobDataMap().put("templateId", templateId);
             jobDetail.getJobDataMap().put("params", params);
             jobDetail.getJobDataMap().put("recipients", recipients);
             jobDetail.getJobDataMap().put("ccEmails", config.get("ccEmails"));
-            jobDetail.getJobDataMap().put("subject", subject);
+            jobDetail.getJobDataMap().put("subject", subject != null ? subject : reportName + " Report");
             jobDetail.getJobDataMap().put("body", body != null ? body : "Please find the attached report.");
             jobDetail.getJobDataMap().put("format", format);
 

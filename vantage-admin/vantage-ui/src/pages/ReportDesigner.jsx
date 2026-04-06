@@ -43,6 +43,24 @@ const ReportDesigner = () => {
         'QRTZ_' // Quartz internal tables
     ];
 
+    // Load template from URL params
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const templateId = params.get('templateId');
+        if (templateId) {
+            fetch(`/api/system/report-designer/templates/${templateId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code === 200 && data.data) {
+                        setTemplate(data.data);
+                        if (data.data.datasourceKey) {
+                            loadTables(data.data.datasourceKey);
+                        }
+                    }
+                });
+        }
+    }, []);
+
     useEffect(() => {
         fetch('/api/system/datasource/list')
             .then(res => res.json())

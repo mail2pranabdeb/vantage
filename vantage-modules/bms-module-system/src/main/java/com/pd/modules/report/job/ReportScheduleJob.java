@@ -1,8 +1,7 @@
 package com.pd.modules.report.job;
 
-import com.pd.common.core.domain.AjaxResult;
-import com.pd.modules.report.domain.SysReport;
-import com.pd.modules.report.service.SysReportService;
+import com.pd.modules.report.domain.SysReportTemplate;
+import com.pd.modules.report.service.ReportDesignerService;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -17,33 +16,34 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.ByteArrayResource;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * Quartz job for executing saved reports and sending email with attachments.
- * This job executes a saved report by ID and emails the results.
+ * Quartz job for executing report templates and sending email with attachments.
+ * This job executes a template by ID and emails the results.
  */
 @Component
 public class ReportScheduleJob implements Job {
 
     private static final Logger log = LoggerFactory.getLogger(ReportScheduleJob.class);
 
-    private final SysReportService reportService;
+    private final ReportDesignerService reportDesignerService;
     private final JavaMailSender mailSender;
 
-    public ReportScheduleJob(SysReportService reportService, JavaMailSender mailSender) {
-        this.reportService = reportService;
+    public ReportScheduleJob(ReportDesignerService reportDesignerService, JavaMailSender mailSender) {
+        this.reportDesignerService = reportDesignerService;
         this.mailSender = mailSender;
     }
 
     @Override
     public void execute(JobExecutionContext context) {
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        Long reportId = dataMap.getLong("reportId");
+        // Support both templateId and reportId for backward compatibility
+        Long templateId = dataMap.containsKey("templateId") ? dataMap.getLong("templateId") : dataMap.getLong("reportId");
         String params = dataMap.getString("params");
         String recipients = dataMap.getString("recipients");
         String ccEmails = dataMap.getString("ccEmails");
@@ -56,18 +56,18 @@ public class ReportScheduleJob implements Job {
         }
 
         log.info("=== Report Schedule Job Started ===");
-        log.info("Report ID: {}", reportId);
+        log.info("Template ID: {}", templateId);
         log.info("Recipients: {}", recipients);
         log.info("Format: {}", format);
 
         try {
-            // Execute the report
-            List<Map<String, Object>> data = reportService.executeReport(reportId, params);
+            // Execute the report template
+            List<Map<String, Object>> data = reportDesignerService.executeTemplate(templateId, params);
             log.info("Report executed successfully. Rows: {}", data.size());
 
             // Generate attachment
-            byte[] attachmentBytes = reportService.generateReportAttachment(reportId, params, format);
-            String fileName = generateFileName(reportId, format);
+            byte[] attachmentBytes = reportDesignerService.generateReportAttachment(templateId, params, format);
+            String fileName = generateFileName(templateId, format);
             String contentType = getContentType(format);
 
             // Send email
@@ -115,16 +115,16 @@ public class ReportScheduleJob implements Job {
         mailSender.send(message);
     }
 
-    private String generateFileName(Long reportId, String format) {
+    private String generateFileName(Long templateId, String format) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String reportName = "Report_" + reportId;
+        String reportName = "Report_" + templateId;
         try {
-            SysReport report = reportService.findById(reportId).orElse(null);
-            if (report != null) {
-                reportName = report.getReportName();
+            Optional<SysReportTemplate> template = reportDesignerService.findById(templateId);
+            if (template.isPresent()) {
+                reportName = template.get().getTemplateName();
             }
         } catch (Exception e) {
-            log.warn("Failed to get report name for file naming", e);
+            log.warn("Failed to get template name for file naming", e);
         }
         String extension = getFileExtension(format);
         return reportName.replaceAll("[^a-zA-Z0-9_-]", "_") + "_" + timestamp + "." + extension;
