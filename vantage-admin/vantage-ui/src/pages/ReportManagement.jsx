@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Play, Download, Code, RefreshCw, Clock, Trash2 } from 'lucide-react';
+import { FileText, Plus, Play, Download, Code, RefreshCw, Clock, Trash2, Calendar, Copy } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import Modal from '../components/Modal';
 
@@ -17,8 +17,11 @@ const ReportManagement = () => {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+    const [isScheduleHelpOpen, setIsScheduleHelpOpen] = useState(false);
     const [currentTemplate, setCurrentTemplate] = useState(null);
     const [templateVersions, setTemplateVersions] = useState([]);
+    const [scheduleCode, setScheduleCode] = useState('');
+    const [scheduleEmail, setScheduleEmail] = useState('');
 
     useEffect(() => {
         fetchTemplates();
@@ -105,6 +108,36 @@ const ReportManagement = () => {
             .then(data => { if (data.code === 200) { addToast('success', 'Version activated', 3000); fetchTemplates(); handleViewVersions(currentTemplate); } });
     };
 
+    const handleScheduleHelp = (row) => {
+        setCurrentTemplate(row);
+        setScheduleEmail('');
+        fetch(`/api/system/report-designer/templates/${row.templateKey}/versions`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setTemplateVersions(data.data || []);
+                    const activeVersions = (data.data || []).filter(v => v.status === '0');
+                    if (activeVersions.length > 0) {
+                        const v = activeVersions[0];
+                        setScheduleCode(`reportExecutionJob.execute(${v.templateId}, 'EXCEL', ['your@email.com'], null, '${row.templateName}', 'Please find the attached report.', '{}')`);
+                    }
+                }
+            });
+        setIsScheduleHelpOpen(true);
+    };
+
+    const updateScheduleCode = (versionId, email) => {
+        const version = templateVersions.find(v => v.templateId === versionId);
+        if (version) {
+            setScheduleCode(`reportExecutionJob.execute(${version.templateId}, 'EXCEL', ['${email || 'your@email.com'}'], null, '${currentTemplate.templateName}', 'Please find the attached report.', '{}')`);
+        }
+        setScheduleEmail(email);
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => addToast('success', 'Copied to clipboard!', 2000));
+    };
+
     return (
         <div style={{ height: 'calc(100vh - 50px)', overflow: 'auto', padding: '8px' }}>
             <div className="page-header" style={{ marginBottom: '12px' }}>
@@ -156,6 +189,7 @@ const ReportManagement = () => {
                                         <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                                             <button onClick={() => handleEditInDesigner(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Edit in Designer"><Code size={14} /></button>
                                             <button onClick={() => handleExecute(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Execute"><Play size={14} /></button>
+                                            <button onClick={() => handleScheduleHelp(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Get Schedule Code"><Calendar size={14} /></button>
                                             <button onClick={() => handleViewVersions(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Versions"><Clock size={14} /></button>
                                             <button onClick={() => handleExport(t, t.outputFormat || 'EXCEL')} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Export"><Download size={14} /></button>
                                             <button onClick={() => handleDelete(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--danger)', borderColor: 'var(--danger)' }} title="Delete"><Trash2 size={14} /></button>
@@ -197,6 +231,57 @@ const ReportManagement = () => {
                             ))}
                         </div>
                     )}
+                </div>
+            </Modal>
+
+            {/* Schedule Help Modal */}
+            <Modal isOpen={isScheduleHelpOpen} onClose={() => setIsScheduleHelpOpen(false)} title={`Schedule: ${currentTemplate?.templateName || ''}`} size="medium">
+                <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '16px', fontSize: '12px' }}>
+                        <strong>Step 1:</strong> Copy the invoke target below<br/>
+                        <strong>Step 2:</strong> Go to <strong>Job Scheduling → Add Job</strong><br/>
+                        <strong>Step 3:</strong> Paste the invoke target and set cron expression
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Select Version</label>
+                        <select className="form-input" value={templateVersions.find(v => scheduleCode.includes(String(v.templateId)))?.templateId || ''}
+                            onChange={e => updateScheduleCode(parseInt(e.target.value), scheduleEmail)}>
+                            {templateVersions.filter(v => v.status === '0').map(v => (
+                                <option key={v.templateId} value={v.templateId}>v{v.version} - {v.changeLog || 'No notes'}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Email Recipients</label>
+                        <input className="form-input" value={scheduleEmail} onChange={e => {
+                            setScheduleEmail(e.target.value);
+                            const version = templateVersions.find(v => scheduleCode.includes(String(v.templateId)));
+                            if (version) setScheduleCode(`reportExecutionJob.execute(${version.templateId}, 'EXCEL', ['${e.target.value || 'your@email.com'}'], null, '${currentTemplate?.templateName || ''}', 'Please find the attached report.', '{}')`);
+                        }} placeholder="user@email.com,user2@email.com" />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Invoke Target (copy this)</label>
+                        <div style={{ position: 'relative' }}>
+                            <pre style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '8px', fontSize: '11px', overflow: 'auto', maxHeight: '100px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>{scheduleCode}</pre>
+                            <button onClick={() => copyToClipboard(scheduleCode)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
+                                <Copy size={12} /> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)', fontSize: '12px' }}>
+                        <strong>Next Steps:</strong>
+                        <ol style={{ paddingLeft: '20px', marginTop: '8px', lineHeight: '1.8' }}>
+                            <li>Go to <strong>Job Scheduling → Add Job</strong></li>
+                            <li>Set <strong>Job Name</strong> (e.g., "{currentTemplate?.templateName} Daily Report")</li>
+                            <li>Paste the invoke target above</li>
+                            <li>Set cron expression (e.g., <code style={{ background: 'var(--bg-primary)', padding: '2px 6px', borderRadius: '4px' }}>0 0 9 * * ?</code> for daily 9 AM)</li>
+                            <li>Enable and save</li>
+                        </ol>
+                    </div>
                 </div>
             </Modal>
         </div>

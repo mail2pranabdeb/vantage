@@ -39,6 +39,35 @@ public class ReportScheduleJob implements Job {
         this.mailSender = mailSender;
     }
 
+    /**
+     * Direct execute method - called from job invokeTarget
+     * Example: reportScheduleJob.execute(1, 'EXCEL', ['user@email.com'], null, 'Report Subject', 'Body', '{}')
+     */
+    public void execute(Long templateId, String format, String[] recipients, String[] ccEmails,
+                        String subject, String body, String params) {
+        log.info("=== Report Schedule Job (direct call) ===");
+        log.info("Template ID: {}, Format: {}, Recipients: {}", templateId, format, recipients);
+
+        try {
+            List<Map<String, Object>> data = reportDesignerService.executeTemplate(templateId, params != null ? params : "{}");
+            log.info("Report executed successfully. Rows: {}", data.size());
+
+            byte[] attachmentBytes = reportDesignerService.generateReportAttachment(templateId, params != null ? params : "{}", format != null ? format : "EXCEL");
+            String fileName = generateFileName(templateId, format != null ? format : "EXCEL");
+            String contentType = getContentType(format != null ? format : "EXCEL");
+
+            if (recipients != null && recipients.length > 0) {
+                sendReportEmail(String.join(",", recipients), ccEmails != null ? String.join(",", ccEmails) : null,
+                    subject, body != null ? body : "Please find the attached report.",
+                    attachmentBytes, fileName, contentType);
+                log.info("=== Report email sent successfully ===");
+            }
+        } catch (Exception e) {
+            log.error("=== Report Schedule Job Failed ===", e);
+            throw new RuntimeException("Report schedule job failed", e);
+        }
+    }
+
     @Override
     public void execute(JobExecutionContext context) {
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
