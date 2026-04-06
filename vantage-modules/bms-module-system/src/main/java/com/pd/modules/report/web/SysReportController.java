@@ -5,7 +5,10 @@ import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.report.domain.SysReport;
+import com.pd.modules.report.domain.SysReportTemplate;
+import com.pd.modules.report.service.ReportDesignerService;
 import com.pd.modules.report.service.SysReportService;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +30,12 @@ public class SysReportController extends BaseController {
 
     @Autowired
     private SysReportService reportService;
+
+    @Autowired
+    private ReportDesignerService reportDesignerService;
+
+    @Autowired
+    private Scheduler scheduler;
 
     @PreAuthorize("hasAuthority('system:report:list')")
     @GetMapping("/list")
@@ -100,14 +111,210 @@ public class SysReportController extends BaseController {
     @PreAuthorize("hasAuthority('system:report:execute')")
     @Log(title = "Report Management", businessType = BusinessType.EXPORT)
     @GetMapping("/download/{reportId}")
-    public void download(@PathVariable Long reportId, 
+    public void download(@PathVariable Long reportId,
                          @RequestParam(required = false) String params,
                          @RequestParam(required = false, defaultValue = "EXCEL") String format,
                          HttpServletResponse response) throws Exception {
         List<Map<String, Object>> data = reportService.executeReport(reportId, params);
         SysReport report = reportService.findById(reportId)
             .orElseThrow(() -> new RuntimeException("Report not found"));
-        
+
         reportService.downloadReport(response, report, data, format);
+    }
+
+    // ==================== Template-Based Report Creation ====================
+
+    /**
+     * Get available templates for report creation
+     */
+    @PreAuthorize("hasAuthority('system:report:add')")
+    @GetMapping("/templates")
+    public AjaxResult getTemplates() {
+        return success(reportDesignerService.findAll());
+    }
+
+    /**
+     * Get a specific template by ID
+     */
+    @PreAuthorize("hasAuthority('system:report:add')")
+    @GetMapping("/template/{templateId}")
+    public AjaxResult getTemplate(@PathVariable Long templateId) {
+        return reportDesignerService.findById(templateId)
+            .map(this::success)
+            .orElseGet(() -> error("Template not found"));
+    }
+
+    /**
+     * Create a report from a template
+     * Populates the report with template's configuration
+     */
+    @PreAuthorize("hasAuthority('system:report:add')")
+    @Log(title = "Report from Template", businessType = BusinessType.INSERT)
+    @PostMapping("/from-template")
+    public AjaxResult createFromTemplate(@RequestBody Map<String, Object> request) {
+        try {
+            Long templateId = Long.valueOf(request.get("templateId").toString());
+            String reportName = (String) request.get("reportName");
+            String reportKey = (String) request.get("reportKey");
+            String scheduleCron = (String) request.get("scheduleCron");
+            String emailRecipients = (String) request.get("emailRecipients");
+            String emailSubject = (String) request.get("emailSubject");
+
+            // Get template
+            Optional<SysReportTemplate> templateOpt = reportDesignerService.findById(templateId);
+            if (templateOpt.isEmpty()) {
+                return error("Template not found");
+            }
+
+            SysReportTemplate template = templateOpt.get();
+
+            // Create report from template
+            SysReport report = new SysReport();
+            report.setReportName(reportName != null ? reportName : template.getTemplateName() + " Report");
+            report.setReportKey(reportKey != null ? reportKey : template.getTemplateKey() + "_report");
+            report.setReportType("SQL");
+            report.setDatasourceKey(template.getDatasourceKey());
+            report.setSqlContent(template.getSqlContent());
+            report.setColumnsConfig(template.getColumnsConfig());
+            report.setParamsConfig(template.getFiltersConfig());
+            report.setOutputFormat(template.getOutputFormat() != null ? template.getOutputFormat() : "EXCEL");
+            report.setTemplateId(templateId);
+            report.setCreateBy("admin");
+
+            // Set scheduling if provided
+            if (scheduleCron != null && !scheduleCron.isEmpty()) {
+                report.setScheduleEnabled(true);
+                report.setScheduleCron(scheduleCron);
+            }
+
+            // Set email if provided
+            if (emailRecipients != null && !emailRecipients.isEmpty()) {
+                report.setEmailEnabled(true);
+                report.setEmailRecipients(emailRecipients);
+                report.setEmailSubject(emailSubject != null ? emailSubject : report.getReportName());
+            }
+
+            if (reportService.existsByReportKey(report.getReportKey())) {
+                return error("Report key already exists: " + report.getReportKey());
+            }
+
+            reportService.save(report);
+            return success("Report created from template successfully", report);
+        } catch (Exception e) {
+            log.error("Failed to create report from template", e);
+            return error("Failed to create report: " + e.getMessage());
+        }
+    }
+
+    // ==================== Job Scheduling ====================
+
+    /**
+     * Schedule a saved report as a Quartz job with email delivery
+     */
+    @PreAuthorize("hasAuthority('system:report:edit')")
+    @Log(title = "Schedule Report", businessType = BusinessType.OTHER)
+    @PostMapping("/schedule/{reportId}")
+    public AjaxResult scheduleReport(@PathVariable Long reportId, @RequestBody Map<String, Object> config) {
+        try {
+            Optional<SysReport> reportOpt = reportService.findById(reportId);
+            if (reportOpt.isEmpty()) {
+                return error("Report not found");
+            }
+
+            SysReport report = reportOpt.get();
+            String cronExpression = (String) config.get("cronExpression");
+            String recipients = (String) config.get("recipients");
+            String subject = (String) config.get("subject");
+            String body = (String) config.get("body");
+            String format = (String) config.getOrDefault("format", report.getOutputFormat());
+            String params = (String) config.getOrDefault("params", "{}");
+
+            if (cronExpression == null || cronExpression.isEmpty()) {
+                return error("Cron expression is required");
+            }
+            if (recipients == null || recipients.isEmpty()) {
+                return error("Email recipients are required");
+            }
+
+            // Update report with schedule config
+            report.setScheduleEnabled(true);
+            report.setScheduleCron(cronExpression);
+            report.setEmailEnabled(true);
+            report.setEmailRecipients(recipients);
+            report.setEmailSubject(subject != null ? subject : report.getReportName());
+            reportService.save(report);
+
+            // Create Quartz job
+            String jobName = "report_" + reportId;
+            String jobGroup = "reports";
+
+            JobDetail jobDetail = JobBuilder.newJob(com.pd.modules.report.job.ReportScheduleJob.class)
+                .withIdentity(jobName, jobGroup)
+                .withDescription("Report: " + report.getReportName())
+                .build();
+
+            jobDetail.getJobDataMap().put("reportId", reportId);
+            jobDetail.getJobDataMap().put("params", params);
+            jobDetail.getJobDataMap().put("recipients", recipients);
+            jobDetail.getJobDataMap().put("ccEmails", config.get("ccEmails"));
+            jobDetail.getJobDataMap().put("subject", subject);
+            jobDetail.getJobDataMap().put("body", body != null ? body : "Please find the attached report.");
+            jobDetail.getJobDataMap().put("format", format);
+
+            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression);
+            CronTrigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity(jobName + "_trigger", jobGroup)
+                .withSchedule(scheduleBuilder)
+                .build();
+
+            // Delete existing job if any
+            scheduler.deleteJob(new JobKey(jobName, jobGroup));
+
+            // Schedule the job
+            scheduler.scheduleJob(jobDetail, trigger);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("jobName", jobName);
+            result.put("jobGroup", jobGroup);
+            result.put("cronExpression", cronExpression);
+            result.put("nextFireTime", trigger.getNextFireTime());
+
+            return success("Report scheduled successfully", result);
+        } catch (Exception e) {
+            log.error("Failed to schedule report", e);
+            return error("Failed to schedule report: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Unschedule a report (delete Quartz job)
+     */
+    @PreAuthorize("hasAuthority('system:report:edit')")
+    @Log(title = "Unschedule Report", businessType = BusinessType.OTHER)
+    @DeleteMapping("/unschedule/{reportId}")
+    public AjaxResult unscheduleReport(@PathVariable Long reportId) {
+        try {
+            Optional<SysReport> reportOpt = reportService.findById(reportId);
+            if (reportOpt.isEmpty()) {
+                return error("Report not found");
+            }
+
+            SysReport report = reportOpt.get();
+            String jobName = "report_" + reportId;
+            String jobGroup = "reports";
+
+            // Delete Quartz job
+            scheduler.deleteJob(new JobKey(jobName, jobGroup));
+
+            // Update report
+            report.setScheduleEnabled(false);
+            report.setScheduleCron(null);
+            reportService.save(report);
+
+            return success("Report unscheduled successfully");
+        } catch (Exception e) {
+            log.error("Failed to unschedule report", e);
+            return error("Failed to unschedule report: " + e.getMessage());
+        }
     }
 }

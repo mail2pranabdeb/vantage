@@ -75,6 +75,12 @@ public class SysReport implements Serializable {
     @Column(name = "email_subject", length = 255)
     private String emailSubject;
 
+    @Column(name = "template_id")
+    private Long templateId;
+
+    @Transient
+    private String templateName;
+
     // Getters and Setters
     public Long getReportId() { return reportId; }
     public void setReportId(Long reportId) { this.reportId = reportId; }
@@ -116,4 +122,8 @@ public class SysReport implements Serializable {
     public void setEmailRecipients(String emailRecipients) { this.emailRecipients = emailRecipients; }
     public String getEmailSubject() { return emailSubject; }
     public void setEmailSubject(String emailSubject) { this.emailSubject = emailSubject; }
+    public Long getTemplateId() { return templateId; }
+    public void setTemplateId(Long templateId) { this.templateId = templateId; }
+    public String getTemplateName() { return templateName; }
+    public void setTemplateName(String templateName) { this.templateName = templateName; }
 }
