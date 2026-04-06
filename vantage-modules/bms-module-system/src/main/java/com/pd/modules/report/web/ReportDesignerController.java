@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controller for report designer.
@@ -87,6 +88,65 @@ public class ReportDesignerController extends BaseController {
             return error("Template not found");
         }
         return success("Template deleted successfully");
+    }
+
+    // ==================== Version Management ====================
+
+    /**
+     * Get all versions of a template
+     */
+    @PreAuthorize("hasAuthority('system:report:template:query')")
+    @GetMapping("/templates/{templateKey}/versions")
+    public AjaxResult getTemplateVersions(@PathVariable String templateKey) {
+        List<SysReportTemplate> versions = reportDesignerService.findByTemplateKeyOrderByVersionDesc(templateKey);
+        return success(versions);
+    }
+
+    /**
+     * Get active versions for job scheduling dropdown
+     */
+    @PreAuthorize("hasAuthority('system:report:template:query')")
+    @GetMapping("/templates/active-versions")
+    public AjaxResult getActiveVersions() {
+        List<SysReportTemplate> all = reportDesignerService.findAll();
+        // Group by templateKey and get latest active version
+        java.util.Map<String, SysReportTemplate> latest = new java.util.LinkedHashMap<>();
+        for (SysReportTemplate t : all) {
+            if ("0".equals(t.getStatus())) {
+                latest.put(t.getTemplateKey(), t);
+            }
+        }
+        return success(new java.util.ArrayList<>(latest.values()));
+    }
+
+    /**
+     * Archive a template version
+     */
+    @PreAuthorize("hasAuthority('system:report:template:edit')")
+    @PutMapping("/templates/{templateId}/archive")
+    public AjaxResult archiveTemplate(@PathVariable Long templateId) {
+        return reportDesignerService.findById(templateId)
+            .map(t -> {
+                t.setStatus("2"); // Archived
+                reportDesignerService.save(t);
+                return success("Template archived");
+            })
+            .orElseGet(() -> error("Template not found"));
+    }
+
+    /**
+     * Activate a template version
+     */
+    @PreAuthorize("hasAuthority('system:report:template:edit')")
+    @PutMapping("/templates/{templateId}/activate")
+    public AjaxResult activateTemplate(@PathVariable Long templateId) {
+        return reportDesignerService.findById(templateId)
+            .map(t -> {
+                t.setStatus("0"); // Active
+                reportDesignerService.save(t);
+                return success("Template activated");
+            })
+            .orElseGet(() -> error("Template not found"));
     }
 
     // ==================== Datasource Metadata ====================

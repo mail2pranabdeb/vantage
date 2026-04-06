@@ -15,14 +15,17 @@ const ReportManagement = () => {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+    const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
     const [currentTemplate, setCurrentTemplate] = useState(null);
+    const [templateVersions, setTemplateVersions] = useState([]);
     const [scheduleData, setScheduleData] = useState({
         cronExpression: '',
         recipients: '',
         ccEmails: '',
         subject: '',
         body: 'Please find the attached report.',
-        format: 'EXCEL'
+        format: 'EXCEL',
+        versionId: null // New field for version selection
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -109,15 +112,62 @@ const ReportManagement = () => {
     // Open schedule modal
     const handleScheduleClick = (row) => {
         setCurrentTemplate(row);
+        // Load versions for this template
+        fetch(`/api/system/report-designer/templates/${row.templateKey}/versions`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) setTemplateVersions(data.data || []);
+            });
         setScheduleData({
             cronExpression: '',
             recipients: '',
             ccEmails: '',
             subject: row.templateName + ' Report',
             body: 'Please find the attached report.',
-            format: row.outputFormat || 'EXCEL'
+            format: row.outputFormat || 'EXCEL',
+            versionId: row.templateId // Default to latest version
         });
         setIsScheduleModalOpen(true);
+    };
+
+    // View versions
+    const handleViewVersions = (row) => {
+        setCurrentTemplate(row);
+        fetch(`/api/system/report-designer/templates/${row.templateKey}/versions`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setTemplateVersions(data.data || []);
+                    setIsVersionModalOpen(true);
+                }
+            });
+    };
+
+    // Archive a version
+    const handleArchiveVersion = (version) => {
+        if (!confirm(`Archive version ${version.version} of ${version.templateName}?`)) return;
+        fetch(`/api/system/report-designer/templates/${version.templateId}/archive`, { method: 'PUT' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    addToast('success', 'Version archived', 3000);
+                    fetchTemplates();
+                    if (isVersionModalOpen) handleViewVersions(currentTemplate);
+                }
+            });
+    };
+
+    // Activate a version
+    const handleActivateVersion = (version) => {
+        fetch(`/api/system/report-designer/templates/${version.templateId}/activate`, { method: 'PUT' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    addToast('success', 'Version activated', 3000);
+                    fetchTemplates();
+                    if (isVersionModalOpen) handleViewVersions(currentTemplate);
+                }
+            });
     };
 
     // Schedule report as Quartz job
@@ -127,14 +177,11 @@ const ReportManagement = () => {
             return;
         }
         setSubmitting(true);
-        fetch(`/api/system/report/schedule/${currentTemplate.templateId}`, {
+        const targetId = scheduleData.versionId || currentTemplate.templateId;
+        fetch(`/api/system/report/schedule/${targetId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                ...scheduleData,
-                templateId: currentTemplate.templateId,
-                reportName: currentTemplate.templateName
-            })
+            body: JSON.stringify(scheduleData)
         })
         .then(res => res.json())
         .then(data => {
@@ -190,8 +237,8 @@ const ReportManagement = () => {
                             <th style={{ padding: '10px', textAlign: 'left' }}>Report Name</th>
                             <th style={{ padding: '10px', textAlign: 'center' }}>Datasource</th>
                             <th style={{ padding: '10px', textAlign: 'center' }}>Format</th>
-                            <th style={{ padding: '10px', textAlign: 'center' }}>Schedule</th>
-                            <th style={{ padding: '10px', textAlign: 'center', width: '360px' }}>Actions</th>
+                            <th style={{ padding: '10px', textAlign: 'center' }}>Version</th>
+                            <th style={{ padding: '10px', textAlign: 'center', width: '400px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -220,6 +267,9 @@ const ReportManagement = () => {
                                         <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#8b5cf620', color: '#8b5cf6' }}>{t.outputFormat}</span>
                                     </td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
+                                        <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#10b98120', color: '#10b981' }}>v{t.version}</span>
+                                    </td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>
                                         <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Not scheduled</span>
                                     </td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
@@ -227,6 +277,7 @@ const ReportManagement = () => {
                                             <button onClick={() => handleEditInDesigner(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Edit in Designer"><Code size={14} /></button>
                                             <button onClick={() => handleExecute(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Execute"><Play size={14} /></button>
                                             <button onClick={() => handleScheduleClick(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Schedule"><Calendar size={14} /></button>
+                                            <button onClick={() => handleViewVersions(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Versions"><Clock size={14} /></button>
                                             <button onClick={() => handleExport(t, t.outputFormat || 'EXCEL')} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Export"><Download size={14} /></button>
                                             <button onClick={() => handleDelete(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--danger)', borderColor: 'var(--danger)' }} title="Delete"><Trash2 size={14} /></button>
                                         </div>
@@ -247,6 +298,17 @@ const ReportManagement = () => {
                     </button>
                 </>}>
                 <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    <div className="form-group">
+                        <label className="form-label">Template Version *</label>
+                        <select value={scheduleData.versionId || ''} onChange={e => setScheduleData(p => ({ ...p, versionId: parseInt(e.target.value) }))} className="form-input">
+                            {templateVersions.map(v => (
+                                <option key={v.templateId} value={v.templateId}>
+                                    v{v.version} - {v.status === '0' ? 'Active' : v.status === '2' ? 'Archived' : 'Inactive'} ({v.changeLog || 'No notes'})
+                                </option>
+                            ))}
+                        </select>
+                        <small className="form-help">Select which version of the report to schedule</small>
+                    </div>
                     <div className="form-group">
                         <label className="form-label">Cron Expression *</label>
                         <input value={scheduleData.cronExpression} onChange={e => setScheduleData(p => ({ ...p, cronExpression: e.target.value }))} className="form-input" placeholder="e.g., 0 0 9 * * ?" />
@@ -280,6 +342,51 @@ const ReportManagement = () => {
                             <option value="EXCEL">Excel (.xls)</option><option value="CSV">CSV</option><option value="HTML">HTML</option><option value="JSON">JSON</option>
                         </select>
                     </div>
+                </div>
+            </Modal>
+
+            {/* Version History Modal */}
+            <Modal isOpen={isVersionModalOpen} onClose={() => setIsVersionModalOpen(false)} title={`Versions: ${currentTemplate?.templateName || ''}`} size="medium">
+                <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    {templateVersions.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No versions found</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {templateVersions.map(v => (
+                                <div key={v.templateId} style={{
+                                    padding: '12px', borderRadius: '8px',
+                                    border: `1px solid ${v.status === '0' ? 'var(--success)' : 'var(--border-color)'}`,
+                                    background: v.status === '0' ? 'rgba(16, 185, 129, 0.05)' : 'var(--bg-tertiary)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontWeight: 700, fontSize: '14px' }}>v{v.version}</span>
+                                            <span style={{
+                                                padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 600,
+                                                background: v.status === '0' ? '#10b98120' : v.status === '2' ? '#f59e0b20' : '#ef444420',
+                                                color: v.status === '0' ? '#10b981' : v.status === '2' ? '#f59e0b' : '#ef4444'
+                                            }}>
+                                                {v.status === '0' ? 'Active' : v.status === '2' ? 'Archived' : 'Inactive'}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            {v.status !== '0' && (
+                                                <button onClick={() => handleActivateVersion(v)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '10px' }}>Activate</button>
+                                            )}
+                                            {v.status === '0' && (
+                                                <button onClick={() => handleArchiveVersion(v)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '10px', color: '#f59e0b', borderColor: '#f59e0b' }}>Archive</button>
+                                            )}
+                                            <button onClick={() => handleEditInDesigner(v)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '10px' }}><Code size={12} /></button>
+                                        </div>
+                                    </div>
+                                    {v.changeLog && <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{v.changeLog}</div>}
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                        {v.updateTime ? `Updated: ${new Date(v.updateTime).toLocaleString()}` : `Created: ${new Date(v.createTime).toLocaleString()}`}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </Modal>
         </div>

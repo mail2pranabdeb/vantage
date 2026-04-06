@@ -19,6 +19,12 @@ public interface SysReportTemplateRepository extends JpaRepository<SysReportTemp
 
     boolean existsByTemplateKey(String templateKey);
 
-    @Query("SELECT r FROM SysReportTemplate r WHERE r.datasourceKey = :datasourceKey AND r.status = '0'")
+    @Query("SELECT r FROM SysReportTemplate r WHERE r.datasourceKey = :datasourceKey AND r.status = '0' ORDER BY r.version DESC")
     List<SysReportTemplate> findByDatasourceKey(@Param("datasourceKey") String datasourceKey);
+
+    @Query("SELECT r FROM SysReportTemplate r WHERE r.templateKey = :templateKey AND r.status = '0' ORDER BY r.version DESC")
+    List<SysReportTemplate> findByTemplateKeyOrderByVersionDesc(@Param("templateKey") String templateKey);
+
+    @Query("SELECT MAX(r.version) FROM SysReportTemplate r WHERE r.templateKey = :templateKey")
+    Integer findMaxVersionByTemplateKey(@Param("templateKey") String templateKey);
 }

@@ -99,7 +99,16 @@ public class SysReportTemplate {
     private String outputFormat = "EXCEL";
 
     @Column(name = "status", length = 1)
-    private String status = "0";
+    private String status = "0"; // 0=Active, 1=Inactive, 2=Archived
+
+    @Column(name = "version")
+    private Integer version = 1;
+
+    @Column(name = "parent_template_id")
+    private Long parentTemplateId;
+
+    @Column(name = "change_log", length = 500)
+    private String changeLog;
 
     @Column(name = "create_by", length = 64, updatable = false)
     @CreatedBy
@@ -288,5 +297,29 @@ public class SysReportTemplate {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public Long getParentTemplateId() {
+        return parentTemplateId;
+    }
+
+    public void setParentTemplateId(Long parentTemplateId) {
+        this.parentTemplateId = parentTemplateId;
+    }
+
+    public String getChangeLog() {
+        return changeLog;
+    }
+
+    public void setChangeLog(String changeLog) {
+        this.changeLog = changeLog;
     }
 }

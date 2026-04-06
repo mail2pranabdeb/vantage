@@ -64,8 +64,26 @@ public class ReportDesignerService {
         return templateRepository.findByTemplateKey(templateKey);
     }
 
+    public List<SysReportTemplate> findByTemplateKeyOrderByVersionDesc(String templateKey) {
+        return templateRepository.findByTemplateKeyOrderByVersionDesc(templateKey);
+    }
+
     @Transactional
     public SysReportTemplate save(SysReportTemplate template) {
+        // Auto-increment version when editing existing template
+        if (template.getTemplateId() != null) {
+            Optional<SysReportTemplate> existing = templateRepository.findById(template.getTemplateId());
+            if (existing.isPresent()) {
+                SysReportTemplate existingTpl = existing.get();
+                Integer maxVersion = templateRepository.findMaxVersionByTemplateKey(existingTpl.getTemplateKey());
+                template.setVersion((maxVersion != null ? maxVersion : 0) + 1);
+                template.setParentTemplateId(existingTpl.getParentTemplateId() != null ? existingTpl.getParentTemplateId() : existingTpl.getTemplateId());
+                template.setCreateTime(existingTpl.getCreateTime());
+                template.setCreateBy(existingTpl.getCreateBy());
+            }
+        } else {
+            template.setVersion(1);
+        }
         template.setUpdateTime(LocalDateTime.now());
         return templateRepository.save(template);
     }
