@@ -15,19 +15,24 @@ import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 @Configuration
 public class QuartzConfig {
 
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
+
     /**
      * Job factory that supports Spring bean autowiring
      */
     public static final class AutowireCapableJobFactory extends SpringBeanJobFactory {
 
-        @Autowired
-        private AutowireCapableBeanFactory beanFactory;
+        private final AutowireCapableBeanFactory beanFactory;
+
+        public AutowireCapableJobFactory(AutowireCapableBeanFactory beanFactory) {
+            this.beanFactory = beanFactory;
+        }
 
         @Override
         protected Object createJobInstance(TriggerFiredBundle bundle) throws Exception {
             Object jobInstance = super.createJobInstance(bundle);
             beanFactory.autowireBean(jobInstance);
-            beanFactory.initializeBean(jobInstance, "jobInstance");
             return jobInstance;
         }
     }
@@ -35,7 +40,7 @@ public class QuartzConfig {
     @Bean
     public SchedulerFactoryBean schedulerFactoryBean() {
         SchedulerFactoryBean factoryBean = new SchedulerFactoryBean();
-        factoryBean.setJobFactory(new AutowireCapableJobFactory());
+        factoryBean.setJobFactory(new AutowireCapableJobFactory(beanFactory));
         factoryBean.setOverwriteExistingJobs(true);
         factoryBean.setWaitForJobsToCompleteOnShutdown(true);
         return factoryBean;
