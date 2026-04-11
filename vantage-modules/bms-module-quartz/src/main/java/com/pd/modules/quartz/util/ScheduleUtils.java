@@ -36,7 +36,7 @@ public class ScheduleUtils {
      */
     public static void createScheduleJob(Scheduler scheduler, SysJob job) {
         try {
-            Class<? extends Job> jobClass = AbstractQuartzJob.class;
+            Class<? extends Job> jobClass = QuartzTaskExecutor.class;
             
             JobDetail jobDetail = JobBuilder.newJob(jobClass)
                     .withIdentity(getJobKey(job.getJobId(), job.getJobGroup()))
