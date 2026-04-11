@@ -43,7 +43,8 @@ public class MailConfig {
                     sender.setHost(host);
                     sender.setPort(port != null ? Integer.parseInt(port) : 587);
                     sender.setUsername(username != null ? username : "");
-                    // Password logging commented out for security, but verify it's not null
+                    sender.setPassword(password != null ? password : "");
+                    // Password logging commented out for security
                     log.info("=== Mail Sender Configured Successfully ===");
                     log.info("   Host: {}, Port: {}, User: {}", host, port, username);
                     

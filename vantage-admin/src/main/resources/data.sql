@@ -11,6 +11,19 @@ insert into sys_role (role_id, role_name, role_key, role_sort, data_scope, statu
 values(2, 'Common User', 'common', 2, '2', '0', '0', 'admin', current_timestamp, '', null, 'Common User Role');
 
 -- ==================== SYSTEM SMTP CONFIG ====================
+MERGE INTO sys_config (config_id, config_name, config_key, config_value, config_type, create_by, create_time, update_by, update_time,
+    remark) VALUES
+    (1, 'mail host', 'mail.host', 'smtp.gmail.com', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System setting'),
+    (2, 'mail port', 'mail.port', '587', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System setting'),
+    (3, 'mail username', 'mail.username', 'mailservicekedb@gmail.com', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System
+setting'),
+    (4, 'mail password', 'mail.password', 'ndomzzwgpyvdsomb', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System setting'
+    ),
+    (5, 'mail fromEmail', 'mail.fromEmail', 'mailservicekedb@gmail.com', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP,
+    'System setting'),
+    (6, 'mail fromName', 'mail.fromName', 'Vantage Admin', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System setting'),
+    (7, 'mail enableAuth', 'mail.enableAuth', 'true', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System setting'),
+    (8, 'mail enableTls', 'mail.enableTls', 'true', 'Y', 'admin', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'System setting');
 
 
 
