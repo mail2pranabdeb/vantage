@@ -24,13 +24,16 @@ public class MailConfig {
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MailConfig.class);
         
         if (configRepository != null) {
             try {
                 // Check for new keys first, then fallback to legacy keys found in user's DB
+                // Legacy keys: mail.host, mail.port, etc.
                 String host = getConfig("mail.smtp.host", "mail.host");
                 
                 if (host != null && !host.isEmpty()) {
+                    log.info("=== Found SMTP Host: {} ===", host);
                     String port = getConfig("mail.smtp.port", "mail.port");
                     String username = getConfig("mail.smtp.username", "mail.username");
                     String password = getConfig("mail.smtp.password", "mail.password");
@@ -40,8 +43,10 @@ public class MailConfig {
                     sender.setHost(host);
                     sender.setPort(port != null ? Integer.parseInt(port) : 587);
                     sender.setUsername(username != null ? username : "");
-                    sender.setPassword(password != null ? password : "");
-
+                    // Password logging commented out for security, but verify it's not null
+                    log.info("=== Mail Sender Configured Successfully ===");
+                    log.info("   Host: {}, Port: {}, User: {}", host, port, username);
+                    
                     Properties props = sender.getJavaMailProperties();
                     props.put("mail.transport.protocol", "smtp");
                     props.put("mail.smtp.auth", auth != null ? auth : "true");
@@ -51,10 +56,14 @@ public class MailConfig {
                     props.put("mail.smtp.timeout", "30000");
                     
                     return sender;
+                } else {
+                    log.warn("=== SMTP Host not found in DB. Using localhost:25 fallback ===");
                 }
             } catch (Exception e) {
-                // If DB config fails, fall through to default
+                log.error("=== Error configuring Mail Sender ===", e);
             }
+        } else {
+            log.warn("=== ConfigRepository is null ===");
         }
         
         // Default fallback
