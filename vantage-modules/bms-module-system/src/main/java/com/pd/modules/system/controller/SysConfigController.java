@@ -206,4 +206,55 @@ public class SysConfigController extends BaseController {
         configRepository.deleteById(configId);
         return success("Config deleted");
     }
+
+    /**
+     * Test email using SMTP settings from sys_config
+     */
+    @PostMapping("/test-email")
+    public AjaxResult testEmail(@RequestBody Map<String, String> request) {
+        String to = request.get("to");
+        if (to == null || to.isEmpty()) {
+            return error("Recipient email is required");
+        }
+
+        try {
+            String host = configRepository.findByConfigKey("mail.smtp.host").map(SysConfig::getConfigValue).orElse(null);
+            String port = configRepository.findByConfigKey("mail.smtp.port").map(SysConfig::getConfigValue).orElse("587");
+            String username = configRepository.findByConfigKey("mail.smtp.username").map(SysConfig::getConfigValue).orElse(null);
+            String password = configRepository.findByConfigKey("mail.smtp.password").map(SysConfig::getConfigValue).orElse(null);
+            String auth = configRepository.findByConfigKey("mail.smtp.auth").map(SysConfig::getConfigValue).orElse("true");
+            String tls = configRepository.findByConfigKey("mail.smtp.starttls.enable").map(SysConfig::getConfigValue).orElse("true");
+
+            if (host == null || host.isEmpty()) {
+                return error("SMTP host not configured. Please set mail.smtp.host in Config Management.");
+            }
+
+            JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+            mailSender.setHost(host);
+            mailSender.setPort(Integer.parseInt(port));
+            mailSender.setUsername(username != null ? username : "");
+            mailSender.setPassword(password != null ? password : "");
+
+            Properties props = mailSender.getJavaMailProperties();
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.auth", "true".equals(auth));
+            if ("true".equals(tls)) {
+                props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.smtp.starttls.required", "true");
+            }
+            props.put("mail.smtp.connectiontimeout", "10000");
+            props.put("mail.smtp.timeout", "30000");
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(username != null ? username : "test@vantage.com");
+            message.setTo(to);
+            message.setSubject("Test Email from Vantage Admin");
+            message.setText("This is a test email to verify your SMTP configuration.\n\nIf you received this, your email configuration is working correctly!\n\nBest regards,\nVantage Admin");
+
+            mailSender.send(message);
+            return success("Test email sent successfully to " + to + "!");
+        } catch (Exception e) {
+            return error("Failed to send test email: " + e.getMessage());
+        }
+    }
 }
