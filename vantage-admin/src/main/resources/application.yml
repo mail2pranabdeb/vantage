@@ -9,11 +9,6 @@ spring:
     driverClassName: org.h2.Driver
     username: sa
     password: vantage123
-  mail:
-    host: localhost
-    port: 25
-    username: ""
-    password: ""
   h2:
     console:
       enabled: true
