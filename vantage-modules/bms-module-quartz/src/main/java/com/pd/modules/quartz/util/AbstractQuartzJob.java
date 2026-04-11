@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.*;
@@ -20,24 +21,17 @@ import java.util.concurrent.*;
 public abstract class AbstractQuartzJob implements Job {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractQuartzJob.class);
-    
+
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
-    
+
+    @Autowired(required = false)
     private SysJobLogRepository jobLogRepository;
+
+    @Autowired(required = false)
     private JobNotificationService notificationService;
+
+    @Autowired(required = false)
     private JobDependencyService dependencyService;
-
-    public void setJobLogRepository(SysJobLogRepository jobLogRepository) {
-        this.jobLogRepository = jobLogRepository;
-    }
-
-    public void setNotificationService(JobNotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    public void setDependencyService(JobDependencyService dependencyService) {
-        this.dependencyService = dependencyService;
-    }
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
