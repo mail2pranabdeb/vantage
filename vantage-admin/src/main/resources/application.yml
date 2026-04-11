@@ -10,20 +10,10 @@ spring:
     username: sa
     password: vantage123
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: your-email@gmail.com
-    password: your-app-password
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+    host: localhost
+    port: 25
+    username: ""
+    password: ""
   h2:
     console:
       enabled: true

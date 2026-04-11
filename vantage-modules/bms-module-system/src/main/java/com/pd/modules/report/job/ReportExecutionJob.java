@@ -1,32 +1,32 @@
 package com.pd.modules.report.job;
 
-import com.pd.common.core.domain.AjaxResult;
-import com.pd.modules.report.domain.SysReportTemplate;
 import com.pd.modules.report.service.ReportDesignerService;
+import com.pd.modules.system.domain.SysConfig;
+import com.pd.modules.system.infrastructure.repository.SysConfigRepository;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.ByteArrayResource;
 
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Quartz job for executing report templates and sending email with attachments.
- * Supports both legacy reports and new designer templates.
+ * Reads SMTP configuration dynamically from sys_config table at runtime.
  */
 @Component
 public class ReportExecutionJob implements Job {
@@ -34,12 +34,12 @@ public class ReportExecutionJob implements Job {
     private static final Logger log = LoggerFactory.getLogger(ReportExecutionJob.class);
 
     private final ReportDesignerService reportDesignerService;
-    private final JavaMailSender mailSender;
+    private final SysConfigRepository configRepository;
 
     public ReportExecutionJob(ReportDesignerService reportDesignerService,
-                              JavaMailSender mailSender) {
+                              SysConfigRepository configRepository) {
         this.reportDesignerService = reportDesignerService;
-        this.mailSender = mailSender;
+        this.configRepository = configRepository;
     }
 
     /**
@@ -102,7 +102,7 @@ public class ReportExecutionJob implements Job {
             String contentType = getContentType(format);
 
             // Send email
-            if (StringUtils.hasText(recipients)) {
+            if (recipients != null && !recipients.isEmpty()) {
                 sendReportEmail(recipients, ccEmails, subject, body, attachmentBytes, fileName, contentType);
                 log.info("=== Report email sent successfully ===");
             } else {
@@ -153,16 +153,22 @@ public class ReportExecutionJob implements Job {
             body = "Please find the attached report.";
         }
 
+        // Create mail sender from sys_config
+        JavaMailSenderImpl mailSender = createMailSender();
+        if (mailSender == null) {
+            throw new RuntimeException("SMTP not configured. Configure email in System Settings → Email Configuration.");
+        }
+
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
         helper.setTo(recipients.split(","));
         if (ccEmails != null && !ccEmails.isEmpty()) {
             helper.setCc(ccEmails.split(","));
         }
         helper.setSubject(subject);
-        helper.setText(body, true); // HTML body
-        helper.setFrom("noreply@vantage.com");
+        helper.setText(body, true);
+        helper.setFrom(mailSender.getUsername());
 
         // Add attachment
         ByteArrayResource resource = new ByteArrayResource(attachment) {
@@ -173,12 +179,50 @@ public class ReportExecutionJob implements Job {
         };
         helper.addAttachment(fileName, resource, contentType);
 
-        try {
-            mailSender.send(message);
-        } catch (MailException e) {
-            log.error("Failed to send report email", e);
-            throw new RuntimeException("Failed to send email", e);
+        mailSender.send(message);
+    }
+
+    /**
+     * Create JavaMailSender from sys_config values
+     */
+    private JavaMailSenderImpl createMailSender() {
+        String host = getConfigValue("mail.smtp.host");
+        String port = getConfigValue("mail.smtp.port");
+        String username = getConfigValue("mail.smtp.username");
+        String password = getConfigValue("mail.smtp.password");
+        String auth = getConfigValue("mail.smtp.auth");
+        String tls = getConfigValue("mail.smtp.starttls.enable");
+
+        if (host == null || host.isEmpty()) {
+            return null;
         }
+
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(host);
+        sender.setPort(Integer.parseInt(port != null ? port : "587"));
+        sender.setUsername(username != null ? username : "");
+        sender.setPassword(password != null ? password : "");
+
+        Properties props = sender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true".equals(auth));
+
+        if ("true".equals(tls)) {
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+        }
+
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "30000");
+        props.put("mail.smtp.writetimeout", "30000");
+
+        return sender;
+    }
+
+    private String getConfigValue(String key) {
+        return configRepository.findByConfigKey(key)
+            .map(SysConfig::getConfigValue)
+            .orElse(null);
     }
 
     private String generateFileName(Long templateId, String format) {
