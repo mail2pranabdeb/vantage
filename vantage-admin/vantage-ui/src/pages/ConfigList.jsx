@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
+import { Settings, Plus, Edit, Trash2, Eye, RefreshCw, Mail, Send } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
@@ -10,6 +10,8 @@ const ConfigList = () => {
     const [configs, setConfigs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isTestEmailOpen, setIsTestEmailOpen] = useState(false);
+    const [testEmailTo, setTestEmailTo] = useState('');
     const [modalMode, setModalMode] = useState('add');
     const [currentConfig, setCurrentConfig] = useState(null);
     const [formData, setFormData] = useState({
@@ -20,6 +22,9 @@ const ConfigList = () => {
         remark: ''
     });
     const [submitting, setSubmitting] = useState(false);
+
+    // SMTP config keys that should show the email test button
+    const smtpKeys = ['mail.smtp.host', 'mail.smtp.port', 'mail.smtp.username', 'mail.smtp.password'];
 
     useEffect(() => {
         fetchConfigs();
@@ -106,6 +111,40 @@ const ConfigList = () => {
             });
         }
     };
+
+    const handleTestEmail = () => {
+        setTestEmailTo('');
+        setIsTestEmailOpen(true);
+    };
+
+    const sendTestEmail = () => {
+        if (!testEmailTo) {
+            addToast('error', 'Recipient email is required', 3000);
+            return;
+        }
+        setSubmitting(true);
+        fetch('/api/system/config/test-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to: testEmailTo })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setSubmitting(false);
+            if (data.code === 200) {
+                addToast('success', data.msg || 'Test email sent!', 5000);
+                setIsTestEmailOpen(false);
+            } else {
+                addToast('error', data.msg || 'Failed to send test email', 5000);
+            }
+        })
+        .catch(() => {
+            setSubmitting(false);
+            addToast('error', 'Failed to send test email', 5000);
+        });
+    };
+
+    const hasSmtpConfig = configs.some(c => smtpKeys.includes(c.configKey) && c.configValue);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -210,6 +249,12 @@ const ConfigList = () => {
             label: 'Refresh',
             icon: RefreshCw,
             onClick: fetchConfigs
+        },
+        {
+            label: 'Test Email',
+            icon: Send,
+            onClick: handleTestEmail,
+            disabled: !hasSmtpConfig
         }
     ];
 
@@ -366,6 +411,36 @@ const ConfigList = () => {
                             className="form-input"
                             rows={3}
                             disabled={modalMode === 'view'}
+                        />
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Test Email Modal */}
+            <Modal
+                isOpen={isTestEmailOpen}
+                onClose={() => setIsTestEmailOpen(false)}
+                title="Send Test Email"
+                size="medium"
+                footer={<>
+                    <button className="btn btn-secondary" onClick={() => setIsTestEmailOpen(false)} disabled={submitting}>Cancel</button>
+                    <button className="btn btn-primary" onClick={sendTestEmail} disabled={submitting} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {submitting ? 'Sending...' : <><Send size={16} /> Send Test Email</>}
+                    </button>
+                </>}
+            >
+                <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+                        A test email will be sent using your SMTP configuration from <strong>sys_config</strong> table.
+                        Make sure you have configured <code style={{ background: 'var(--bg-tertiary)', padding: '2px 6px', borderRadius: '4px' }}>mail.smtp.host</code>, <code style={{ background: 'var(--bg-tertiary)', padding: '2px 6px', borderRadius: '4px' }}>mail.smtp.port</code>, <code style={{ background: 'var(--bg-tertiary)', padding: '2px 6px', borderRadius: '4px' }}>mail.smtp.username</code>, and <code style={{ background: 'var(--bg-tertiary)', padding: '2px 6px', borderRadius: '4px' }}>mail.smtp.password</code>.
+                    </p>
+                    <div className="form-group">
+                        <label className="form-label">Recipient Email *</label>
+                        <input
+                            className="form-input"
+                            value={testEmailTo}
+                            onChange={e => setTestEmailTo(e.target.value)}
+                            placeholder="user@example.com"
                         />
                     </div>
                 </div>
