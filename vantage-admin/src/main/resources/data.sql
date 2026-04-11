@@ -418,9 +418,6 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 415);
 insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
 VALUES (42, 'Report Designer', 4, 2, '/system/report-designer', '', 'C', '0', '1', 'system:report:designer', 'fa fa-wrench', '0', 'admin', CURRENT_TIMESTAMP, 'Visual report designer with drag-and-drop');
 
-insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
-VALUES (43, 'Report Templates', 4, 3, '/system/report-templates', '', 'C', '0', '1', 'system:report:template', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Manage saved report templates');
-
 -- Permissions for report designer
 insert INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
 VALUES

@@ -164,9 +164,15 @@ public class ReportDesignerController extends BaseController {
     @Log(title = "Report Execution", businessType = BusinessType.OTHER)
     @PostMapping("/execute/{templateId}")
     public AjaxResult executeTemplate(@PathVariable Long templateId,
-                                      @RequestParam(required = false, defaultValue = "{}") String params) {
+                                      @RequestBody(required = false) Map<String, Object> params) {
         try {
-            List<Map<String, Object>> data = reportDesignerService.executeTemplate(templateId, params);
+            // Convert params Map to JSON string
+            String paramsJson = "{}";
+            if (params != null && !params.isEmpty()) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                paramsJson = mapper.writeValueAsString(params);
+            }
+            List<Map<String, Object>> data = reportDesignerService.executeTemplate(templateId, paramsJson);
             return success(data);
         } catch (Exception e) {
             logger.error("Failed to execute report template", e);

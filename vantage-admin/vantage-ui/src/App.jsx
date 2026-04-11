@@ -66,18 +66,23 @@ function App() {
     const handleChildNavigate = (event) => {
       const { pageConfig } = event.detail || {};
       if (pageConfig && authState === 'authenticated') {
-        const existingTab = tabs.find(t => t.id === pageConfig.id);
-        if (existingTab) {
-          setActiveTabId(existingTab.id);
-        } else {
-          addTab(pageConfig);
-          setActiveTabId(pageConfig.id);
-        }
+        // Check tabs from current state
+        setTabs(currentTabs => {
+          const existingTab = currentTabs.find(t => t.id === pageConfig.id);
+          if (existingTab) {
+            setActiveTabId(existingTab.id);
+          } else {
+            const newTabs = [...currentTabs, { ...pageConfig, timestamp: Date.now() }];
+            setActiveTabId(pageConfig.id);
+            return newTabs;
+          }
+          return currentTabs;
+        });
       }
     };
     window.addEventListener('navigate-to-page', handleChildNavigate);
     return () => window.removeEventListener('navigate-to-page', handleChildNavigate);
-  }, [authState, tabs]);
+  }, [authState]);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);

@@ -73,7 +73,11 @@ const ReportManagement = () => {
     };
 
     const handleExecute = (row) => {
-        fetch(`/api/system/report-designer/execute/${row.templateId}?params={}`, { method: 'POST' })
+        fetch(`/api/system/report-designer/execute/${row.templateId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+        })
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
@@ -238,9 +242,8 @@ const ReportManagement = () => {
             <Modal isOpen={isScheduleHelpOpen} onClose={() => setIsScheduleHelpOpen(false)} title={`Schedule: ${currentTemplate?.templateName || ''}`} size="medium">
                 <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                     <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '16px', fontSize: '12px' }}>
-                        <strong>Step 1:</strong> Copy the invoke target below<br/>
-                        <strong>Step 2:</strong> Go to <strong>Job Scheduling → Add Job</strong><br/>
-                        <strong>Step 3:</strong> Paste the invoke target and set cron expression
+                        <strong>How to Schedule This Report:</strong><br/>
+                        Configure this report to run automatically via the Job Scheduling module.
                     </div>
 
                     <div className="form-group">
@@ -273,11 +276,13 @@ const ReportManagement = () => {
                     </div>
 
                     <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)', fontSize: '12px' }}>
-                        <strong>Next Steps:</strong>
+                        <strong>Scheduling Steps:</strong>
                         <ol style={{ paddingLeft: '20px', marginTop: '8px', lineHeight: '1.8' }}>
+                            <li>Copy the <strong>Invoke Target</strong> above</li>
                             <li>Go to <strong>Job Scheduling → Add Job</strong></li>
-                            <li>Set <strong>Job Name</strong> (e.g., "{currentTemplate?.templateName} Daily Report")</li>
-                            <li>Paste the invoke target above</li>
+                            <li>Set Job Name (e.g., "{currentTemplate?.templateName} Report")</li>
+                            <li>Set Job Group (e.g., "reports")</li>
+                            <li>Paste the Invoke Target into the <strong>Invoke Target</strong> field</li>
                             <li>Set cron expression (e.g., <code style={{ background: 'var(--bg-primary)', padding: '2px 6px', borderRadius: '4px' }}>0 0 9 * * ?</code> for daily 9 AM)</li>
                             <li>Enable and save</li>
                         </ol>
