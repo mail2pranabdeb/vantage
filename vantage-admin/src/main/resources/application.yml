@@ -28,7 +28,7 @@ module:
       enabled: true
     generator:
       enabled: true
-  init-on-fresh-db: true  # Set to false after first run to skip data initialization
+  init-on-fresh-db: false  # Set to false after first run to skip data initialization
   tracing:
     sampling:
       probability: 1.0  # Sample all traces (reduce in production)

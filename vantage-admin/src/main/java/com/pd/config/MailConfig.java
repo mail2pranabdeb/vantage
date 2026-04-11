@@ -13,7 +13,7 @@ import java.util.Properties;
 /**
  * Dynamic Mail Configuration.
  * Loads SMTP settings from sys_config table at startup.
- * If database config is unavailable, falls back to localhost:25.
+ * Supports both new keys (mail.smtp.*) and legacy keys (mail.*) for backward compatibility.
  */
 @Configuration
 public class MailConfig {
@@ -27,13 +27,15 @@ public class MailConfig {
         
         if (configRepository != null) {
             try {
-                String host = getConfig("mail.smtp.host");
+                // Check for new keys first, then fallback to legacy keys found in user's DB
+                String host = getConfig("mail.smtp.host", "mail.host");
+                
                 if (host != null && !host.isEmpty()) {
-                    String port = getConfig("mail.smtp.port");
-                    String username = getConfig("mail.smtp.username");
-                    String password = getConfig("mail.smtp.password");
-                    String auth = getConfig("mail.smtp.auth");
-                    String tls = getConfig("mail.smtp.starttls.enable");
+                    String port = getConfig("mail.smtp.port", "mail.port");
+                    String username = getConfig("mail.smtp.username", "mail.username");
+                    String password = getConfig("mail.smtp.password", "mail.password");
+                    String auth = getConfig("mail.smtp.auth", "mail.enableAuth");
+                    String tls = getConfig("mail.smtp.starttls.enable", "mail.enableTls");
 
                     sender.setHost(host);
                     sender.setPort(port != null ? Integer.parseInt(port) : 587);
@@ -61,9 +63,11 @@ public class MailConfig {
         return sender;
     }
 
-    private String getConfig(String key) {
-        return configRepository.findByConfigKey(key)
+    private String getConfig(String key1, String key2) {
+        return configRepository.findByConfigKey(key1)
             .map(SysConfig::getConfigValue)
-            .orElse(null);
+            .orElseGet(() -> configRepository.findByConfigKey(key2)
+                .map(SysConfig::getConfigValue)
+                .orElse(null));
     }
 }

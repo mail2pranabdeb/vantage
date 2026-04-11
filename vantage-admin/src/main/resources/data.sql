@@ -10,6 +10,10 @@ values(1, 'Super Admin', 'admin',  1, '1', '0', '0', 'admin', current_timestamp,
 insert into sys_role (role_id, role_name, role_key, role_sort, data_scope, status, del_flag, create_by, create_time, update_by, update_time, remark)
 values(2, 'Common User', 'common', 2, '2', '0', '0', 'admin', current_timestamp, '', null, 'Common User Role');
 
+-- ==================== SYSTEM SMTP CONFIG ====================
+
+
+
 -- ==================== SYSTEM MODULE MENUS ====================
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, update_by, update_time, remark)
 values(1, 'System Management', 0, 1, '#', '', 'M', '0', '1', '', 'fa fa-gear', '0', 'admin', current_timestamp, '', null, 'System Management');

@@ -36,12 +36,13 @@ public class EmailConfigController extends BaseController {
     @GetMapping
     public AjaxResult getConfig() {
         Map<String, Object> config = new HashMap<>();
-        config.put("host", getConfigValue("mail.smtp.host", ""));
-        config.put("port", getConfigValue("mail.smtp.port", "587"));
-        config.put("username", getConfigValue("mail.smtp.username", ""));
-        config.put("password", getConfigValue("mail.smtp.password", ""));
-        config.put("enableAuth", "true".equals(getConfigValue("mail.smtp.auth", "true")));
-        config.put("enableTls", "true".equals(getConfigValue("mail.smtp.starttls.enable", "true")));
+        // Check new keys first, fallback to legacy keys (mail.host, etc.)
+        config.put("host", getConfigValue("mail.smtp.host", getConfigValue("mail.host", "")));
+        config.put("port", getConfigValue("mail.smtp.port", getConfigValue("mail.port", "587")));
+        config.put("username", getConfigValue("mail.smtp.username", getConfigValue("mail.username", "")));
+        config.put("password", getConfigValue("mail.smtp.password", getConfigValue("mail.password", "")));
+        config.put("enableAuth", "true".equals(getConfigValue("mail.smtp.auth", getConfigValue("mail.enableAuth", "true"))));
+        config.put("enableTls", "true".equals(getConfigValue("mail.smtp.starttls.enable", getConfigValue("mail.enableTls", "true"))));
         return success(config);
     }
 
