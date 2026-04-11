@@ -56,16 +56,73 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
 
         // Parse arguments
         Object[] args = parseArguments(argsStr);
-        Class<?>[] argTypes = getArgumentTypes(args);
 
-        // Find and invoke method
-        Method method = bean.getClass().getMethod(methodName, argTypes);
+        // Find and invoke method - try multiple type signatures for null args
+        Method method = findMethod(bean.getClass(), methodName, args);
         if (method == null) {
-            throw new IllegalArgumentException("Method not found: " + beanName + "." + methodName);
+            throw new IllegalArgumentException("Method not found: " + beanName + "." + methodName + 
+                " with compatible argument types");
         }
 
         log.info("Invoking {}.{} with {} arguments", beanName, methodName, args.length);
         method.invoke(bean, args);
+    }
+
+    /**
+     * Find method by name, trying different type signatures for null arguments.
+     * Tries: Object.class, String[].class, String.class, Long.class for nulls
+     */
+    private Method findMethod(Class<?> clazz, String methodName, Object[] args) {
+        // Strategy 1: Use actual runtime types
+        Class<?>[] types = getArgumentTypes(args);
+        try {
+            return clazz.getMethod(methodName, types);
+        } catch (NoSuchMethodException e) {
+            // Fall through to strategy 2
+        }
+
+        // Strategy 2: For null args, try String[].class (common for email arrays)
+        Class<?>[] types2 = new Class<?>[args.length];
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] == null) {
+                types2[i] = String[].class; // Most common nullable type for our use case
+            } else {
+                types2[i] = args[i].getClass();
+            }
+        }
+        try {
+            return clazz.getMethod(methodName, types2);
+        } catch (NoSuchMethodException e) {
+            // Fall through to strategy 3
+        }
+
+        // Strategy 3: For null args, try Object.class
+        Class<?>[] types3 = new Class<?>[args.length];
+        for (int i = 0; i < args.length; i++) {
+            types3[i] = args[i] != null ? args[i].getClass() : Object.class;
+        }
+        try {
+            return clazz.getMethod(methodName, types3);
+        } catch (NoSuchMethodException e) {
+            // Strategy 4: Try all parameterized types
+        }
+
+        // Strategy 4: Search all methods with matching name and compatible parameter count
+        for (Method m : clazz.getMethods()) {
+            if (m.getName().equals(methodName) && m.getParameterCount() == args.length) {
+                Class<?>[] paramTypes = m.getParameterTypes();
+                boolean compatible = true;
+                for (int i = 0; i < args.length; i++) {
+                    if (args[i] != null && !paramTypes[i].isAssignableFrom(args[i].getClass())) {
+                        compatible = false;
+                        break;
+                    }
+                }
+                if (compatible) return m;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -160,12 +217,14 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     }
 
     /**
-     * Get runtime types of arguments for method lookup
+     * Get runtime types of arguments for method lookup.
+     * For null values, tries to match the method's parameter types.
      */
     private Class<?>[] getArgumentTypes(Object[] args) {
         Class<?>[] types = new Class<?>[args.length];
         for (int i = 0; i < args.length; i++) {
             if (args[i] == null) {
+                // For null args, use Object.class but prefer String[] for array positions
                 types[i] = Object.class;
             } else if (args[i] instanceof Long) {
                 types[i] = Long.class;

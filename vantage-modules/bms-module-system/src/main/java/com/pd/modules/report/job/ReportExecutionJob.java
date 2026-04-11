@@ -42,10 +42,39 @@ public class ReportExecutionJob implements Job {
         this.mailSender = mailSender;
     }
 
+    /**
+     * Direct execute method - called from job invokeTarget
+     * Example: reportExecutionJob.execute(1, 'EXCEL', ['user@email.com'], null, 'Report', 'Body', '{}')
+     */
+    public void execute(Long templateId, String format, String[] recipients, String[] ccEmails,
+                        String subject, String body, String params) {
+        log.info("=== Report Execution Job (direct call) ===");
+        log.info("Template ID: {}, Format: {}, Recipients: {}", templateId, format, recipients);
+
+        try {
+            List<Map<String, Object>> data = reportDesignerService.executeTemplate(templateId, params != null ? params : "{}");
+            log.info("Report executed successfully. Rows: {}", data.size());
+
+            byte[] attachmentBytes = reportDesignerService.generateReportAttachment(templateId, params != null ? params : "{}", format != null ? format : "EXCEL");
+            String fileName = generateFileName(templateId, format != null ? format : "EXCEL");
+            String contentType = getContentType(format != null ? format : "EXCEL");
+
+            if (recipients != null && recipients.length > 0) {
+                sendReportEmail(String.join(",", recipients), ccEmails != null ? String.join(",", ccEmails) : null,
+                    subject, body != null ? body : "Please find the attached report.",
+                    attachmentBytes, fileName, contentType);
+                log.info("=== Report email sent successfully ===");
+            }
+        } catch (Exception e) {
+            log.error("=== Report Execution Job Failed ===", e);
+            throw new RuntimeException("Report execution job failed", e);
+        }
+    }
+
     @Override
     public void execute(JobExecutionContext context) {
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        Long templateId = dataMap.getLong("templateId");
+        Long templateId = dataMap.containsKey("templateId") ? dataMap.getLong("templateId") : dataMap.getLong("reportId");
         String params = dataMap.getString("params");
         String recipients = dataMap.getString("recipients");
         String ccEmails = dataMap.getString("ccEmails");
