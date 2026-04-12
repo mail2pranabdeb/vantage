@@ -55,7 +55,9 @@ const pageComponents = {
 };
 
 const TabContent = ({ tab, isActive }) => {
-    const Component = pageComponents[tab.url];
+    // Strip query parameters for component lookup
+    const baseUrl = tab.url ? tab.url.split('?')[0] : '';
+    const Component = pageComponents[baseUrl];
 
     if (!Component) {
         console.log('Page not found for URL:', tab.url);
