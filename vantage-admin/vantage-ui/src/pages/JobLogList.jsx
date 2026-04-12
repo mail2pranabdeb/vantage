@@ -7,7 +7,7 @@ const JobLogList = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/system/jobLog/list')
+        fetch('/api/system/job-log/list')
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
