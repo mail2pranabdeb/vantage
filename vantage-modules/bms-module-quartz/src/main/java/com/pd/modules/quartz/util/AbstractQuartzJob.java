@@ -39,14 +39,35 @@ public abstract class AbstractQuartzJob implements Job {
         Long jobId = sysJob.getJobId();
         String jobGroup = sysJob.getJobGroup();
 
+        // Check if a log was pre-created by manual run
+        Long existingLogId = context.getJobDetail().getJobDataMap().getLong("JOB_LOG_ID");
+        if (context.getTrigger() != null && context.getTrigger().getJobDataMap().containsKey("JOB_LOG_ID")) {
+            existingLogId = context.getTrigger().getJobDataMap().getLong("JOB_LOG_ID");
+        }
+        
+        // Also check merged map (sometimes Quartz puts trigger data there)
+        if (existingLogId == null || existingLogId == 0L) {
+             Object logIdObj = context.getMergedJobDataMap().get("JOB_LOG_ID");
+             if (logIdObj != null) {
+                 existingLogId = Long.valueOf(logIdObj.toString());
+             }
+        }
+
         // Initialize job log
-        SysJobLog jobLog = new SysJobLog();
-        jobLog.setJobId(jobId);
+        SysJobLog jobLog;
+        if (existingLogId != null && existingLogId > 0) {
+            jobLog = jobLogRepository.findById(existingLogId).orElse(new SysJobLog());
+            jobLog.setJobId(jobId); // Ensure ID is set
+        } else {
+            jobLog = new SysJobLog();
+            jobLog.setJobId(jobId);
+            jobLog.setInvokeTarget(sysJob.getInvokeTarget());
+        }
+        
         jobLog.setJobName(sysJob.getJobName());
         jobLog.setJobGroup(jobGroup);
-        jobLog.setInvokeTarget(sysJob.getInvokeTarget());
         jobLog.setStartTime(LocalDateTime.now());
-        jobLog.setRetryCount(0);
+        if (jobLog.getRetryCount() == null) jobLog.setRetryCount(0);
 
         long startTime = System.currentTimeMillis();
         int retryCount = 0;

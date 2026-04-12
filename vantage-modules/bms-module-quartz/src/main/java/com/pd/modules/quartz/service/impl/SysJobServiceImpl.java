@@ -1,11 +1,15 @@
 package com.pd.modules.quartz.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import org.quartz.JobDataMap;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.pd.modules.quartz.domain.SysJob;
+import com.pd.modules.quartz.domain.SysJobLog;
+import com.pd.modules.quartz.infrastructure.repository.SysJobLogRepository;
 import com.pd.modules.quartz.infrastructure.repository.SysJobRepository;
 import com.pd.modules.quartz.service.ISysJobService;
 import com.pd.modules.quartz.service.JobWebSocketService;
@@ -26,6 +30,9 @@ public class SysJobServiceImpl implements ISysJobService {
 
     @Autowired
     private JobWebSocketService webSocketService;
+    
+    @Autowired
+    private SysJobLogRepository jobLogRepository;
 
     @Override
     public List<SysJob> selectJobList(SysJob job) {
@@ -92,15 +99,37 @@ public class SysJobServiceImpl implements ISysJobService {
     }
 
     @Override
-    public void run(SysJob job) throws SchedulerException {
+    public Long run(SysJob job) throws SchedulerException {
         Long jobId = job.getJobId();
         SysJob sysJob = jobRepository.findById(jobId).orElse(null);
         if (sysJob == null) {
-            return;
+            throw new RuntimeException("Job not found");
         }
         String jobGroup = sysJob.getJobGroup();
-        scheduler.triggerJob(ScheduleUtils.getJobKey(jobId, jobGroup));
+        
+        // Create a job log entry first to get an ID
+        SysJobLog jobLog = new SysJobLog();
+        jobLog.setJobId(jobId);
+        jobLog.setJobName(sysJob.getJobName());
+        jobLog.setJobGroup(jobGroup);
+        jobLog.setInvokeTarget(sysJob.getInvokeTarget());
+        jobLog.setStartTime(LocalDateTime.now());
+        jobLog.setRetryCount(0);
+        jobLog.setStatus("2"); // 2 = Running/Pending
+        
+        // Save log to generate ID
+        SysJobLog savedLog = jobLogRepository.save(jobLog);
+        Long jobLogId = savedLog.getJobLogId();
+        
+        // Add log ID to JobDataMap so the job execution can update it
+        JobDataMap data = new JobDataMap();
+        data.put("JOB_LOG_ID", jobLogId);
+        
+        // Trigger the job with the map
+        scheduler.triggerJob(ScheduleUtils.getJobKey(jobId, jobGroup), data);
         webSocketService.sendJobStarted(jobId, sysJob.getJobName());
+        
+        return jobLogId;
     }
 
     @Override

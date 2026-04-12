@@ -266,7 +266,8 @@ const JobList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    toast.success('Job executed successfully');
+                    const jobLogId = data.data;
+                    toast.success(`Job executed successfully. Run ID: ${jobLogId}`);
                 } else {
                     toast.error(data.msg || 'Failed to run job');
                 }

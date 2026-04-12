@@ -45,8 +45,9 @@ public interface ISysJobService {
 
     /**
      * Run job immediately
+     * @return Job Log ID
      */
-    void run(SysJob job) throws SchedulerException;
+    Long run(SysJob job) throws SchedulerException;
 
     /**
      * Insert job

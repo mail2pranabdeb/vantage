@@ -92,8 +92,8 @@ public class SysJobController extends BaseController {
      */
     @PostMapping("/run")
     public AjaxResult run(@RequestBody SysJob job) throws SchedulerException {
-        sysJobService.run(job);
-        return success("Job executed successfully");
+        Long jobLogId = sysJobService.run(job);
+        return success(jobLogId);
     }
 
     /**
