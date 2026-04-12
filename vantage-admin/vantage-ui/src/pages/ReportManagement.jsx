@@ -89,7 +89,7 @@ const ReportManagement = () => {
     };
 
     const handleExport = (row, format) => {
-        window.open(`/api/system/report-designer/export/${row.templateId}?params={}&format=${format}`, '_blank');
+        window.open(`/api/system/report-designer/export/${row.templateId}?format=${format}`, '_blank');
     };
 
     const handleViewVersions = (row) => {
