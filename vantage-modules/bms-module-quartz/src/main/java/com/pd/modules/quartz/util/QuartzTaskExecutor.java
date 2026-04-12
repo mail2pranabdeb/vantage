@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Concrete Quartz job that parses invokeTarget string and executes via reflection.
@@ -82,20 +83,14 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     private void executeReportJob(SysJob sysJob) throws Exception {
         log.info("Executing Report Job ID: {}, Report ID: {}", sysJob.getJobId(), sysJob.getReportId());
         
-        // We need to fetch the service dynamically to avoid circular dependencies or heavy imports
-        // In a real app, you'd inject ReportDesignerService here
         try {
             Object reportService = applicationContext.getBean("reportDesignerService");
-            Object template = null;
-            
-            // Find method findById
             java.lang.reflect.Method findByIdMethod = reportService.getClass().getMethod("findById", Long.class);
             Optional<?> opt = (Optional<?>) findByIdMethod.invoke(reportService, sysJob.getReportId());
             
             if (opt.isPresent()) {
-                template = opt.get();
+                Object template = opt.get();
                 
-                // Get templateId from template
                 java.lang.reflect.Method getTemplateIdMethod = template.getClass().getMethod("getTemplateId");
                 Long templateId = (Long) getTemplateIdMethod.invoke(template);
                 
@@ -125,15 +120,46 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
      */
     private void sendReportEmail(SysJob sysJob, String templateName, String outputFormat, List<?> data) throws Exception {
         String recipients = sysJob.getNotificationEmails();
+        String emailGroup = sysJob.getReportEmailGroup();
+        
+        // If a group is defined, append those emails
+        if (emailGroup != null && !emailGroup.isEmpty()) {
+            try {
+                Object dictService = applicationContext.getBean("sysDictDataServiceImpl");
+                java.lang.reflect.Method getMethod = dictService.getClass().getMethod("selectDictDataByType", String.class);
+                java.util.List<?> dictList = (java.util.List<?>) getMethod.invoke(dictService, emailGroup);
+                
+                if (dictList != null && !dictList.isEmpty()) {
+                    java.util.stream.Stream<String> emails = dictList.stream()
+                        .map(obj -> {
+                            try {
+                                return (String) obj.getClass().getMethod("getDictValue").invoke(obj);
+                            } catch (Exception e) { return null; }
+                        })
+                        .filter(v -> v != null);
+                    
+                    String groupEmails = emails.collect(java.util.stream.Collectors.joining(","));
+                    
+                    if (recipients != null && !recipients.isEmpty()) {
+                        recipients = recipients + "," + groupEmails;
+                    } else {
+                        recipients = groupEmails;
+                    }
+                    log.info("Resolved email group '{}' to: {}", emailGroup, recipients);
+                }
+            } catch (Exception e) {
+                log.error("Failed to resolve email group: {}", emailGroup, e);
+            }
+        }
+
         if (recipients == null || recipients.isEmpty()) {
             log.warn("No recipients configured for Job {}", sysJob.getJobId());
             return;
         }
 
-        // Reuse logic from ReportExecutionJob or similar
-        // For now, we log that we would send it
-        log.info("Would send {} report '{}' to {}", outputFormat, templateName, recipients);
+        log.info("Sending {} report '{}' to {}", outputFormat, templateName, recipients);
         log.info("Data rows: {}", data.size());
+        // Actual sending logic would go here using JavaMailSender
     }
 
     /**

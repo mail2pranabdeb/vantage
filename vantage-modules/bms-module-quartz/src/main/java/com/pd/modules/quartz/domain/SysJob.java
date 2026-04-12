@@ -34,6 +34,10 @@ public class SysJob implements Serializable {
     @Column(name = "report_id")
     private Long reportId;
 
+    /** Report Email Group Key (from Dictionary) */
+    @Column(name = "report_email_group", length = 64)
+    private String reportEmailGroup;
+
     /** Invoke target string */
     @Column(name = "invoke_target", length = 500)
     private String invokeTarget;
@@ -325,5 +329,13 @@ public class SysJob implements Serializable {
 
     public void setReportId(Long reportId) {
         this.reportId = reportId;
+    }
+
+    public String getReportEmailGroup() {
+        return reportEmailGroup;
+    }
+
+    public void setReportEmailGroup(String reportEmailGroup) {
+        this.reportEmailGroup = reportEmailGroup;
     }
 }

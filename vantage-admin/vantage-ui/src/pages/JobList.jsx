@@ -31,12 +31,14 @@ const JobList = () => {
     const [copiedId, setCopiedId] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [activeReports, setActiveReports] = useState([]);
+    const [emailGroups, setEmailGroups] = useState([]);
     const [formData, setFormData] = useState({
         jobName: '',
         jobGroup: '',
         invokeTarget: '',
         jobType: 'BEAN',
         reportId: '',
+        reportEmailGroup: '',
         cronExpression: '',
         misfirePolicy: '3',
         concurrent: '1',
@@ -94,6 +96,13 @@ const JobList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) setActiveReports(data.data || []);
+            });
+            
+        // Fetch email groups from dictionary
+        fetch('/api/system/dict/data/type/sys_report_email_group')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) setEmailGroups(data.data || []);
             });
     }, []);
 
@@ -769,6 +778,40 @@ const JobList = () => {
                                     disabled={modalMode === 'view'}
                                 />
                                 <small className="form-help">Method to invoke for this scheduled job</small>
+                            </div>
+                        )}
+
+                        {formData.jobType === 'REPORT' && (
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label className="form-label">Email Group (Optional)</label>
+                                    <select 
+                                        name="reportEmailGroup" 
+                                        value={formData.reportEmailGroup} 
+                                        onChange={handleInputChange} 
+                                        className="form-input"
+                                        disabled={modalMode === 'view'}
+                                    >
+                                        <option value="">-- Select Group --</option>
+                                        {emailGroups.map(g => (
+                                            <option key={g.dictCode} value={g.dictValue}>
+                                                {g.dictLabel}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <small className="form-help">Pre-defined groups from Dictionary</small>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label className="form-label">Additional Recipients</label>
+                                    <FormInput
+                                        name="notificationEmails"
+                                        value={formData.notificationEmails}
+                                        onChange={handleInputChange}
+                                        placeholder="user@test.com,manager@test.com"
+                                        disabled={modalMode === 'view'}
+                                    />
+                                </div>
                             </div>
                         )}
 
