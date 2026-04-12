@@ -30,10 +30,13 @@ const JobList = () => {
     const [showCronBuilder, setShowCronBuilder] = useState(false);
     const [copiedId, setCopiedId] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [activeReports, setActiveReports] = useState([]);
     const [formData, setFormData] = useState({
         jobName: '',
         jobGroup: '',
         invokeTarget: '',
+        jobType: 'BEAN',
+        reportId: '',
         cronExpression: '',
         misfirePolicy: '3',
         concurrent: '1',
@@ -85,6 +88,13 @@ const JobList = () => {
         fetchJobTemplates();
         fetchEmailTemplates();
         fetchMetrics();
+        
+        // Fetch active reports for dropdown
+        fetch('/api/system/report-designer/active-templates')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) setActiveReports(data.data || []);
+            });
     }, []);
 
     const fetchJobTemplates = () => {
@@ -713,17 +723,53 @@ const JobList = () => {
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Invoke Target</label>
-                            <FormInput
-                                name="invokeTarget"
-                                value={formData.invokeTarget}
-                                onChange={handleInputChange}
-                                placeholder="e.g., ryTask.ryMultipleParams('ry', 'test')"
-                                required
+                            <label className="form-label">Job Type</label>
+                            <select 
+                                name="jobType" 
+                                value={formData.jobType} 
+                                onChange={handleInputChange} 
+                                className="form-input"
                                 disabled={modalMode === 'view'}
-                            />
-                            <small className="form-help">Method to invoke for this scheduled job</small>
+                            >
+                                <option value="BEAN">Standard (Invoke Target)</option>
+                                <option value="REPORT">Report Execution</option>
+                            </select>
                         </div>
+
+                        {formData.jobType === 'REPORT' ? (
+                            <div className="form-group">
+                                <label className="form-label">Select Active Report</label>
+                                <select 
+                                    name="reportId" 
+                                    value={formData.reportId} 
+                                    onChange={handleInputChange} 
+                                    className="form-input"
+                                    required
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <option value="">-- Select a Report --</option>
+                                    {activeReports.map(r => (
+                                        <option key={r.templateId} value={r.templateId}>
+                                            {r.templateName} (v{r.version})
+                                        </option>
+                                    ))}
+                                </select>
+                                <small className="form-help">Only activated reports appear here</small>
+                            </div>
+                        ) : (
+                            <div className="form-group">
+                                <label className="form-label">Invoke Target</label>
+                                <FormInput
+                                    name="invokeTarget"
+                                    value={formData.invokeTarget}
+                                    onChange={handleInputChange}
+                                    placeholder="e.g., beanName.method('args')"
+                                    required={formData.jobType === 'BEAN'}
+                                    disabled={modalMode === 'view'}
+                                />
+                                <small className="form-help">Method to invoke for this scheduled job</small>
+                            </div>
+                        )}
 
                         <div className="form-group">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>

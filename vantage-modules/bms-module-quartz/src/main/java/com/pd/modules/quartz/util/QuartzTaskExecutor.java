@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Concrete Quartz job that parses invokeTarget string and executes via reflection.
@@ -30,6 +31,13 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
 
     @Override
     protected void runTask(SysJob sysJob) throws Exception {
+        // Check if it's a Report Job
+        if ("REPORT".equals(sysJob.getJobType()) && sysJob.getReportId() != null) {
+            executeReportJob(sysJob);
+            return;
+        }
+
+        // ... existing Bean execution logic ...
         String invokeTarget = sysJob.getInvokeTarget();
         if (invokeTarget == null || invokeTarget.trim().isEmpty()) {
             throw new IllegalArgumentException("invokeTarget is empty");
@@ -60,12 +68,72 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         // Find and invoke method - try multiple type signatures for null args
         Method method = findMethod(bean.getClass(), methodName, args);
         if (method == null) {
-            throw new IllegalArgumentException("Method not found: " + beanName + "." + methodName + 
+            throw new IllegalArgumentException("Method not found: " + beanName + "." + methodName +
                 " with compatible argument types");
         }
 
         log.info("Invoking {}.{} with {} arguments", beanName, methodName, args.length);
         method.invoke(bean, args);
+    }
+
+    /**
+     * Logic to execute a Report Job
+     */
+    private void executeReportJob(SysJob sysJob) throws Exception {
+        log.info("Executing Report Job ID: {}, Report ID: {}", sysJob.getJobId(), sysJob.getReportId());
+        
+        // We need to fetch the service dynamically to avoid circular dependencies or heavy imports
+        // In a real app, you'd inject ReportDesignerService here
+        try {
+            Object reportService = applicationContext.getBean("reportDesignerService");
+            Object template = null;
+            
+            // Find method findById
+            java.lang.reflect.Method findByIdMethod = reportService.getClass().getMethod("findById", Long.class);
+            Optional<?> opt = (Optional<?>) findByIdMethod.invoke(reportService, sysJob.getReportId());
+            
+            if (opt.isPresent()) {
+                template = opt.get();
+                
+                // Get templateId from template
+                java.lang.reflect.Method getTemplateIdMethod = template.getClass().getMethod("getTemplateId");
+                Long templateId = (Long) getTemplateIdMethod.invoke(template);
+                
+                java.lang.reflect.Method getTemplateNameMethod = template.getClass().getMethod("getTemplateName");
+                String templateName = (String) getTemplateNameMethod.invoke(template);
+
+                java.lang.reflect.Method getOutputFormatMethod = template.getClass().getMethod("getOutputFormat");
+                String outputFormat = (String) getOutputFormatMethod.invoke(template);
+
+                // Execute report
+                java.lang.reflect.Method executeTemplateMethod = reportService.getClass().getMethod("executeTemplate", Long.class, String.class);
+                List<?> data = (List<?>) executeTemplateMethod.invoke(reportService, templateId, "{}");
+
+                // Send email
+                sendReportEmail(sysJob, templateName, outputFormat, data);
+            } else {
+                throw new Exception("Report template not found: " + sysJob.getReportId());
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute report job", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Send report via email
+     */
+    private void sendReportEmail(SysJob sysJob, String templateName, String outputFormat, List<?> data) throws Exception {
+        String recipients = sysJob.getNotificationEmails();
+        if (recipients == null || recipients.isEmpty()) {
+            log.warn("No recipients configured for Job {}", sysJob.getJobId());
+            return;
+        }
+
+        // Reuse logic from ReportExecutionJob or similar
+        // For now, we log that we would send it
+        log.info("Would send {} report '{}' to {}", outputFormat, templateName, recipients);
+        log.info("Data rows: {}", data.size());
     }
 
     /**

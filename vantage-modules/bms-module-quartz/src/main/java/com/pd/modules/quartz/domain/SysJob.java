@@ -26,8 +26,16 @@ public class SysJob implements Serializable {
     @Column(name = "job_group", length = 64)
     private String jobGroup;
 
+    /** Job Type (BEAN or REPORT) */
+    @Column(name = "job_type", length = 20)
+    private String jobType = "BEAN";
+
+    /** Linked Report ID (for REPORT type jobs) */
+    @Column(name = "report_id")
+    private Long reportId;
+
     /** Invoke target string */
-    @Column(name = "invoke_target", length = 500, nullable = false)
+    @Column(name = "invoke_target", length = 500)
     private String invokeTarget;
 
     /** Cron expression */
@@ -301,5 +309,21 @@ public class SysJob implements Serializable {
 
     public void setTemplateName(String templateName) {
         this.templateName = templateName;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    public Long getReportId() {
+        return reportId;
+    }
+
+    public void setReportId(Long reportId) {
+        this.reportId = reportId;
     }
 }

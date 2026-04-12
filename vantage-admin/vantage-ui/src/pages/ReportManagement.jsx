@@ -88,6 +88,24 @@ const ReportManagement = () => {
             .catch(() => addToast('error', 'Execution failed', 5000));
     };
 
+    const handleActivate = (row) => {
+        if (!confirm(`Activate this report? This will set status to Active and increment version.`)) return;
+        
+        fetch(`/api/system/report-designer/templates/${row.templateId}/activate`, { 
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                addToast('success', data.msg);
+                fetchTemplates();
+            } else {
+                addToast('error', data.msg);
+            }
+        });
+    };
+
     const handleExport = (row, format) => {
         window.open(`/api/system/report-designer/export/${row.templateId}?format=${format}`, '_blank');
     };
@@ -191,9 +209,18 @@ const ReportManagement = () => {
                                     </td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#3b82f620', color: '#3b82f6' }}>{t.datasourceKey}</span></td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#8b5cf620', color: '#8b5cf6' }}>{t.outputFormat}</span></td>
-                                    <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#10b98120', color: '#10b981' }}>v{t.version}</span></td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                                        <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: t.status === '0' ? '#10b98120' : '#f59e0b20', color: t.status === '0' ? '#10b981' : '#f59e0b' }}>
+                                            {t.status === '0' ? `Active v${t.version}` : `v${t.version}`}
+                                        </span>
+                                    </td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                            {t.status !== '0' && (
+                                                <button onClick={() => handleActivate(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px', color: '#10b981', borderColor: '#10b981' }} title="Activate Report">
+                                                    <Play size={14} />
+                                                </button>
+                                            )}
                                             <button onClick={() => handleEditInDesigner(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Edit in Designer"><Code size={14} /></button>
                                             <button onClick={() => handleExecute(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Execute"><Play size={14} /></button>
                                             <button onClick={() => handleScheduleHelp(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Get Schedule Code"><Calendar size={14} /></button>

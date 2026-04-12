@@ -120,6 +120,19 @@ public class ReportDesignerController extends BaseController {
     }
 
     /**
+     * Get all active templates (simplified for dropdowns)
+     */
+    @PreAuthorize("hasAuthority('system:report:template:query')")
+    @GetMapping("/active-templates")
+    public AjaxResult getActiveTemplates() {
+        List<SysReportTemplate> all = reportDesignerService.findAll();
+        List<SysReportTemplate> active = all.stream()
+            .filter(t -> "0".equals(t.getStatus()))
+            .collect(java.util.stream.Collectors.toList());
+        return success(active);
+    }
+
+    /**
      * Archive a template version
      */
     @PreAuthorize("hasAuthority('system:report:template:edit')")
@@ -135,22 +148,27 @@ public class ReportDesignerController extends BaseController {
     }
 
     /**
-     * Activate a template version
+     * Activate a report: Creates a new version and sets it to Active (0).
+     * This allows users to "publish" changes as a new version.
      */
     @PreAuthorize("hasAuthority('system:report:template:edit')")
     @PutMapping("/templates/{templateId}/activate")
+    @org.springframework.transaction.annotation.Transactional
     public AjaxResult activateTemplate(@PathVariable Long templateId) {
         return reportDesignerService.findById(templateId)
-            .map(t -> {
-                t.setStatus("0"); // Active
-                reportDesignerService.save(t);
-                return success("Template activated");
+            .map(current -> {
+                int newVersion = (current.getVersion() != null ? current.getVersion() : 0) + 1;
+                current.setVersion(newVersion);
+                current.setStatus("0"); // Active
+                reportDesignerService.save(current);
+                return success("Activated successfully as version " + newVersion);
             })
             .orElseGet(() -> error("Template not found"));
     }
 
-    // ==================== Datasource Metadata ====================
-
+    /**
+     * Datasource Metadata
+     */
     @PreAuthorize("hasAuthority('system:report:template:query')")
     @GetMapping("/datasource/{datasourceKey}/tables")
     public AjaxResult getDatasourceTables(@PathVariable String datasourceKey) {
