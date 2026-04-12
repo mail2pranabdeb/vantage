@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Play, Download, Database, Table, Columns, Filter, BarChart3, Settings, Trash2, Plus, Eye, X } from 'lucide-react';
 
-const ReportDesigner = () => {
+const ReportDesigner = ({ tab }) => {
     const [template, setTemplate] = useState({
         templateName: '',
         templateKey: '',
@@ -43,23 +43,25 @@ const ReportDesigner = () => {
         'QRTZ_' // Quartz internal tables
     ];
 
-    // Load template from URL params
+    // Load template from tab URL (passed from App.jsx via TabContent)
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const templateId = params.get('templateId');
-        if (templateId) {
-            fetch(`/api/system/report-designer/templates/${templateId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.code === 200 && data.data) {
-                        setTemplate(data.data);
-                        if (data.data.datasourceKey) {
-                            loadTables(data.data.datasourceKey);
+        if (tab && tab.url) {
+            const params = new URLSearchParams(tab.url.split('?')[1] || '');
+            const templateId = params.get('templateId');
+            if (templateId) {
+                fetch(`/api/system/report-designer/templates/${templateId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.code === 200 && data.data) {
+                            setTemplate(data.data);
+                            if (data.data.datasourceKey) {
+                                loadTables(data.data.datasourceKey);
+                            }
                         }
-                    }
-                });
+                    });
+            }
         }
-    }, []);
+    }, [tab]);
 
     useEffect(() => {
         fetch('/api/system/datasource/list')

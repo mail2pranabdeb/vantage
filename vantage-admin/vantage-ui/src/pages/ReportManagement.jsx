@@ -123,7 +123,9 @@ const ReportManagement = () => {
                     const activeVersions = (data.data || []).filter(v => v.status === '0');
                     if (activeVersions.length > 0) {
                         const v = activeVersions[0];
-                        setScheduleCode(`reportExecutionJob.execute(${v.templateId}, 'EXCEL', ['your@email.com'], null, '${row.templateName}', 'Please find the attached report.', '{}')`);
+                        // Use the template's saved output format instead of hardcoding EXCEL
+                        const format = v.outputFormat || 'EXCEL';
+                        setScheduleCode(`reportExecutionJob.execute(${v.templateId}, '${format}', ['your@email.com'], null, '${row.templateName}', 'Please find the attached report.', '{}')`);
                     }
                 }
             });
@@ -133,7 +135,8 @@ const ReportManagement = () => {
     const updateScheduleCode = (versionId, email) => {
         const version = templateVersions.find(v => v.templateId === versionId);
         if (version) {
-            setScheduleCode(`reportExecutionJob.execute(${version.templateId}, 'EXCEL', ['${email || 'your@email.com'}'], null, '${currentTemplate.templateName}', 'Please find the attached report.', '{}')`);
+            const format = version.outputFormat || 'EXCEL';
+            setScheduleCode(`reportExecutionJob.execute(${version.templateId}, '${format}', ['${email || 'your@email.com'}'], null, '${currentTemplate.templateName}', 'Please find the attached report.', '{}')`);
         }
         setScheduleEmail(email);
     };

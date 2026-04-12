@@ -73,6 +73,7 @@ const TabContent = ({ tab, isActive }) => {
         return null;
     }
 
+    // Pass tab as prop so component can access URL and params
     return (
         <div style={{
             flex: 1,
@@ -80,7 +81,7 @@ const TabContent = ({ tab, isActive }) => {
             background: 'var(--bg-primary)',
             padding: '8px'
         }}>
-            <Component />
+            <Component tab={tab} />
         </div>
     );
 };
