@@ -40,6 +40,19 @@ public class SysDictController extends BaseController {
         return success(dictData);
     }
 
+    @PreAuthorize("hasAuthority('system:dict:list')")
+    @GetMapping("/data/type/{dictType}")
+    public AjaxResult getDataByType(@PathVariable String dictType) {
+        List<SysDictData> dictData = dictDataRepository.findByDictTypeOrderBySort(dictType);
+        return success(dictData);
+    }
+
+    @GetMapping("/type/get-by-code/{dictType}")
+    public AjaxResult getTypeByCode(@PathVariable String dictType) {
+        Optional<SysDictType> type = dictTypeRepository.findByDictType(dictType);
+        return type.map(this::success).orElse(success(null));
+    }
+
     @PreAuthorize("hasAuthority('system:dict:query')")
     @GetMapping("/type/{dictId}")
     public AjaxResult getType(@PathVariable Long dictId) {
@@ -81,5 +94,40 @@ public class SysDictController extends BaseController {
         }
         dictTypeRepository.deleteById(dictId);
         return success("Dictionary type deleted successfully");
+    }
+
+    @PreAuthorize("hasAuthority('system:dict:add')")
+    @Log(title = "Dictionary Data", businessType = BusinessType.INSERT)
+    @PostMapping("/data")
+    public AjaxResult addData(@RequestBody SysDictData dictData) {
+        dictData.setStatus(dictData.getStatus() != null ? dictData.getStatus() : "0");
+        dictData.setCreateBy("admin");
+        dictData.setCreateTime(LocalDateTime.now());
+        dictDataRepository.save(dictData);
+        return success("Dictionary data added successfully");
+    }
+
+    @PreAuthorize("hasAuthority('system:dict:edit')")
+    @Log(title = "Dictionary Data", businessType = BusinessType.UPDATE)
+    @PutMapping("/data")
+    public AjaxResult editData(@RequestBody SysDictData dictData) {
+        if (dictData.getDictCode() == null || !dictDataRepository.findById(dictData.getDictCode()).isPresent()) {
+            return error("Dictionary data not found");
+        }
+        dictData.setUpdateBy("admin");
+        dictData.setUpdateTime(LocalDateTime.now());
+        dictDataRepository.save(dictData);
+        return success("Dictionary data updated successfully");
+    }
+
+    @PreAuthorize("hasAuthority('system:dict:remove')")
+    @Log(title = "Dictionary Data", businessType = BusinessType.DELETE)
+    @DeleteMapping("/data/{dictCode}")
+    public AjaxResult removeData(@PathVariable Long dictCode) {
+        if (!dictDataRepository.findById(dictCode).isPresent()) {
+            return error("Dictionary data not found");
+        }
+        dictDataRepository.deleteById(dictCode);
+        return success("Dictionary data deleted successfully");
     }
 }

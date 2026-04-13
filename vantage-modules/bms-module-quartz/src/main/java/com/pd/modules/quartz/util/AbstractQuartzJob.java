@@ -40,11 +40,11 @@ public abstract class AbstractQuartzJob implements Job {
         String jobGroup = sysJob.getJobGroup();
 
         // Check if a log was pre-created by manual run
-        Long existingLogId = context.getJobDetail().getJobDataMap().getLong("JOB_LOG_ID");
+        Long existingLogId = getJobLogIdSafely(context.getJobDetail().getJobDataMap());
         if (context.getTrigger() != null && context.getTrigger().getJobDataMap().containsKey("JOB_LOG_ID")) {
-            existingLogId = context.getTrigger().getJobDataMap().getLong("JOB_LOG_ID");
+            existingLogId = getJobLogIdSafely(context.getTrigger().getJobDataMap());
         }
-        
+
         // Also check merged map (sometimes Quartz puts trigger data there)
         if (existingLogId == null || existingLogId == 0L) {
              Object logIdObj = context.getMergedJobDataMap().get("JOB_LOG_ID");
@@ -194,5 +194,18 @@ public abstract class AbstractQuartzJob implements Job {
             sb.append(element.toString()).append("\n");
         }
         return sb.toString();
+    }
+
+    /**
+     * Safely extract a JOB_LOG_ID from a JobDataMap, handling type mismatches.
+     */
+    private Long getJobLogIdSafely(org.quartz.JobDataMap dataMap) {
+        try {
+            Object val = dataMap.get("JOB_LOG_ID");
+            if (val == null) return 0L;
+            return Long.valueOf(val.toString());
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 }

@@ -1,7 +1,7 @@
 -- Report Job Email Group Migration
 
 -- 1. Add Report Email Group column to sys_job
-ALTER TABLE sys_job ADD COLUMN IF NOT EXISTS report_email_group VARCHAR(64);
+ALTER TABLE sys_job ADD COLUMN IF NOT EXISTS report_email_group VARCHAR(500);
 
 -- 2. Add Dictionary Type for Report Email Groups
 MERGE INTO sys_dict_type (dict_id, dict_name, dict_type, status, create_by, create_time, remark) 
@@ -22,7 +22,7 @@ VALUES (
     (SELECT COALESCE(MAX(dict_code), 100) + 1 FROM sys_dict_data), 
     1, 
     'Management Team', 
-    'admin@example.com,manager@example.com', 
+    'mail2pranabdeb@gmail.com,mailservicekedb@gmail.com',
     'sys_report_email_group', 
     '', 
     '', 

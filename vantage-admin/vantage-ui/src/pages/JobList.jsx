@@ -38,7 +38,7 @@ const JobList = () => {
         invokeTarget: '',
         jobType: 'BEAN',
         reportId: '',
-        reportEmailGroup: '',
+        reportEmailGroup: [],
         cronExpression: '',
         misfirePolicy: '3',
         concurrent: '1',
@@ -102,8 +102,13 @@ const JobList = () => {
         fetch('/api/system/dict/data/type/sys_report_email_group')
             .then(res => res.json())
             .then(data => {
-                if (data.code === 200) setEmailGroups(data.data || []);
-            });
+                console.log("Email groups response:", data);
+                if (data.code === 200) {
+                    setEmailGroups(data.data || []);
+                    console.log("Email groups set:", data.data);
+                }
+            })
+            .catch(err => console.error("Failed to fetch email groups:", err));
     }, []);
 
     const fetchJobTemplates = () => {
@@ -174,6 +179,9 @@ const JobList = () => {
             jobName: '',
             jobGroup: '',
             invokeTarget: '',
+            jobType: 'BEAN',
+            reportId: '',
+            reportEmailGroup: [],
             cronExpression: '',
             misfirePolicy: '3',
             concurrent: '1',
@@ -184,6 +192,7 @@ const JobList = () => {
             notifyOnFailure: false,
             notificationEmails: '',
             webhookUrl: '',
+            emailTemplateId: '',
             dependentJobIds: '',
             timeZone: 'UTC',
             allowHoliday: true,
@@ -194,12 +203,19 @@ const JobList = () => {
     };
 
     const handleEditClick = (row) => {
-        setModalMode('edit');
-        setCurrentJob(row);
+        console.log("Edit job row data:", row);
+        // Parse email group - split comma-separated string to array for multi-select
+        let emailGroupArray = [];
+        if (row.reportEmailGroup) {
+            emailGroupArray = row.reportEmailGroup.split(',').map(s => s.trim()).filter(s => s);
+        }
         setFormData({
             jobName: row.jobName || '',
             jobGroup: row.jobGroup || '',
             invokeTarget: row.invokeTarget || '',
+            jobType: row.jobType || 'BEAN',
+            reportId: row.reportId || '',
+            reportEmailGroup: emailGroupArray,
             cronExpression: row.cronExpression || '',
             misfirePolicy: String(row.misfirePolicy || '3'),
             concurrent: String(row.concurrent || '1'),
@@ -216,6 +232,8 @@ const JobList = () => {
             allowHoliday: row.allowHoliday !== undefined ? row.allowHoliday : true,
             remark: row.remark || ''
         });
+        setCurrentJob(row);
+        setModalMode('edit');
         setShowCronBuilder(false);
         setIsModalOpen(true);
     };
@@ -223,10 +241,18 @@ const JobList = () => {
     const handleViewClick = (row) => {
         setModalMode('view');
         setCurrentJob(row);
+        // Parse email group - split comma-separated string to array for multi-select
+        let emailGroupArray = [];
+        if (row.reportEmailGroup) {
+            emailGroupArray = row.reportEmailGroup.split(',').map(s => s.trim()).filter(s => s);
+        }
         setFormData({
             jobName: row.jobName || '',
             jobGroup: row.jobGroup || '',
             invokeTarget: row.invokeTarget || '',
+            jobType: row.jobType || 'BEAN',
+            reportId: row.reportId || '',
+            reportEmailGroup: emailGroupArray,
             cronExpression: row.cronExpression || '',
             misfirePolicy: String(row.misfirePolicy || '3'),
             concurrent: String(row.concurrent || '1'),
@@ -237,6 +263,7 @@ const JobList = () => {
             notifyOnFailure: row.notifyOnFailure || false,
             notificationEmails: row.notificationEmails || '',
             webhookUrl: row.webhookUrl || '',
+            emailTemplateId: row.emailTemplateId || '',
             dependentJobIds: row.dependentJobIds || '',
             timeZone: row.timeZone || 'UTC',
             allowHoliday: row.allowHoliday !== undefined ? row.allowHoliday : true,
@@ -422,15 +449,20 @@ const JobList = () => {
 
         const url = modalMode === 'add' ? '/api/system/job' : '/api/system/job';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
-        const body = { 
-            ...formData, 
+        const body = {
+            ...formData,
             jobId: modalMode === 'edit' ? currentJob.jobId : null,
+            // Convert array back to comma-separated string for backend
+            reportEmailGroup: Array.isArray(formData.reportEmailGroup)
+                ? formData.reportEmailGroup.join(',')
+                : formData.reportEmailGroup,
             misfirePolicy: parseInt(formData.misfirePolicy),
             concurrent: formData.concurrent === '1' ? '1' : '0',
             maxRetryCount: parseInt(formData.maxRetryCount),
             retryInterval: parseInt(formData.retryInterval),
             timeoutSeconds: parseInt(formData.timeoutSeconds)
         };
+        console.log("Submitting job data:", body);
 
         fetch(url, {
             method,
@@ -527,7 +559,7 @@ const JobList = () => {
             sortable: true,
             render: (value) => (
                 <span className={`status-pill ${value === '0' ? 'active' : 'inactive'}`}>
-                    {value === '0' ? 'Running' : 'Paused'}
+                    {value === '0' ? 'Active' : 'Paused'}
                 </span>
             )
         },
@@ -670,6 +702,7 @@ const JobList = () => {
 
             {/* Add/Edit/View Modal */}
             <Modal
+                key={currentJob?.jobId || 'new'}
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={modalMode === 'add' ? 'Add Job' : modalMode === 'edit' ? 'Edit Job' : 'View Job'}
@@ -785,23 +818,27 @@ const JobList = () => {
                             <div className="form-row">
                                 <div className="form-group">
                                     <label className="form-label">Email Group (Optional)</label>
-                                    <select 
-                                        name="reportEmailGroup" 
-                                        value={formData.reportEmailGroup} 
-                                        onChange={handleInputChange} 
+                                    <select
+                                        name="reportEmailGroup"
+                                        value={formData.reportEmailGroup}
+                                        onChange={(e) => {
+                                            const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                            setFormData(prev => ({ ...prev, reportEmailGroup: selected }));
+                                        }}
                                         className="form-input"
+                                        multiple
                                         disabled={modalMode === 'view'}
+                                        style={{ minHeight: '80px' }}
                                     >
-                                        <option value="">-- Select Group --</option>
                                         {emailGroups.map(g => (
-                                            <option key={g.dictCode} value={g.dictValue}>
+                                            <option key={g.dictCode} value={g.dictCode}>
                                                 {g.dictLabel}
                                             </option>
                                         ))}
                                     </select>
-                                    <small className="form-help">Pre-defined groups from Dictionary</small>
+                                    <small className="form-help">Hold Ctrl/Cmd to select multiple groups</small>
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label className="form-label">Additional Recipients</label>
                                     <FormInput
@@ -884,7 +921,7 @@ const JobList = () => {
                                     className="form-input"
                                     disabled={modalMode === 'view'}
                                 >
-                                    <option value="0">Running</option>
+                                    <option value="0">Active</option>
                                     <option value="1">Paused</option>
                                 </select>
                             </div>

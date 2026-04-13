@@ -37,29 +37,32 @@ public class ScheduleUtils {
     public static void createScheduleJob(Scheduler scheduler, SysJob job) {
         try {
             Class<? extends Job> jobClass = QuartzTaskExecutor.class;
-            
+            JobKey jobKey = getJobKey(job.getJobId(), job.getJobGroup());
+            TriggerKey triggerKey = getTriggerKey(job.getJobId(), job.getJobGroup());
+
+            // Delete existing job/trigger if present (clean slate)
+            if (scheduler.checkExists(jobKey)) {
+                scheduler.deleteJob(jobKey);
+            }
+
             JobDetail jobDetail = JobBuilder.newJob(jobClass)
-                    .withIdentity(getJobKey(job.getJobId(), job.getJobGroup()))
+                    .withIdentity(jobKey)
                     .build();
 
             CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule(job.getCronExpression())
                     .withMisfireHandlingInstructionDoNothing();
 
             CronTrigger trigger = TriggerBuilder.newTrigger()
-                    .withIdentity(getTriggerKey(job.getJobId(), job.getJobGroup()))
+                    .withIdentity(triggerKey)
                     .withSchedule(cronScheduleBuilder)
                     .build();
 
             jobDetail.getJobDataMap().put("TASK_PROPERTIES", job);
 
-            if (scheduler.checkExists(getJobKey(job.getJobId(), job.getJobGroup()))) {
-                scheduler.rescheduleJob(getTriggerKey(job.getJobId(), job.getJobGroup()), trigger);
-            } else {
-                scheduler.scheduleJob(jobDetail, trigger);
-            }
+            scheduler.scheduleJob(jobDetail, trigger);
 
             if ("1".equals(job.getStatus())) {
-                scheduler.pauseJob(getJobKey(job.getJobId(), job.getJobGroup()));
+                scheduler.pauseJob(jobKey);
             }
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to create schedule job", e);

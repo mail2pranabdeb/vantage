@@ -3,8 +3,11 @@ package com.pd.modules.quartz.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.quartz.JobDataMap;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.pd.modules.quartz.domain.SysJob;
@@ -21,6 +24,8 @@ import com.pd.modules.quartz.util.ScheduleUtils;
  */
 @Service
 public class SysJobServiceImpl implements ISysJobService {
+
+    private static final Logger log = LoggerFactory.getLogger(SysJobServiceImpl.class);
 
     @Autowired
     private SysJobRepository jobRepository;
@@ -106,7 +111,15 @@ public class SysJobServiceImpl implements ISysJobService {
             throw new RuntimeException("Job not found");
         }
         String jobGroup = sysJob.getJobGroup();
+
+        JobKey jobKey = ScheduleUtils.getJobKey(jobId, jobGroup);
         
+        // Ensure the job exists in the scheduler before triggering
+        if (!scheduler.checkExists(jobKey)) {
+            log.info("Job {} not found in scheduler, creating it now", sysJob.getJobName());
+            ScheduleUtils.createScheduleJob(scheduler, sysJob);
+        }
+
         // Create a job log entry first to get an ID
         SysJobLog jobLog = new SysJobLog();
         jobLog.setJobId(jobId);
@@ -116,19 +129,19 @@ public class SysJobServiceImpl implements ISysJobService {
         jobLog.setStartTime(LocalDateTime.now());
         jobLog.setRetryCount(0);
         jobLog.setStatus("2"); // 2 = Running/Pending
-        
+
         // Save log to generate ID
         SysJobLog savedLog = jobLogRepository.save(jobLog);
         Long jobLogId = savedLog.getJobLogId();
-        
+
         // Add log ID to JobDataMap so the job execution can update it
         JobDataMap data = new JobDataMap();
         data.put("JOB_LOG_ID", jobLogId);
-        
+
         // Trigger the job with the map
-        scheduler.triggerJob(ScheduleUtils.getJobKey(jobId, jobGroup), data);
+        scheduler.triggerJob(jobKey, data);
         webSocketService.sendJobStarted(jobId, sysJob.getJobName());
-        
+
         return jobLogId;
     }
 
@@ -156,8 +169,12 @@ public class SysJobServiceImpl implements ISysJobService {
         job.setUpdateTime(java.time.LocalDateTime.now());
         job.setUpdateBy("admin");
 
-        // Delete old scheduler job
-        scheduler.deleteJob(ScheduleUtils.getJobKey(existingJob.getJobId(), existingJob.getJobGroup()));
+        JobKey jobKey = ScheduleUtils.getJobKey(existingJob.getJobId(), existingJob.getJobGroup());
+        
+        // Delete old scheduler job if it exists
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
 
         jobRepository.save(job);
 

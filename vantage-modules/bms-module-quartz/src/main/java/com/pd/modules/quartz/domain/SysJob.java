@@ -35,7 +35,7 @@ public class SysJob implements Serializable {
     private Long reportId;
 
     /** Report Email Group Key (from Dictionary) */
-    @Column(name = "report_email_group", length = 64)
+    @Column(name = "report_email_group", length = 500)
     private String reportEmailGroup;
 
     /** Invoke target string */

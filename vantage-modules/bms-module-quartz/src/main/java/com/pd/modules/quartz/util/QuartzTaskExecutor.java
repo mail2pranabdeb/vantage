@@ -122,30 +122,43 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         String recipients = sysJob.getNotificationEmails();
         String emailGroup = sysJob.getReportEmailGroup();
         
-        // If a group is defined, append those emails
+        // If email group is defined, resolve emails from dictionary by dict_code
         if (emailGroup != null && !emailGroup.isEmpty()) {
             try {
-                Object dictService = applicationContext.getBean("sysDictDataServiceImpl");
-                java.lang.reflect.Method getMethod = dictService.getClass().getMethod("selectDictDataByType", String.class);
-                java.util.List<?> dictList = (java.util.List<?>) getMethod.invoke(dictService, emailGroup);
+                // emailGroup stores dict codes comma-separated (e.g., "101,102")
+                String[] dictCodes = emailGroup.split(",");
+                StringBuilder groupEmails = new StringBuilder();
                 
-                if (dictList != null && !dictList.isEmpty()) {
-                    java.util.stream.Stream<String> emails = dictList.stream()
-                        .map(obj -> {
-                            try {
-                                return (String) obj.getClass().getMethod("getDictValue").invoke(obj);
-                            } catch (Exception e) { return null; }
-                        })
-                        .filter(v -> v != null);
+                Object dictRepo = applicationContext.getBean("sysDictDataRepository");
+                java.lang.reflect.Method findByIdMethod = dictRepo.getClass().getMethod("findById", Long.class);
+                
+                for (String dictCodeStr : dictCodes) {
+                    dictCodeStr = dictCodeStr.trim();
+                    if (dictCodeStr.isEmpty()) continue;
                     
-                    String groupEmails = emails.collect(java.util.stream.Collectors.joining(","));
-                    
+                    try {
+                        Long dictCode = Long.parseLong(dictCodeStr);
+                        java.util.Optional<?> optDict = (java.util.Optional<?>) findByIdMethod.invoke(dictRepo, dictCode);
+                        if (optDict.isPresent()) {
+                            Object dictData = optDict.get();
+                            String dictValue = (String) dictData.getClass().getMethod("getDictValue").invoke(dictData);
+                            if (dictValue != null && !dictValue.isEmpty()) {
+                                if (groupEmails.length() > 0) groupEmails.append(",");
+                                groupEmails.append(dictValue);
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        log.warn("Invalid dict_code in email group: {}", dictCodeStr);
+                    }
+                }
+                
+                if (groupEmails.length() > 0) {
                     if (recipients != null && !recipients.isEmpty()) {
                         recipients = recipients + "," + groupEmails;
                     } else {
-                        recipients = groupEmails;
+                        recipients = groupEmails.toString();
                     }
-                    log.info("Resolved email group '{}' to: {}", emailGroup, recipients);
+                    log.info("Resolved email group codes '{}' to: {}", emailGroup, recipients);
                 }
             } catch (Exception e) {
                 log.error("Failed to resolve email group: {}", emailGroup, e);
