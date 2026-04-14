@@ -203,12 +203,34 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             Object template = templateOpt.get();
             java.lang.reflect.Method getSubjectMethod = template.getClass().getMethod("getEmailSubject");
             java.lang.reflect.Method getBodyMethod = template.getClass().getMethod("getEmailBody");
+            java.lang.reflect.Method getDatasourceKeyMethod = template.getClass().getMethod("getDatasourceKey");
+            java.lang.reflect.Method getQuerySqlMethod = template.getClass().getMethod("getQuerySql");
+            java.lang.reflect.Method getIncludeDataTableMethod = template.getClass().getMethod("getIncludeDataTable");
+
             String templateSubject = (String) getSubjectMethod.invoke(template);
             String templateBody = (String) getBodyMethod.invoke(template);
+            String datasourceKey = (String) getDatasourceKeyMethod.invoke(template);
+            String querySql = (String) getQuerySqlMethod.invoke(template);
+            Boolean includeDataTable = (Boolean) getIncludeDataTableMethod.invoke(template);
 
             // Process template variables
             String subject = processReportTemplate(templateSubject, templateName, outputFormat, data, sysJob);
             String body = processReportTemplate(templateBody, templateName, outputFormat, data, sysJob);
+
+            // Execute template SQL query and render HTML table if configured
+            if (Boolean.TRUE.equals(includeDataTable) && datasourceKey != null && !datasourceKey.isEmpty() && querySql != null && !querySql.isEmpty()) {
+                try {
+                    Object tplService = applicationContext.getBean("emailTemplateService");
+                    java.lang.reflect.Method executeQueryMethod = tplService.getClass().getMethod("executeQueryAndRenderTable", String.class, String.class);
+                    String dataTableHtml = (String) executeQueryMethod.invoke(tplService, datasourceKey, querySql);
+                    body = body.replace("${dataTable}", dataTableHtml);
+                } catch (Exception e) {
+                    log.error("Failed to execute template SQL query", e);
+                    body = body.replace("${dataTable}", "<p style='color:red;'>Error: Failed to execute data query - " + e.getMessage() + "</p>");
+                }
+            } else {
+                body = body.replace("${dataTable}", "");
+            }
 
             // Send email
             MimeMessage message = mailSender.createMimeMessage();

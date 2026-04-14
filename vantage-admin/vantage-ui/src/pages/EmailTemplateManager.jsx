@@ -15,6 +15,9 @@ const EmailTemplateManager = () => {
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [copiedId, setCopiedId] = useState(null);
     const [activeTab, setActiveTab] = useState('html');
+    const [previewContent, setPreviewContent] = useState({ subject: '', body: '' });
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [datasources, setDatasources] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -24,7 +27,10 @@ const EmailTemplateManager = () => {
         emailBody: '',
         isDefault: false,
         isActive: true,
-        remark: ''
+        remark: '',
+        datasourceKey: '',
+        querySql: '',
+        includeDataTable: false
     });
 
     const templateTypes = [
@@ -46,12 +52,28 @@ const EmailTemplateManager = () => {
         { var: '${status}', description: 'Execution status' },
         { var: '${message}', description: 'Result message' },
         { var: '${exceptionInfo}', description: 'Exception stack trace' },
-        { var: '${timestamp}', description: 'Current timestamp' }
+        { var: '${timestamp}', description: 'Current timestamp' },
+        { var: '${reportName}', description: 'Report name' },
+        { var: '${reportFormat}', description: 'Report format (CSV, etc.)' },
+        { var: '${totalRows}', description: 'Total data rows' },
+        { var: '${dataTable}', description: 'HTML table from SQL query (if enabled)' }
     ];
 
     useEffect(() => {
         fetchTemplates();
+        fetchDatasources();
     }, []);
+
+    const fetchDatasources = () => {
+        fetch('/api/system/datasource/list')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setDatasources((data.data || []).filter(d => d.status === '0'));
+                }
+            })
+            .catch(err => console.error("Failed to fetch datasources:", err));
+    };
 
     const fetchTemplates = () => {
         setLoading(true);
@@ -94,14 +116,42 @@ const EmailTemplateManager = () => {
             emailBody: template.emailBody || '',
             isDefault: template.isDefault || false,
             isActive: template.isActive || true,
-            remark: template.remark || ''
+            remark: template.remark || '',
+            datasourceKey: template.datasourceKey || '',
+            querySql: template.querySql || '',
+            includeDataTable: template.includeDataTable || false
         });
         setIsModalOpen(true);
     };
 
-    const handlePreviewClick = (template) => {
-        setSelectedTemplate(template);
-        setIsPreviewOpen(true);
+    const handlePreviewClick = () => {
+        setPreviewLoading(true);
+        fetch('/api/system/email-template/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                emailSubject: formData.emailSubject,
+                emailBody: formData.emailBody,
+                datasourceKey: formData.datasourceKey,
+                querySql: formData.querySql,
+                includeDataTable: formData.includeDataTable
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setPreviewLoading(false);
+            if (data.code === 200) {
+                setPreviewContent({ subject: data.subject || '', body: data.body || '' });
+                setIsPreviewOpen(true);
+            } else {
+                alert(data.msg || 'Preview failed');
+            }
+        })
+        .catch(err => {
+            setPreviewLoading(false);
+            console.error("Preview failed:", err);
+            alert('Preview failed');
+        });
     };
 
     const handleDeleteClick = (template) => {
@@ -153,10 +203,18 @@ const EmailTemplateManager = () => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
+        }));
+    };
+
+    const handleCheckboxChange = (e) => {
+        const { name, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: checked
         }));
     };
 
@@ -461,6 +519,26 @@ const EmailTemplateManager = () => {
                             Cancel
                         </button>
                         <button
+                            className="btn btn-secondary"
+                            onClick={handlePreviewClick}
+                            disabled={submitting || previewLoading}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            {previewLoading ? (
+                                <div style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    border: '2px solid var(--text-primary)',
+                                    borderBottomColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                            ) : (
+                                <Eye size={16} />
+                            )}
+                            Preview
+                        </button>
+                        <button
                             className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={submitting}
@@ -521,6 +599,60 @@ const EmailTemplateManager = () => {
                             disabled={false}
                         />
                         <small className="form-help">Use variables like ${'{}'}jobName, ${'{}'}appName</small>
+                    </div>
+
+                    {/* Data Table Query */}
+                    <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                        <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Code size={14} /> Data Table (Optional)
+                        </h4>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label className="form-label">Datasource</label>
+                                <select
+                                    name="datasourceKey"
+                                    value={formData.datasourceKey}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                    disabled={false}
+                                >
+                                    <option value="">-- None --</option>
+                                    {datasources.map(ds => (
+                                        <option key={ds.datasourceKey} value={ds.datasourceKey}>
+                                            {ds.datasourceName} ({ds.datasourceKey})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '8px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                    <input
+                                        type="checkbox"
+                                        name="includeDataTable"
+                                        checked={formData.includeDataTable}
+                                        onChange={handleCheckboxChange}
+                                        style={{ width: '16px', height: '16px' }}
+                                    />
+                                    <span>Include data table in email</span>
+                                </label>
+                            </div>
+                        </div>
+                        {formData.includeDataTable && (
+                            <div className="form-group">
+                                <label className="form-label">SQL Query</label>
+                                <textarea
+                                    name="querySql"
+                                    value={formData.querySql}
+                                    onChange={handleInputChange}
+                                    placeholder="SELECT * FROM sys_user WHERE status = '0'"
+                                    rows={4}
+                                    className="form-input"
+                                    style={{ fontFamily: 'monospace', fontSize: '12px', resize: 'vertical' }}
+                                    disabled={false}
+                                />
+                                <small className="form-help">Query results will be rendered as an HTML table at {'${dataTable}'} placeholder</small>
+                            </div>
+                        )}
                     </div>
 
                     {/* Email Body */}
@@ -704,30 +836,32 @@ const EmailTemplateManager = () => {
             <Modal
                 isOpen={isPreviewOpen}
                 onClose={() => setIsPreviewOpen(false)}
-                title="Email Preview"
+                title="Live Email Preview"
                 size="large"
             >
-                {selectedTemplate && (
+                {previewContent.subject && (
                     <div>
-                        <div style={{ 
-                            padding: '12px', 
-                            background: 'var(--bg-secondary)', 
+                        <div style={{
+                            padding: '12px',
+                            background: 'var(--bg-secondary)',
                             borderRadius: '8px',
                             marginBottom: '16px'
                         }}>
                             <strong style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Subject:</strong>
                             <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                                {selectedTemplate.emailSubject}
+                                {previewContent.subject}
                             </div>
                         </div>
-                        <div style={{ 
-                            padding: '16px', 
-                            border: '1px solid var(--border-color)', 
+                        <div style={{
+                            padding: '16px',
+                            border: '1px solid var(--border-color)',
                             borderRadius: '8px',
                             background: 'white',
-                            color: '#333'
+                            color: '#333',
+                            maxHeight: '60vh',
+                            overflow: 'auto'
                         }}>
-                            <div dangerouslySetInnerHTML={{ __html: selectedTemplate.emailBody }} />
+                            <div dangerouslySetInnerHTML={{ __html: previewContent.body }} />
                         </div>
                     </div>
                 )}

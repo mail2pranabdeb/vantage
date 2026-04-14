@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Email template controller for managing job notification templates
@@ -108,29 +109,35 @@ public class EmailTemplateController extends BaseController {
     }
 
     /**
-     * Preview template with sample data
+     * Preview template with sample data and optional SQL execution
      */
-    @GetMapping("/{templateId}/preview")
-    public AjaxResult preview(@PathVariable Long templateId) {
-        EmailTemplate template = emailTemplateService.getTemplateById(templateId)
-                .orElseThrow(() -> new RuntimeException("Template not found"));
-        
-        // Sample data for preview
-        String previewSubject = template.getEmailSubject()
-                .replace("${appName}", "Vantage")
-                .replace("${jobName}", "Sample Job")
-                .replace("${jobId}", "1")
-                .replace("${jobGroup}", "system")
-                .replace("${invokeTarget}", "sampleService.execute()")
-                .replace("${cronExpression}", "0 */5 * * * ?")
-                .replace("${executionTime}", "2024-01-15 10:30:00")
-                .replace("${duration}", "1234")
-                .replace("${retryCount}", "0")
-                .replace("${status}", "Success")
-                .replace("${message}", "Execution completed successfully")
-                .replace("${exceptionInfo}", "N/A")
-                .replace("${timestamp}", "2024-01-15 10:30:05");
+    @PostMapping("/preview")
+    public AjaxResult preview(@RequestBody Map<String, Object> request) {
+        try {
+            String subject = (String) request.getOrDefault("emailSubject", "");
+            String body = (String) request.getOrDefault("emailBody", "");
+            String datasourceKey = (String) request.get("datasourceKey");
+            String querySql = (String) request.get("querySql");
+            Boolean includeDataTable = (Boolean) request.getOrDefault("includeDataTable", false);
 
-        return success(previewSubject);
+            // Process template variables
+            String renderedSubject = emailTemplateService.processTemplate(subject, null, null);
+            String renderedBody = emailTemplateService.processTemplate(body, null, null);
+
+            String dataTableHtml = "";
+            if (includeDataTable && datasourceKey != null && !datasourceKey.isEmpty() && querySql != null && !querySql.isEmpty()) {
+                dataTableHtml = emailTemplateService.executeQueryAndRenderTable(datasourceKey, querySql);
+                renderedBody = renderedBody.replace("${dataTable}", dataTableHtml);
+            } else {
+                renderedBody = renderedBody.replace("${dataTable}", "");
+            }
+
+            AjaxResult result = success();
+            result.put("subject", renderedSubject);
+            result.put("body", renderedBody);
+            return result;
+        } catch (Exception e) {
+            return error("Preview failed: " + e.getMessage());
+        }
     }
 }

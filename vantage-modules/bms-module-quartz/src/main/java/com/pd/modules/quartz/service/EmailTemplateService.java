@@ -6,7 +6,9 @@ import com.pd.modules.quartz.domain.SysJobLog;
 import com.pd.modules.quartz.infrastructure.repository.EmailTemplateRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,6 +18,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -28,6 +31,9 @@ public class EmailTemplateService {
 
     private final JavaMailSender mailSender;
     private final EmailTemplateRepository templateRepository;
+
+    @Autowired(required = false)
+    private org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate namedJdbcTemplate;
 
     @Value("${spring.mail.username:}")
     private String fromEmail;
@@ -131,9 +137,132 @@ public class EmailTemplateService {
     }
 
     /**
-     * Process template variables
+     * Process template variables (public version for preview, uses sample data)
      */
-    private String processTemplate(String template, SysJob job, SysJobLog jobLog) {
+    public String processTemplate(String template, SysJob job, SysJobLog jobLog) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+
+        if (job == null) {
+            // Use sample data for preview
+            return template
+                .replace("${appName}", appName)
+                .replace("${jobId}", "1")
+                .replace("${jobName}", "Sample Report Job")
+                .replace("${jobGroup}", "system")
+                .replace("${invokeTarget}", "reportService.execute()")
+                .replace("${cronExpression}", "0 */5 * * * ?")
+                .replace("${executionTime}", now.format(formatter))
+                .replace("${duration}", "1234")
+                .replace("${retryCount}", "0")
+                .replace("${status}", "Success")
+                .replace("${message}", "Execution completed successfully")
+                .replace("${exceptionInfo}", "N/A")
+                .replace("${timestamp}", now.format(formatter))
+                .replace("${reportName}", "Sample Report")
+                .replace("${reportFormat}", "CSV")
+                .replace("${totalRows}", "10");
+        }
+
+        return template
+            .replace("${appName}", appName)
+            .replace("${jobId}", String.valueOf(job.getJobId()))
+            .replace("${jobName}", job.getJobName())
+            .replace("${jobGroup}", job.getJobGroup())
+            .replace("${invokeTarget}", job.getInvokeTarget())
+            .replace("${cronExpression}", job.getCronExpression() != null ? job.getCronExpression() : "N/A")
+            .replace("${executionTime}", jobLog != null && jobLog.getStartTime() != null ? jobLog.getStartTime().format(formatter) : "N/A")
+            .replace("${duration}", String.valueOf(jobLog != null && jobLog.getExecutionDuration() != null ? jobLog.getExecutionDuration() : 0))
+            .replace("${retryCount}", String.valueOf(jobLog != null && jobLog.getRetryCount() != null ? jobLog.getRetryCount() : 0))
+            .replace("${status}", jobLog != null && jobLog.getStatus() != null ? ("0".equals(jobLog.getStatus()) ? "Success" : "Failed") : "Unknown")
+            .replace("${message}", jobLog != null && jobLog.getJobMessage() != null ? jobLog.getJobMessage() : "N/A")
+            .replace("${exceptionInfo}", jobLog != null && jobLog.getExceptionInfo() != null ? jobLog.getExceptionInfo() : "N/A")
+            .replace("${timestamp}", now.format(formatter))
+            .replace("${reportName}", job.getJobName())
+            .replace("${reportFormat}", "CSV")
+            .replace("${totalRows}", "0");
+    }
+
+    /**
+     * Execute SQL query against a datasource and render results as HTML table
+     */
+    public String executeQueryAndRenderTable(String datasourceKey, String querySql) {
+        if (namedJdbcTemplate == null) {
+            log.warn("NamedParameterJdbcTemplate not available, cannot execute query for datasource: {}", datasourceKey);
+            return "<p style='color:red;'>Error: Datasource query execution not available</p>";
+        }
+
+        try {
+            // For now, use the primary datasource (H2). In a full multi-datasource setup,
+            // you'd resolve the datasource by key and create a dynamic JdbcTemplate.
+            List<Map<String, Object>> rows = namedJdbcTemplate.queryForList(querySql, java.util.Collections.emptyMap());
+
+            if (rows.isEmpty()) {
+                return "<p>No data returned from query.</p>";
+            }
+
+            StringBuilder html = new StringBuilder();
+            html.append("<table style='width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-serif;'>");
+            html.append("<thead><tr style='background:#4a5568;color:white;'>");
+
+            // Headers
+            Map<String, Object> firstRow = rows.get(0);
+            for (String col : firstRow.keySet()) {
+                html.append("<th style='padding:8px;border:1px solid #e2e8f0;text-align:left;'>")
+                    .append(escapeHtml(col))
+                    .append("</th>");
+            }
+            html.append("</tr></thead><tbody>");
+
+            // Data rows
+            int rowCount = 0;
+            for (Map<String, Object> row : rows) {
+                if (rowCount >= 500) { // Limit to 500 rows for email
+                    break;
+                }
+                html.append("<tr style='background:")
+                    .append(rowCount % 2 == 0 ? "#f7fafc" : "white")
+                    .append(";'>");
+                for (String col : firstRow.keySet()) {
+                    Object val = row.get(col);
+                    html.append("<td style='padding:6px 8px;border:1px solid #e2e8f0;'>")
+                        .append(escapeHtml(val != null ? val.toString() : ""))
+                        .append("</td>");
+                }
+                html.append("</tr>");
+                rowCount++;
+            }
+
+            html.append("</tbody></table>");
+            if (rows.size() > 500) {
+                html.append("<p style='font-size:11px;color:#666;'>Showing first 500 of ")
+                    .append(rows.size()).append(" rows.</p>");
+            }
+
+            log.info("Executed query for datasource '{}', rendered {} rows as HTML table", datasourceKey, rowCount);
+            return html.toString();
+        } catch (Exception e) {
+            log.error("Failed to execute query for datasource: {}", datasourceKey, e);
+            return "<p style='color:red;'>Error executing query: " + escapeHtml(e.getMessage()) + "</p>";
+        }
+    }
+
+    /**
+     * Escape HTML special characters
+     */
+    private String escapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&#39;");
+    }
+
+    /**
+     * Process template variables (private version with real job data)
+     */
+    private String processTemplateInternal(String template, SysJob job, SysJobLog jobLog) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         
         return template

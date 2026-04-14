@@ -53,6 +53,18 @@ public class EmailTemplate implements Serializable {
     @Column(name = "remark", length = 500)
     private String remark;
 
+    /** Datasource key for data table queries */
+    @Column(name = "datasource_key", length = 50)
+    private String datasourceKey;
+
+    /** Custom SQL query to fetch data for HTML table */
+    @Column(name = "query_sql", columnDefinition = "TEXT")
+    private String querySql;
+
+    /** Include data table in email */
+    @Column(name = "include_data_table")
+    private Boolean includeDataTable = false;
+
     // Getters and Setters
     public Long getTemplateId() {
         return templateId;
@@ -132,5 +144,29 @@ public class EmailTemplate implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getDatasourceKey() {
+        return datasourceKey;
+    }
+
+    public void setDatasourceKey(String datasourceKey) {
+        this.datasourceKey = datasourceKey;
+    }
+
+    public String getQuerySql() {
+        return querySql;
+    }
+
+    public void setQuerySql(String querySql) {
+        this.querySql = querySql;
+    }
+
+    public Boolean getIncludeDataTable() {
+        return includeDataTable;
+    }
+
+    public void setIncludeDataTable(Boolean includeDataTable) {
+        this.includeDataTable = includeDataTable;
     }
 }
