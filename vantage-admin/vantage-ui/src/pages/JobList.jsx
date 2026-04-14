@@ -544,47 +544,29 @@ const JobList = () => {
             )
         },
         {
-            key: 'invokeTarget',
-            header: 'Target',
-            sortable: false,
-            render: (value) => (
-                <span className="badge-outline" style={{ fontSize: '11px', fontFamily: 'monospace', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-                    {value}
-                </span>
-            )
-        },
-        {
-            key: 'cronExpression',
-            header: 'Cron',
-            sortable: true,
-            render: (value) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        fontFamily: 'monospace',
-                        background: 'var(--bg-tertiary)',
-                        color: 'var(--text-secondary)'
-                    }}>
-                        {value}
-                    </span>
-                    <button 
-                        onClick={() => copyToClipboard(value, 'cron')}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: 'var(--text-muted)' }}
-                        title="Copy cron expression"
-                    >
-                        {copiedId === 'cron' ? <Check size={12} style={{ color: 'var(--success)' }} /> : <Copy size={12} />}
-                    </button>
-                </div>
-            )
-        },
-        {
             key: 'status',
             header: 'Status',
             sortable: true,
+            align: 'center',
             render: (value) => (
-                <span className={`status-pill ${value === '0' ? 'active' : 'inactive'}`}>
+                <span className={`status-pill ${value === '0' ? 'active' : 'inactive'}`} style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: 600
+                }}>
+                    <span style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: value === '0' ? '#11998e' : '#6b7280',
+                        display: 'inline-block',
+                        boxShadow: value === '0' ? '0 0 6px #11998e' : 'none',
+                        animation: value === '0' ? 'pulse 2s infinite' : 'none'
+                    }} />
                     {value === '0' ? 'Active' : 'Paused'}
                 </span>
             )
