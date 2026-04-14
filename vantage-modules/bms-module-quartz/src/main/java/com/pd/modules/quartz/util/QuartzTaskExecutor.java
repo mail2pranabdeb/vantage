@@ -173,45 +173,34 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         log.info("Sending {} report '{}' to {}", outputFormat, templateName, recipients);
         log.info("Data rows: {}", data.size());
 
-        // Actually send the email using JavaMailSender
+        // Send the report email using SimpleMailMessage (same as test email)
         try {
             Object mailSender = applicationContext.getBean("javaMailSender");
-            java.lang.reflect.Method createMimeMessageMethod = mailSender.getClass().getMethod("createMimeMessage");
-            Object mimeMessage = createMimeMessageMethod.invoke(mailSender);
+            
+            // Use SimpleMailMessage like the working test email code
+            Object message = Class.forName("org.springframework.mail.SimpleMailMessage")
+                .getDeclaredConstructor()
+                .newInstance();
 
-            Object helper = Class.forName("org.springframework.mail.javamail.MimeMessageHelper")
-                .getConstructor(mimeMessage.getClass(), boolean.class)
-                .newInstance(mimeMessage, true);
+            java.lang.reflect.Method setFromMethod = message.getClass().getMethod("setFrom", String.class);
+            setFromMethod.invoke(message, "Vantage Admin <noreply@vantage.com>");
 
-            // Set from address
-            java.lang.reflect.Method setFromMethod = helper.getClass().getMethod("setFrom", String.class);
-            setFromMethod.invoke(helper, "Vantage Admin <noreply@vantage.com>");
+            java.lang.reflect.Method setToMethod = message.getClass().getMethod("setTo", String[].class);
+            setToMethod.invoke(message, (Object) recipients.split(","));
 
-            // Set recipients
-            java.lang.reflect.Method setToMethod = helper.getClass().getMethod("setTo", String[].class);
-            setToMethod.invoke(helper, (Object) recipients.split(","));
+            java.lang.reflect.Method setSubjectMethod = message.getClass().getMethod("setSubject", String.class);
+            setSubjectMethod.invoke(message, "Report: " + templateName);
 
-            // Set subject
-            java.lang.reflect.Method setSubjectMethod = helper.getClass().getMethod("setSubject", String.class);
-            setSubjectMethod.invoke(helper, "Report: " + templateName);
-
-            // Build HTML email body
-            StringBuilder htmlBody = new StringBuilder();
-            htmlBody.append("<html><body>");
-            htmlBody.append("<h2>Automated Report: ").append(templateName).append("</h2>");
-            htmlBody.append("<p>Generated on: ").append(java.time.LocalDateTime.now()).append("</p>");
-            htmlBody.append("<p>Format: ").append(outputFormat).append("</p>");
-            htmlBody.append("<p>Total rows: ").append(data.size()).append("</p>");
-            htmlBody.append("<hr/>");
-            htmlBody.append("<p>This is an automated report from Vantage Admin.</p>");
-            htmlBody.append("</body></html>");
-
-            java.lang.reflect.Method setTextMethod = helper.getClass().getMethod("setText", String.class, boolean.class);
-            setTextMethod.invoke(helper, htmlBody.toString(), true);
+            String body = String.format(
+                "Automated Report: %s\nGenerated on: %s\nFormat: %s\nTotal rows: %d\n\nThis is an automated report from Vantage Admin.",
+                templateName, java.time.LocalDateTime.now(), outputFormat, data.size()
+            );
+            java.lang.reflect.Method setTextMethod = message.getClass().getMethod("setText", String.class);
+            setTextMethod.invoke(message, body);
 
             // Send the email
-            java.lang.reflect.Method sendMethod = mailSender.getClass().getMethod("send", mimeMessage.getClass());
-            sendMethod.invoke(mailSender, mimeMessage);
+            java.lang.reflect.Method sendMethod = mailSender.getClass().getMethod("send", message.getClass());
+            sendMethod.invoke(mailSender, message);
 
             log.info("Report email sent successfully to {}", recipients);
         } catch (Exception e) {
