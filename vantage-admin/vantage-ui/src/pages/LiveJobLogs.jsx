@@ -68,7 +68,7 @@ const LiveJobLogs = () => {
     }, [logs, autoScroll]);
 
     const fetchRecentLogs = () => {
-        fetch('/api/system/job-log/failed/recent?limit=50')
+        fetch('/api/system/job-log/list?limit=100')
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
@@ -78,12 +78,13 @@ const LiveJobLogs = () => {
                         jobId: log.jobId,
                         jobName: log.jobName,
                         jobGroup: log.jobGroup,
-                        status: log.status === '0' ? 'success' : 'failed',
+                        status: log.status === '0' ? 'success' : log.status === '2' ? 'running' : 'failed',
                         message: log.jobMessage,
                         duration: log.executionDuration,
                         retryCount: log.retryCount || 0,
                         exceptionInfo: log.exceptionInfo,
-                        type: 'JOB_COMPLETED'
+                        invokeTarget: log.invokeTarget,
+                        type: log.status === '0' ? 'JOB_COMPLETED' : log.status === '2' ? 'JOB_STARTED' : 'JOB_FAILED'
                     }));
                     setLogs(formattedLogs);
                 }
