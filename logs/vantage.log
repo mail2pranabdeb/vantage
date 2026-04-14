@@ -11,3 +11,12 @@
 2026-04-05 22:58:20.957 [SpringApplicationShutdownHook] [,] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2026-04-05 22:58:20.960 [SpringApplicationShutdownHook] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2026-04-05 22:58:20.962 [SpringApplicationShutdownHook] [,] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-04-14 08:30:00.048 [schedulerFactoryBean_Worker-1] [,] INFO  c.p.m.quartz.util.AbstractQuartzJob - Executing job 225 (attempt 1/1)
+2026-04-14 08:30:00.050 [pool-2-thread-1] [,] INFO  c.p.m.quartz.util.QuartzTaskExecutor - Executing Report Job ID: 225, Report ID: 356
+2026-04-14 08:30:00.132 [pool-2-thread-1] [,] INFO  c.p.m.r.s.ReportDesignerService - Generated SQL from template: SELECT LOGIN_NAME, USER_NAME, EMAIL FROM SYS_USER
+2026-04-14 08:30:00.132 [pool-2-thread-1] [,] INFO  c.p.m.r.s.ReportDesignerService - Executing report template User Report: SELECT LOGIN_NAME, USER_NAME, EMAIL FROM SYS_USER
+2026-04-14 08:30:00.237 [pool-2-thread-1] [,] INFO  c.p.m.quartz.util.QuartzTaskExecutor - Resolved email group codes '11' to: mail2pranabdeb@gmail.com,mailservicekedb@gmail.com
+2026-04-14 08:30:00.238 [pool-2-thread-1] [,] INFO  c.p.m.quartz.util.QuartzTaskExecutor - Sending EXCEL report 'User Report' to mail2pranabdeb@gmail.com,mailservicekedb@gmail.com
+2026-04-14 08:30:00.238 [pool-2-thread-1] [,] INFO  c.p.m.quartz.util.QuartzTaskExecutor - Data rows: 2
+2026-04-14 08:30:06.738 [pool-2-thread-1] [,] INFO  c.p.m.quartz.util.QuartzTaskExecutor - Report email with attachment sent successfully to mail2pranabdeb@gmail.com,mailservicekedb@gmail.com
+2026-04-14 08:30:06.799 [schedulerFactoryBean_Worker-1] [,] INFO  c.p.m.quartz.util.AbstractQuartzJob - Job 225 completed in 6690 ms with status 0

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import jakarta.mail.internet.MimeMessage;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -174,33 +176,48 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             return;
         }
 
-        log.info("Sending {} report '{}' to {}", outputFormat, templateName, recipients);
+        // Check if email template is configured
+        if (sysJob.getEmailTemplateId() == null) {
+            log.warn("No email template configured for Job {}. Skipping email.", sysJob.getJobId());
+            return;
+        }
+
+        log.info("Sending {} report '{}' to {} using template ID: {}", outputFormat, templateName, recipients, sysJob.getEmailTemplateId());
         log.info("Data rows: {}", data.size());
 
-        // Send the report email with attachment
+        // Send the report email with attachment using the configured email template
         try {
             JavaMailSender mailSender = applicationContext.getBean(JavaMailSender.class);
+            
+            // Get the email template
+            Object templateService = applicationContext.getBean("emailTemplateService");
+            java.lang.reflect.Method getTemplateByIdMethod = templateService.getClass().getMethod("getTemplateById", Long.class);
+            @SuppressWarnings("unchecked")
+            java.util.Optional<?> templateOpt = (java.util.Optional<?>) getTemplateByIdMethod.invoke(templateService, sysJob.getEmailTemplateId());
+
+            if (templateOpt.isEmpty()) {
+                log.error("Email template not found for ID: {}", sysJob.getEmailTemplateId());
+                return;
+            }
+
+            Object template = templateOpt.get();
+            java.lang.reflect.Method getSubjectMethod = template.getClass().getMethod("getEmailSubject");
+            java.lang.reflect.Method getBodyMethod = template.getClass().getMethod("getEmailBody");
+            String templateSubject = (String) getSubjectMethod.invoke(template);
+            String templateBody = (String) getBodyMethod.invoke(template);
+
+            // Process template variables
+            String subject = processReportTemplate(templateSubject, templateName, outputFormat, data, sysJob);
+            String body = processReportTemplate(templateBody, templateName, outputFormat, data, sysJob);
+
+            // Send email
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom("Vantage Admin <noreply@vantage.com>");
             helper.setTo(recipients.split(","));
-            helper.setSubject("Report: " + templateName);
-
-            // Build email body
-            String htmlBody = String.format(
-                "<html><body>" +
-                "<h2>Automated Report: %s</h2>" +
-                "<p>Generated on: %s</p>" +
-                "<p>Format: %s</p>" +
-                "<p>Total rows: %d</p>" +
-                "<hr/>" +
-                "<p>Please find the report attached.</p>" +
-                "<p>This is an automated report from Vantage Admin.</p>" +
-                "</body></html>",
-                templateName, java.time.LocalDateTime.now(), outputFormat, data.size()
-            );
-            helper.setText(htmlBody, true);
+            helper.setSubject(subject);
+            helper.setText(body, true);
 
             // Attach report as CSV
             String csvContent = convertToCsv(data);
@@ -215,6 +232,25 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         } catch (Exception e) {
             log.error("Failed to send report email to {}", recipients, e);
         }
+    }
+
+    /**
+     * Process template variables
+     */
+    private String processReportTemplate(String template, String templateName, String outputFormat, List<?> data, SysJob sysJob) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String appName = "Vantage";
+
+        return template
+            .replace("${appName}", appName)
+            .replace("${jobId}", String.valueOf(sysJob.getJobId()))
+            .replace("${jobName}", sysJob.getJobName())
+            .replace("${jobGroup}", sysJob.getJobGroup())
+            .replace("${reportName}", templateName)
+            .replace("${reportFormat}", outputFormat)
+            .replace("${totalRows}", String.valueOf(data.size()))
+            .replace("${executionTime}", LocalDateTime.now().format(formatter))
+            .replace("${timestamp}", LocalDateTime.now().format(formatter));
     }
 
     /**

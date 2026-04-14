@@ -48,8 +48,8 @@ const JobList = () => {
         timeoutSeconds: 3600,
         notifyOnFailure: false,
         notificationEmails: '',
-        webhookUrl: '',
         emailTemplateId: '',
+        webhookUrl: '',
         dependentJobIds: '',
         timeZone: 'UTC',
         allowHoliday: true,
@@ -97,7 +97,23 @@ const JobList = () => {
             .then(data => {
                 if (data.code === 200) setActiveReports(data.data || []);
             });
-            
+
+        // Fetch email templates for dropdown
+        fetch('/api/system/email-template/active')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const templates = data.data || [];
+                    setEmailTemplates(templates);
+                    // Auto-select default template for new jobs
+                    const defaultTpl = templates.find(t => t.isDefault) || templates[0];
+                    if (defaultTpl) {
+                        setFormData(prev => ({ ...prev, emailTemplateId: String(defaultTpl.templateId) }));
+                    }
+                }
+            })
+            .catch(err => console.error("Failed to fetch email templates:", err));
+
         // Fetch email groups from dictionary
         fetch('/api/system/dict/data/type/sys_report_email_group')
             .then(res => res.json())
@@ -175,6 +191,8 @@ const JobList = () => {
     const handleAddClick = () => {
         setModalMode('add');
         setCurrentJob(null);
+        // Auto-select default email template if available
+        const defaultTemplateId = emailTemplates.length > 0 ? String(emailTemplates[0].templateId) : '';
         setFormData({
             jobName: '',
             jobGroup: '',
@@ -182,6 +200,7 @@ const JobList = () => {
             jobType: 'BEAN',
             reportId: '',
             reportEmailGroup: [],
+            emailTemplateId: defaultTemplateId,
             cronExpression: '',
             misfirePolicy: '3',
             concurrent: '1',
@@ -192,7 +211,6 @@ const JobList = () => {
             notifyOnFailure: false,
             notificationEmails: '',
             webhookUrl: '',
-            emailTemplateId: '',
             dependentJobIds: '',
             timeZone: 'UTC',
             allowHoliday: true,
@@ -447,6 +465,13 @@ const JobList = () => {
     const handleSubmit = () => {
         setSubmitting(true);
 
+        // Validate email template for REPORT type
+        if (formData.jobType === 'REPORT' && !formData.emailTemplateId) {
+            alert('Please select an Email Template for Report jobs');
+            setSubmitting(false);
+            return;
+        }
+
         const url = modalMode === 'add' ? '/api/system/job' : '/api/system/job';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
         const body = {
@@ -460,7 +485,8 @@ const JobList = () => {
             concurrent: formData.concurrent === '1' ? '1' : '0',
             maxRetryCount: parseInt(formData.maxRetryCount),
             retryInterval: parseInt(formData.retryInterval),
-            timeoutSeconds: parseInt(formData.timeoutSeconds)
+            timeoutSeconds: parseInt(formData.timeoutSeconds),
+            emailTemplateId: formData.emailTemplateId ? parseInt(formData.emailTemplateId) : null
         };
         console.log("Submitting job data:", body);
 
@@ -780,12 +806,13 @@ const JobList = () => {
                         </div>
 
                         {formData.jobType === 'REPORT' ? (
+                            <>
                             <div className="form-group">
                                 <label className="form-label">Select Active Report</label>
-                                <select 
-                                    name="reportId" 
-                                    value={formData.reportId} 
-                                    onChange={handleInputChange} 
+                                <select
+                                    name="reportId"
+                                    value={formData.reportId}
+                                    onChange={handleInputChange}
                                     className="form-input"
                                     required
                                     disabled={modalMode === 'view'}
@@ -799,6 +826,37 @@ const JobList = () => {
                                 </select>
                                 <small className="form-help">Only activated reports appear here</small>
                             </div>
+
+                            <div className="form-group">
+                                <label className="form-label">
+                                    Email Template <span style={{ color: 'var(--danger)' }}>*</span>
+                                </label>
+                                <select
+                                    name="emailTemplateId"
+                                    value={formData.emailTemplateId}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                    required
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <option value="">-- Select Email Template --</option>
+                                    {emailTemplates.map(t => (
+                                        <option key={t.templateId} value={t.templateId}>
+                                            {t.templateName} {t.isDefault ? '(Default)' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                <small className="form-help">
+                                    {emailTemplates.length === 0 ? (
+                                        <span style={{ color: 'var(--danger)' }}>No templates found. </span>
+                                    ) : ''}
+                                    <a href="#/system/email-templates" onClick={(e) => {
+                                        e.preventDefault();
+                                        window.location.href = '/#/system/email-templates';
+                                    }}>Manage Templates</a>
+                                </small>
+                            </div>
+                            </>
                         ) : (
                             <div className="form-group">
                                 <label className="form-label">Invoke Target</label>
@@ -985,32 +1043,6 @@ const JobList = () => {
                         {formData.notifyOnFailure && (
                             <>
                                 <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Email Template</label>
-                                        <select
-                                            name="emailTemplateId"
-                                            value={formData.emailTemplateId}
-                                            onChange={handleInputChange}
-                                            className="form-input"
-                                            disabled={modalMode === 'view'}
-                                        >
-                                            <option value="">-- Select Template --</option>
-                                            {emailTemplates.map(t => (
-                                                <option key={t.templateId} value={t.templateId}>
-                                                    {t.templateName} ({t.templateType})
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <small className="form-help">
-                                            {emailTemplates.length === 0 ? (
-                                                <span style={{ color: 'var(--danger)' }}>No templates found. </span>
-                                            ) : ''}
-                                            <a href="#/system/email-templates" onClick={(e) => {
-                                                e.preventDefault();
-                                                window.location.href = '/#/system/email-templates';
-                                            }}>Manage Templates</a>
-                                        </small>
-                                    </div>
                                     <FormInput
                                         label="Notification Emails (comma-separated)"
                                         name="notificationEmails"
