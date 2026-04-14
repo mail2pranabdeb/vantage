@@ -249,9 +249,13 @@ const EmailTemplateManager = () => {
 
         const url = modalMode === 'add' ? '/api/system/email-template' : '/api/system/email-template';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
+        
+        // Build body manually, converting dataTables array to JSON string
+        const { dataTables, ...restFormData } = formData;
         const body = {
-            ...formData,
-            templateId: modalMode === 'edit' ? currentTemplate.templateId : null
+            ...restFormData,
+            templateId: modalMode === 'edit' ? currentTemplate.templateId : null,
+            dataTables: dataTables.length > 0 ? JSON.stringify(dataTables) : null
         };
 
         fetch(url, {
