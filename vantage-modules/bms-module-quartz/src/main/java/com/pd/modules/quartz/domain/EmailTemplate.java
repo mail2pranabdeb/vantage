@@ -65,6 +65,10 @@ public class EmailTemplate implements Serializable {
     @Column(name = "include_data_table")
     private Boolean includeDataTable = false;
 
+    /** Multiple data tables as JSON array */
+    @Column(name = "data_tables", columnDefinition = "TEXT")
+    private String dataTables;
+
     // Getters and Setters
     public Long getTemplateId() {
         return templateId;
@@ -168,5 +172,13 @@ public class EmailTemplate implements Serializable {
 
     public void setIncludeDataTable(Boolean includeDataTable) {
         this.includeDataTable = includeDataTable;
+    }
+
+    public String getDataTables() {
+        return dataTables;
+    }
+
+    public void setDataTables(String dataTables) {
+        this.dataTables = dataTables;
     }
 }

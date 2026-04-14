@@ -63,4 +63,9 @@ public interface ISysJobService {
      * Validate cron expression
      */
     boolean checkCronExpressionIsValid(SysJob job);
+
+    /**
+     * Get full dependency chain for a job
+     */
+    List<SysJob> getJobDependencyChain(Long jobId);
 }

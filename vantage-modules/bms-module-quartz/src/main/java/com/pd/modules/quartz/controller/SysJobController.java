@@ -210,4 +210,13 @@ public class SysJobController extends BaseController {
                 .toList();
         return success(groups);
     }
+
+    /**
+     * Get full dependency chain for a job
+     */
+    @GetMapping("/{jobId}/chain")
+    public AjaxResult getChain(@PathVariable Long jobId) {
+        List<SysJob> chain = sysJobService.getJobDependencyChain(jobId);
+        return success(chain);
+    }
 }

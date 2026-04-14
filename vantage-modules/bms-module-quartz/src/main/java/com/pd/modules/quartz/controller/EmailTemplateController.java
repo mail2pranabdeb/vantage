@@ -116,17 +116,15 @@ public class EmailTemplateController extends BaseController {
         try {
             String subject = (String) request.getOrDefault("emailSubject", "");
             String body = (String) request.getOrDefault("emailBody", "");
-            String datasourceKey = (String) request.get("datasourceKey");
-            String querySql = (String) request.get("querySql");
-            Boolean includeDataTable = (Boolean) request.getOrDefault("includeDataTable", false);
+            String dataTablesJson = (String) request.get("dataTables");
 
             // Process template variables
             String renderedSubject = emailTemplateService.processTemplate(subject, null, null);
             String renderedBody = emailTemplateService.processTemplate(body, null, null);
 
             String dataTableHtml = "";
-            if (includeDataTable && datasourceKey != null && !datasourceKey.isEmpty() && querySql != null && !querySql.isEmpty()) {
-                dataTableHtml = emailTemplateService.executeQueryAndRenderTable(datasourceKey, querySql);
+            if (dataTablesJson != null && !dataTablesJson.isEmpty()) {
+                dataTableHtml = emailTemplateService.executeMultipleQueriesAndRenderTables(dataTablesJson);
                 renderedBody = renderedBody.replace("${dataTable}", dataTableHtml);
             } else {
                 renderedBody = renderedBody.replace("${dataTable}", "");

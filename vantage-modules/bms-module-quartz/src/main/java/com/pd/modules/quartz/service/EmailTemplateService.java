@@ -248,6 +248,94 @@ public class EmailTemplateService {
     }
 
     /**
+     * Execute multiple SQL queries and render all results as HTML tables
+     */
+    public String executeMultipleQueriesAndRenderTables(String dataTablesJson) {
+        if (namedJdbcTemplate == null || dataTablesJson == null || dataTablesJson.isEmpty()) {
+            return "";
+        }
+
+        try {
+            // Parse JSON array: [{"datasourceKey":"primary","query":"SELECT...","label":"My Table","enabled":true},...]
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            java.util.List<java.util.Map<String, Object>> tables = mapper.readValue(dataTablesJson,
+                mapper.getTypeFactory().constructCollectionType(java.util.List.class, java.util.Map.class));
+
+            StringBuilder allTablesHtml = new StringBuilder();
+            int tableCount = 0;
+
+            for (java.util.Map<String, Object> tableConfig : tables) {
+                Boolean enabled = (Boolean) tableConfig.get("enabled");
+                if (!Boolean.TRUE.equals(enabled)) continue;
+
+                String label = (String) tableConfig.getOrDefault("label", "Data Table " + (tableCount + 1));
+                String query = (String) tableConfig.get("query");
+                if (query == null || query.trim().isEmpty()) continue;
+
+                // Execute query
+                List<Map<String, Object>> rows;
+                try {
+                    rows = namedJdbcTemplate.queryForList(query, java.util.Collections.emptyMap());
+                } catch (Exception e) {
+                    log.error("Failed to execute query for table '{}': {}", label, e.getMessage());
+                    allTablesHtml.append("<h3 style='color:var(--danger);margin-top:20px;'>")
+                        .append(escapeHtml(label)).append("</h3>");
+                    allTablesHtml.append("<p style='color:red;'>Error: ").append(escapeHtml(e.getMessage())).append("</p>");
+                    tableCount++;
+                    continue;
+                }
+
+                if (rows.isEmpty()) {
+                    allTablesHtml.append("<h3 style='margin-top:20px;'>").append(escapeHtml(label)).append("</h3>");
+                    allTablesHtml.append("<p style='color:var(--text-muted);'>No data returned.</p>");
+                    tableCount++;
+                    continue;
+                }
+
+                // Render table
+                allTablesHtml.append("<h3 style='margin-top:20px;margin-bottom:8px;'>").append(escapeHtml(label)).append("</h3>");
+                allTablesHtml.append("<table style='width:100%;border-collapse:collapse;font-size:12px;font-family:Arial,sans-serif;'>");
+                allTablesHtml.append("<thead><tr style='background:#4a5568;color:white;'>");
+
+                Map<String, Object> firstRow = rows.get(0);
+                for (String col : firstRow.keySet()) {
+                    allTablesHtml.append("<th style='padding:8px;border:1px solid #e2e8f0;text-align:left;'>")
+                        .append(escapeHtml(col)).append("</th>");
+                }
+                allTablesHtml.append("</tr></thead><tbody>");
+
+                int rowCount = 0;
+                for (Map<String, Object> row : rows) {
+                    if (rowCount >= 500) break;
+                    allTablesHtml.append("<tr style='background:")
+                        .append(rowCount % 2 == 0 ? "#f7fafc" : "white").append(";'>");
+                    for (String col : firstRow.keySet()) {
+                        Object val = row.get(col);
+                        allTablesHtml.append("<td style='padding:6px 8px;border:1px solid #e2e8f0;'>")
+                            .append(escapeHtml(val != null ? val.toString() : "")).append("</td>");
+                    }
+                    allTablesHtml.append("</tr>");
+                    rowCount++;
+                }
+
+                allTablesHtml.append("</tbody></table>");
+                if (rows.size() > 500) {
+                    allTablesHtml.append("<p style='font-size:11px;color:#666;'>Showing first 500 of ")
+                        .append(rows.size()).append(" rows.</p>");
+                }
+
+                tableCount++;
+            }
+
+            log.info("Executed {} data table queries for email template", tableCount);
+            return allTablesHtml.toString();
+        } catch (Exception e) {
+            log.error("Failed to execute multiple queries for email template", e);
+            return "<p style='color:red;'>Error rendering data tables: " + escapeHtml(e.getMessage()) + "</p>";
+        }
+    }
+
+    /**
      * Escape HTML special characters
      */
     private String escapeHtml(String text) {

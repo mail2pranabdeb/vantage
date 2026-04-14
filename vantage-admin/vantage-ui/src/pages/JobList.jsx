@@ -20,6 +20,9 @@ const JobList = () => {
     const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
     const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false);
     const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
+    const [isChainModalOpen, setIsChainModalOpen] = useState(false);
+    const [chainJobs, setChainJobs] = useState([]);
+    const [allJobsMap, setAllJobsMap] = useState({});
     const [modalMode, setModalMode] = useState('add');
     const [currentJob, setCurrentJob] = useState(null);
     const [jobLogs, setJobLogs] = useState([]);
@@ -155,7 +158,12 @@ const JobList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    setJobs(data.data || []);
+                    const jobs = data.data || [];
+                    setJobs(jobs);
+                    // Build a map for quick lookup
+                    const map = {};
+                    jobs.forEach(j => { map[j.jobId] = j; });
+                    setAllJobsMap(map);
                 }
                 setLoading(false);
             })
@@ -454,6 +462,18 @@ const JobList = () => {
         });
     };
 
+    const handleViewChainClick = (row) => {
+        fetch(`/api/system/job/${row.jobId}/chain`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setChainJobs(data.data || []);
+                    setIsChainModalOpen(true);
+                }
+            })
+            .catch(err => console.error("Failed to fetch job chain:", err));
+    };
+
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -592,6 +612,7 @@ const JobList = () => {
     const actions = [
         { label: 'Run', icon: Play, onClick: handleRunClick },
         { label: 'Pause', icon: Pause, onClick: handlePauseClick },
+        { label: 'Chain', icon: Link, onClick: handleViewChainClick },
         { label: 'Logs', icon: FileText, onClick: (row) => fetchJobLogs(row.jobId) },
         { label: 'Edit', icon: Edit, onClick: handleEditClick },
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
@@ -1051,15 +1072,28 @@ const JobList = () => {
                         <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Link size={16} /> Job Dependencies
                         </h4>
-                        <FormInput
-                            label="Dependent Job IDs (comma-separated)"
-                            name="dependentJobIds"
-                            value={formData.dependentJobIds}
-                            onChange={handleInputChange}
-                            placeholder="1, 2, 3"
-                            disabled={modalMode === 'view'}
-                        />
-                        <small className="form-help">Jobs to trigger after this job completes successfully</small>
+                        <div className="form-group">
+                            <label className="form-label">Dependent Jobs (comma-separated IDs)</label>
+                            <select
+                                name="dependentJobIds"
+                                value={formData.dependentJobIds ? formData.dependentJobIds.split(',').map(s => s.trim()).filter(s => s) : []}
+                                onChange={(e) => {
+                                    const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                    setFormData(prev => ({ ...prev, dependentJobIds: selected.join(',') }));
+                                }}
+                                className="form-input"
+                                multiple
+                                disabled={modalMode === 'view'}
+                                style={{ minHeight: '80px' }}
+                            >
+                                {Object.values(allJobsMap).filter(j => j.jobId !== currentJob?.jobId).map(j => (
+                                    <option key={j.jobId} value={String(j.jobId)}>
+                                        {j.jobName} (ID: {j.jobId})
+                                    </option>
+                                ))}
+                            </select>
+                            <small className="form-help">Hold Ctrl/Cmd to select multiple. These jobs run after this job completes.</small>
+                        </div>
                     </div>
 
                     {/* Additional Settings */}
@@ -1234,6 +1268,43 @@ const JobList = () => {
                     </div>
                 ) : (
                     <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>Loading metrics...</p>
+                )}
+            </Modal>
+
+            {/* Job Chain Modal */}
+            <Modal
+                isOpen={isChainModalOpen}
+                onClose={() => setIsChainModalOpen(false)}
+                title="Job Dependency Chain"
+                size="medium"
+            >
+                {chainJobs.length > 0 ? (
+                    <div>
+                        {chainJobs.map((job, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                                <div style={{
+                                    width: '32px', height: '32px', borderRadius: '50%',
+                                    background: idx === 0 ? 'var(--primary)' : 'var(--bg-tertiary)',
+                                    color: idx === 0 ? 'white' : 'var(--text-primary)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: 600, fontSize: '12px', flexShrink: 0
+                                }}>
+                                    {idx + 1}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 600, fontSize: '13px' }}>{job.jobName}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                        ID: {job.jobId} | Group: {job.jobGroup} | Status: {job.status === '0' ? 'Active' : 'Paused'}
+                                    </div>
+                                </div>
+                                {idx < chainJobs.length - 1 && (
+                                    <div style={{ color: 'var(--primary)', fontSize: '18px' }}>→</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>No dependencies configured.</p>
                 )}
             </Modal>
         </div>

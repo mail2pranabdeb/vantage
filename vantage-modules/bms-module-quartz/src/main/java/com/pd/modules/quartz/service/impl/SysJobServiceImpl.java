@@ -149,13 +149,14 @@ public class SysJobServiceImpl implements ISysJobService {
     public void insertJob(SysJob job) throws SchedulerException {
         job.setCreateTime(java.time.LocalDateTime.now());
         job.setCreateBy("admin");
+        validateNoCircularDependency(job.getJobId(), job.getDependentJobIds());
         jobRepository.save(job);
 
         // Check if cron expression is valid
         if (CronUtils.isValid(job.getCronExpression())) {
             ScheduleUtils.createScheduleJob(scheduler, job);
         }
-        
+
         webSocketService.sendJobCreated(job.getJobId(), job.getJobName());
     }
 
@@ -168,6 +169,7 @@ public class SysJobServiceImpl implements ISysJobService {
 
         job.setUpdateTime(java.time.LocalDateTime.now());
         job.setUpdateBy("admin");
+        validateNoCircularDependency(job.getJobId(), job.getDependentJobIds());
 
         JobKey jobKey = ScheduleUtils.getJobKey(existingJob.getJobId(), existingJob.getJobGroup());
         
@@ -187,5 +189,67 @@ public class SysJobServiceImpl implements ISysJobService {
     @Override
     public boolean checkCronExpressionIsValid(SysJob job) {
         return CronUtils.isValid(job.getCronExpression());
+    }
+
+    /**
+     * Validate that dependent job IDs don't create a circular dependency chain.
+     */
+    private void validateNoCircularDependency(Long jobId, String dependentJobIds) {
+        if (dependentJobIds == null || dependentJobIds.trim().isEmpty()) {
+            return;
+        }
+
+        String[] ids = dependentJobIds.split(",");
+        for (String idStr : ids) {
+            Long depId;
+            try {
+                depId = Long.valueOf(idStr.trim());
+            } catch (NumberFormatException e) {
+                continue;
+            }
+            if (depId.equals(jobId)) {
+                throw new RuntimeException("Circular dependency detected: Job " + jobId + " cannot depend on itself");
+            }
+            // Check if the dependent job depends on this job (direct circular)
+            SysJob depJob = jobRepository.findById(depId).orElse(null);
+            if (depJob != null && depJob.getDependentJobIds() != null) {
+                String[] depDepIds = depJob.getDependentJobIds().split(",");
+                for (String depDepIdStr : depDepIds) {
+                    try {
+                        if (Long.valueOf(depDepIdStr.trim()).equals(jobId)) {
+                            throw new RuntimeException("Circular dependency detected: Job " + jobId + " and Job " + depId + " depend on each other");
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the full dependency chain for a job (recursive)
+     */
+    public List<SysJob> getJobDependencyChain(Long jobId) {
+        List<SysJob> chain = new java.util.ArrayList<>();
+        collectDependencies(jobId, chain, new java.util.HashSet<>());
+        return chain;
+    }
+
+    private void collectDependencies(Long jobId, List<SysJob> chain, java.util.Set<Long> visited) {
+        if (visited.contains(jobId)) return;
+        visited.add(jobId);
+
+        SysJob job = jobRepository.findById(jobId).orElse(null);
+        if (job == null) return;
+
+        chain.add(job);
+
+        if (job.getDependentJobIds() != null && !job.getDependentJobIds().isEmpty()) {
+            for (String idStr : job.getDependentJobIds().split(",")) {
+                try {
+                    Long depId = Long.valueOf(idStr.trim());
+                    collectDependencies(depId, chain, visited);
+                } catch (NumberFormatException ignored) {}
+            }
+        }
     }
 }

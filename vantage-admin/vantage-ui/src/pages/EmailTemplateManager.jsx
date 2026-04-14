@@ -28,9 +28,7 @@ const EmailTemplateManager = () => {
         isDefault: false,
         isActive: true,
         remark: '',
-        datasourceKey: '',
-        querySql: '',
-        includeDataTable: false
+        dataTables: []  // [{datasourceKey, query, label, enabled}]
     });
 
     const templateTypes = [
@@ -109,6 +107,11 @@ const EmailTemplateManager = () => {
     const handleEditClick = (template) => {
         setModalMode('edit');
         setCurrentTemplate(template);
+        // Parse dataTables JSON if present
+        let dt = [];
+        try {
+            if (template.dataTables) dt = JSON.parse(template.dataTables);
+        } catch(e) { /* ignore */ }
         setFormData({
             templateName: template.templateName || '',
             templateType: template.templateType || 'JOB_FAILURE',
@@ -117,9 +120,7 @@ const EmailTemplateManager = () => {
             isDefault: template.isDefault || false,
             isActive: template.isActive || true,
             remark: template.remark || '',
-            datasourceKey: template.datasourceKey || '',
-            querySql: template.querySql || '',
-            includeDataTable: template.includeDataTable || false
+            dataTables: dt
         });
         setIsModalOpen(true);
     };
@@ -132,9 +133,7 @@ const EmailTemplateManager = () => {
             body: JSON.stringify({
                 emailSubject: formData.emailSubject,
                 emailBody: formData.emailBody,
-                datasourceKey: formData.datasourceKey,
-                querySql: formData.querySql,
-                includeDataTable: formData.includeDataTable
+                dataTables: formData.dataTables.length > 0 ? JSON.stringify(formData.dataTables) : null
             })
         })
         .then(res => res.json())
@@ -152,6 +151,28 @@ const EmailTemplateManager = () => {
             console.error("Preview failed:", err);
             alert('Preview failed');
         });
+    };
+
+    // Data table management
+    const addDataTable = () => {
+        setFormData(prev => ({
+            ...prev,
+            dataTables: [...prev.dataTables, { datasourceKey: '', query: '', label: '', enabled: true }]
+        }));
+    };
+
+    const removeDataTable = (idx) => {
+        setFormData(prev => ({
+            ...prev,
+            dataTables: prev.dataTables.filter((_, i) => i !== idx)
+        }));
+    };
+
+    const updateDataTable = (idx, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            dataTables: prev.dataTables.map((dt, i) => i === idx ? { ...dt, [field]: value } : dt)
+        }));
     };
 
     const handleDeleteClick = (template) => {
@@ -601,57 +622,99 @@ const EmailTemplateManager = () => {
                         <small className="form-help">Use variables like ${'{}'}jobName, ${'{}'}appName</small>
                     </div>
 
-                    {/* Data Table Query */}
+                    {/* Data Tables */}
                     <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                        <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Code size={14} /> Data Table (Optional)
-                        </h4>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Datasource</label>
-                                <select
-                                    name="datasourceKey"
-                                    value={formData.datasourceKey}
-                                    onChange={handleInputChange}
-                                    className="form-input"
-                                    disabled={false}
-                                >
-                                    <option value="">-- None --</option>
-                                    {datasources.map(ds => (
-                                        <option key={ds.datasourceKey} value={ds.datasourceKey}>
-                                            {ds.datasourceName} ({ds.datasourceKey})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '8px' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                                    <input
-                                        type="checkbox"
-                                        name="includeDataTable"
-                                        checked={formData.includeDataTable}
-                                        onChange={handleCheckboxChange}
-                                        style={{ width: '16px', height: '16px' }}
-                                    />
-                                    <span>Include data table in email</span>
-                                </label>
-                            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Code size={14} /> Data Tables (Multiple Datasources)
+                            </h4>
+                            <button
+                                type="button"
+                                onClick={addDataTable}
+                                style={{
+                                    padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--primary)',
+                                    background: 'transparent', color: 'var(--primary)', cursor: 'pointer', fontSize: '12px',
+                                    display: 'flex', alignItems: 'center', gap: '4px'
+                                }}
+                            >
+                                + Add Table
+                            </button>
                         </div>
-                        {formData.includeDataTable && (
-                            <div className="form-group">
-                                <label className="form-label">SQL Query</label>
-                                <textarea
-                                    name="querySql"
-                                    value={formData.querySql}
-                                    onChange={handleInputChange}
-                                    placeholder="SELECT * FROM sys_user WHERE status = '0'"
-                                    rows={4}
-                                    className="form-input"
-                                    style={{ fontFamily: 'monospace', fontSize: '12px', resize: 'vertical' }}
-                                    disabled={false}
-                                />
-                                <small className="form-help">Query results will be rendered as an HTML table at {'${dataTable}'} placeholder</small>
+
+                        {formData.dataTables.map((dt, idx) => (
+                            <div key={idx} style={{
+                                padding: '12px', marginBottom: '12px', borderRadius: '8px',
+                                border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+                                position: 'relative'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={dt.enabled}
+                                            onChange={(e) => updateDataTable(idx, 'enabled', e.target.checked)}
+                                            style={{ width: '14px', height: '14px' }}
+                                        />
+                                        <span>Enabled</span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeDataTable(idx)}
+                                        style={{
+                                            background: 'none', border: 'none', color: 'var(--danger)',
+                                            cursor: 'pointer', fontSize: '16px', padding: '2px 6px'
+                                        }}
+                                        title="Remove"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Table Label</label>
+                                        <input
+                                            type="text"
+                                            value={dt.label}
+                                            onChange={(e) => updateDataTable(idx, 'label', e.target.value)}
+                                            className="form-input"
+                                            placeholder="e.g., User List"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Datasource</label>
+                                        <select
+                                            value={dt.datasourceKey}
+                                            onChange={(e) => updateDataTable(idx, 'datasourceKey', e.target.value)}
+                                            className="form-input"
+                                        >
+                                            <option value="">-- None --</option>
+                                            {datasources.map(ds => (
+                                                <option key={ds.datasourceKey} value={ds.datasourceKey}>
+                                                    {ds.datasourceName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">SQL Query</label>
+                                    <textarea
+                                        value={dt.query}
+                                        onChange={(e) => updateDataTable(idx, 'query', e.target.value)}
+                                        className="form-input"
+                                        placeholder="SELECT * FROM sys_user WHERE status = '0'"
+                                        rows={3}
+                                        style={{ fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }}
+                                    />
+                                </div>
                             </div>
+                        ))}
+
+                        {formData.dataTables.length === 0 && (
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>
+                                No data tables configured. Click "Add Table" to include query results in the email.
+                            </p>
                         )}
                     </div>
 
