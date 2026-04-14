@@ -18,7 +18,16 @@ const CronBuilder = ({ value, onChange, disabled = false }) => {
             return '*';
         };
 
-        return `${getValue(second)} ${getValue(minute)} ${getValue(hour)} ${getValue(day)} ${getValue(month)} ${getValue(weekday)} ?`;
+        // Quartz uses 6-field format: second minute hour day month weekday
+        // Use '?' in either day OR weekday field (not both), replacing '*'
+        const dayVal = getValue(day);
+        const weekdayVal = getValue(weekday);
+
+        // If both are '*', set weekday to '?' (common pattern)
+        const finalDay = dayVal === '*' && weekdayVal === '*' ? dayVal : dayVal;
+        const finalWeekday = dayVal === '*' && weekdayVal === '*' ? '?' : weekdayVal;
+
+        return `${getValue(second)} ${getValue(minute)} ${getValue(hour)} ${finalDay} ${getValue(month)} ${finalWeekday}`;
     };
 
     const handleFieldChange = (field, setter, newType, newValue = '') => {
@@ -78,7 +87,7 @@ const CronBuilder = ({ value, onChange, disabled = false }) => {
     );
 
     const quickPresets = [
-        { label: 'Every 5 seconds', cron: '*/5 * * * * * ?' },
+        { label: 'Every 5 seconds', cron: '*/5 * * * * ?' },
         { label: 'Every minute', cron: '0 */1 * * * ?' },
         { label: 'Every 5 minutes', cron: '0 */5 * * * ?' },
         { label: 'Every hour', cron: '0 0 */1 * * ?' },
@@ -180,7 +189,7 @@ const CronBuilder = ({ value, onChange, disabled = false }) => {
                     fontSize: '14px',
                     color: 'var(--primary)'
                 }}>
-                    {value || '* * * * * * ?'}
+                    {value || '* * * * * ?'}
                 </code>
             </div>
         </div>
