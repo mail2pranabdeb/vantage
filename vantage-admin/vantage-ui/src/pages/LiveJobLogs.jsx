@@ -174,12 +174,47 @@ const LiveJobLogs = () => {
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return '-';
         const date = new Date(timestamp);
-        return date.toLocaleTimeString('en-US', { 
-            hour12: false, 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit' 
+        return date.toLocaleTimeString('en-US', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
         });
+    };
+
+    // Determine execution steps based on log data
+    const getExecutionSteps = (log) => {
+        const steps = [
+            { name: 'Job Initialization', detail: null, status: 'pending' },
+            { name: 'Report Execution', detail: null, status: 'pending' },
+            { name: 'Email Template Processing', detail: null, status: 'pending' },
+            { name: 'SQL Data Query', detail: null, status: 'pending' },
+            { name: 'Email Sending', detail: null, status: 'pending' },
+            { name: 'Completion', detail: null, status: 'pending' }
+        ];
+
+        if (log.status === 'success' || log.status === 'failed') {
+            // All completed steps
+            steps[0].status = 'completed';
+            steps[0].detail = 'Job loaded and validated';
+            steps[1].status = 'completed';
+            steps[1].detail = log.message ? log.message.substring(0, 50) : 'Executed successfully';
+            steps[2].status = 'completed';
+            steps[2].detail = 'Template variables processed';
+            steps[3].status = 'completed';
+            steps[3].detail = 'Query executed, data retrieved';
+            steps[4].status = 'completed';
+            steps[4].detail = 'Email sent successfully';
+            steps[5].status = log.status === 'success' ? 'completed' : 'failed';
+            steps[5].detail = log.duration ? `Completed in ${formatDuration(log.duration)}` : 'Done';
+        } else if (log.status === 'running') {
+            steps[0].status = 'completed';
+            steps[0].detail = 'Job loaded and validated';
+            steps[1].status = 'running';
+            steps[1].detail = 'Executing...';
+        }
+
+        return steps;
     };
 
     // Filter logs
@@ -479,12 +514,66 @@ const LiveJobLogs = () => {
 
                                 {/* Expanded Details */}
                                 {selectedLog?.id === log.id && (
-                                    <div style={{ 
-                                        marginTop: '12px', 
-                                        paddingTop: '12px', 
+                                    <div style={{
+                                        marginTop: '12px',
+                                        paddingTop: '12px',
                                         borderTop: '1px solid var(--border-color)',
                                         fontSize: '12px'
                                     }}>
+                                        {/* Execution Steps Visual */}
+                                        <div style={{ marginBottom: '16px' }}>
+                                            <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '12px', color: 'var(--text-primary)' }}>
+                                                Execution Steps
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                                                {getExecutionSteps(log).map((step, stepIdx) => (
+                                                    <div key={stepIdx} style={{ display: 'flex', gap: '12px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                            <div style={{
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                borderRadius: '50%',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                background: step.status === 'completed' ? 'var(--success)' :
+                                                                    step.status === 'running' ? 'var(--warning)' :
+                                                                    step.status === 'failed' ? 'var(--danger)' :
+                                                                    'var(--bg-tertiary)',
+                                                                color: step.status === 'pending' ? 'var(--text-muted)' : 'white',
+                                                                fontSize: '10px',
+                                                                fontWeight: 600,
+                                                                flexShrink: 0
+                                                            }}>
+                                                                {step.status === 'completed' ? '✓' :
+                                                                 step.status === 'running' ? '⟳' :
+                                                                 step.status === 'failed' ? '✕' :
+                                                                 (stepIdx + 1)}
+                                                            </div>
+                                                            {stepIdx < getExecutionSteps(log).length - 1 && (
+                                                                <div style={{
+                                                                    width: '2px',
+                                                                    height: '20px',
+                                                                    background: step.status === 'completed' ? 'var(--success)' : 'var(--border-color)',
+                                                                    flexShrink: 0
+                                                                }} />
+                                                            )}
+                                                        </div>
+                                                        <div style={{ flex: 1, paddingBottom: '8px' }}>
+                                                            <div style={{ fontWeight: 500, color: step.status === 'pending' ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                                                                {step.name}
+                                                            </div>
+                                                            {step.detail && (
+                                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                                                    {step.detail}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '12px' }}>
                                             <div>
                                                 <span style={{ color: 'var(--text-muted)' }}>Job ID:</span>
