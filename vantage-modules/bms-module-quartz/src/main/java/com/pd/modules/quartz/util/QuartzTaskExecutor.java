@@ -4,8 +4,12 @@ import com.pd.modules.quartz.domain.SysJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import jakarta.mail.internet.MimeMessage;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -173,39 +177,109 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         log.info("Sending {} report '{}' to {}", outputFormat, templateName, recipients);
         log.info("Data rows: {}", data.size());
 
-        // Send the report email using SimpleMailMessage (same as test email)
+        // Send the report email with attachment
         try {
-            Object mailSender = applicationContext.getBean("javaMailSender");
-            
-            // Use SimpleMailMessage like the working test email code
-            Object message = Class.forName("org.springframework.mail.SimpleMailMessage")
-                .getDeclaredConstructor()
-                .newInstance();
+            JavaMailSender mailSender = applicationContext.getBean(JavaMailSender.class);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            java.lang.reflect.Method setFromMethod = message.getClass().getMethod("setFrom", String.class);
-            setFromMethod.invoke(message, "Vantage Admin <noreply@vantage.com>");
+            helper.setFrom("Vantage Admin <noreply@vantage.com>");
+            helper.setTo(recipients.split(","));
+            helper.setSubject("Report: " + templateName);
 
-            java.lang.reflect.Method setToMethod = message.getClass().getMethod("setTo", String[].class);
-            setToMethod.invoke(message, (Object) recipients.split(","));
-
-            java.lang.reflect.Method setSubjectMethod = message.getClass().getMethod("setSubject", String.class);
-            setSubjectMethod.invoke(message, "Report: " + templateName);
-
-            String body = String.format(
-                "Automated Report: %s\nGenerated on: %s\nFormat: %s\nTotal rows: %d\n\nThis is an automated report from Vantage Admin.",
+            // Build email body
+            String htmlBody = String.format(
+                "<html><body>" +
+                "<h2>Automated Report: %s</h2>" +
+                "<p>Generated on: %s</p>" +
+                "<p>Format: %s</p>" +
+                "<p>Total rows: %d</p>" +
+                "<hr/>" +
+                "<p>Please find the report attached.</p>" +
+                "<p>This is an automated report from Vantage Admin.</p>" +
+                "</body></html>",
                 templateName, java.time.LocalDateTime.now(), outputFormat, data.size()
             );
-            java.lang.reflect.Method setTextMethod = message.getClass().getMethod("setText", String.class);
-            setTextMethod.invoke(message, body);
+            helper.setText(htmlBody, true);
 
-            // Send the email
-            java.lang.reflect.Method sendMethod = mailSender.getClass().getMethod("send", message.getClass());
-            sendMethod.invoke(mailSender, message);
+            // Attach report as CSV
+            String csvContent = convertToCsv(data);
+            String fileName = templateName.replaceAll("[^a-zA-Z0-9\\s-]", "_") + "_" + 
+                              java.time.LocalDate.now() + ".csv";
+            helper.addAttachment(fileName, 
+                new org.springframework.core.io.ByteArrayResource(csvContent.getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                "text/csv");
 
-            log.info("Report email sent successfully to {}", recipients);
+            mailSender.send(message);
+            log.info("Report email with attachment sent successfully to {}", recipients);
         } catch (Exception e) {
             log.error("Failed to send report email to {}", recipients, e);
         }
+    }
+
+    /**
+     * Convert report data to CSV format
+     */
+    private String convertToCsv(List<?> data) {
+        StringBuilder csv = new StringBuilder();
+        
+        if (data.isEmpty()) {
+            return "No data available\n";
+        }
+
+        Object firstRow = data.get(0);
+        if (firstRow instanceof java.util.Map) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> firstMap = (java.util.Map<String, Object>) firstRow;
+            List<String> headers = new ArrayList<>(firstMap.keySet());
+            
+            // Write header
+            csv.append(String.join(",", headers)).append("\n");
+            
+            // Write data rows
+            for (Object row : data) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> rowMap = (java.util.Map<String, Object>) row;
+                List<String> values = new ArrayList<>();
+                for (String header : headers) {
+                    Object val = rowMap.get(header);
+                    String strVal = val != null ? val.toString() : "";
+                    // Escape commas in values
+                    if (strVal.contains(",") || strVal.contains("\"") || strVal.contains("\n")) {
+                        strVal = "\"" + strVal.replace("\"", "\"\"") + "\"";
+                    }
+                    values.add(strVal);
+                }
+                csv.append(String.join(",", values)).append("\n");
+            }
+        } else if (firstRow instanceof Object[]) {
+            Object[] firstArray = (Object[]) firstRow;
+            for (int i = 0; i < firstArray.length; i++) {
+                csv.append("Column").append(i + 1);
+                if (i < firstArray.length - 1) csv.append(",");
+            }
+            csv.append("\n");
+            
+            for (Object row : data) {
+                Object[] rowArray = (Object[]) row;
+                for (int i = 0; i < rowArray.length; i++) {
+                    String val = rowArray[i] != null ? rowArray[i].toString() : "";
+                    if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
+                        val = "\"" + val.replace("\"", "\"\"") + "\"";
+                    }
+                    csv.append(val);
+                    if (i < rowArray.length - 1) csv.append(",");
+                }
+                csv.append("\n");
+            }
+        } else {
+            csv.append("Data\n");
+            for (Object row : data) {
+                csv.append(row.toString()).append("\n");
+            }
+        }
+        
+        return csv.toString();
     }
 
     /**
