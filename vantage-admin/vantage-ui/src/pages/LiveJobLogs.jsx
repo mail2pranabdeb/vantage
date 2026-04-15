@@ -14,7 +14,7 @@ const LiveJobLogs = () => {
     const [autoScroll, setAutoScroll] = useState(false);
     const [filterStatus, setFilterStatus] = useState('all'); // all, success, failed
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedLog, setSelectedLog] = useState(null);
+    const [selectedLogId, setSelectedLogId] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const [copiedId, setCopiedId] = useState(null);
     const logsEndRef = useRef(null);
@@ -73,7 +73,7 @@ const LiveJobLogs = () => {
             .then(data => {
                 if (data.code === 200) {
                     const formattedLogs = (data.data || []).map(log => ({
-                        id: log.jobLogId,
+                        id: String(log.jobLogId),
                         timestamp: log.startTime,
                         jobId: log.jobId,
                         jobName: log.jobName,
@@ -94,32 +94,76 @@ const LiveJobLogs = () => {
 
     const addLog = (event) => {
         const newStatus = event.type === 'JOB_FAILED' ? 'failed' : event.type === 'JOB_STARTED' ? 'running' : 'success';
-        const newLog = {
-            id: event.jobId + '-' + Date.now(),
-            timestamp: event.timestamp || new Date().toISOString(),
-            jobId: event.jobId,
-            jobName: event.jobName,
-            jobGroup: event.jobGroup || 'default',
-            status: newStatus,
-            message: event.errorMessage || event.message || (newStatus === 'running' ? 'Execution started' : newStatus === 'success' ? 'Execution completed' : 'Execution failed'),
-            duration: event.duration || 0,
-            retryCount: event.retryCount || 0,
-            exceptionInfo: event.exceptionInfo || '',
-            type: event.type
-        };
+        const newMessage = event.errorMessage || event.message || (newStatus === 'running' ? 'Execution started' : newStatus === 'success' ? 'Execution completed' : 'Execution failed');
 
         setLogs(prev => {
-            // Check if a log for this jobId already exists with 'running' status and update it
-            const existingIdx = prev.findIndex(l => l.jobId === event.jobId && l.status === 'running');
-            if (existingIdx >= 0 && newStatus !== 'running') {
-                // Update the existing running entry with completion data
-                const updated = [...prev];
-                updated[existingIdx] = { ...updated[existingIdx], ...newLog };
-                return updated.slice(0, 100);
+            // Find existing entry by jobId (ignore status check — always update the same job)
+            const existingIdx = prev.findIndex(l => l.jobId === event.jobId);
+            if (existingIdx >= 0) {
+                const existing = prev[existingIdx];
+                // Only update if the new event represents a more recent state
+                // running → success/failed, or any → running for new starts
+                if (newStatus === 'running' && existing.status !== 'running') {
+                    // New execution started — replace the old entry
+                    const updated = [...prev];
+                    updated[existingIdx] = {
+                        ...existing,
+                        id: event.jobId + '-ws-' + Date.now(),
+                        status: newStatus,
+                        message: newMessage,
+                        duration: 0,
+                        retryCount: 0,
+                        exceptionInfo: '',
+                        type: event.type,
+                        timestamp: event.timestamp || new Date().toISOString()
+                    };
+                    return updated.slice(0, 100);
+                } else if (newStatus !== 'running' && existing.status === 'running') {
+                    // Running → completed/failed
+                    const updated = [...prev];
+                    updated[existingIdx] = {
+                        ...existing,
+                        status: newStatus,
+                        message: newMessage,
+                        duration: event.duration || existing.duration || 0,
+                        retryCount: event.retryCount || existing.retryCount,
+                        exceptionInfo: event.exceptionInfo || existing.exceptionInfo || '',
+                        type: event.type,
+                        timestamp: event.timestamp || existing.timestamp
+                    };
+                    return updated.slice(0, 100);
+                } else if (newStatus !== 'running' && existing.status !== 'running') {
+                    // Both non-running — update the existing one with latest data
+                    const updated = [...prev];
+                    updated[existingIdx] = {
+                        ...existing,
+                        status: newStatus,
+                        message: newMessage,
+                        duration: event.duration || existing.duration || 0,
+                        type: event.type,
+                        timestamp: event.timestamp || existing.timestamp
+                    };
+                    return updated.slice(0, 100);
+                }
+                // Same status, no update needed
+                return prev;
             }
-            // Prepend new log to the beginning so newest is always on top
+            // Not found — prepend new log
+            const newLog = {
+                id: event.jobId + '-ws-' + Date.now(),
+                timestamp: event.timestamp || new Date().toISOString(),
+                jobId: event.jobId,
+                jobName: event.jobName,
+                jobGroup: event.jobGroup || 'default',
+                status: newStatus,
+                message: newMessage,
+                duration: event.duration || 0,
+                retryCount: event.retryCount || 0,
+                exceptionInfo: event.exceptionInfo || '',
+                type: event.type
+            };
             const updated = [newLog, ...prev];
-            return updated.slice(0, 100); // Keep last 100 logs
+            return updated.slice(0, 100);
         });
     };
 
@@ -478,7 +522,7 @@ const LiveJobLogs = () => {
                         {filteredLogs.map((log, idx) => (
                             <div
                                 key={log.id}
-                                onClick={() => setSelectedLog(selectedLog?.id === log.id ? null : log)}
+                                onClick={() => setSelectedLogId(selectedLogId === log.id ? null : log.id)}
                                 style={{
                                     padding: '12px 16px',
                                     borderRadius: '8px',
@@ -527,7 +571,7 @@ const LiveJobLogs = () => {
                                 </div>
 
                                 {/* Expanded Details */}
-                                {selectedLog?.id === log.id && (
+                                {selectedLogId === log.id && (
                                     <div style={{
                                         marginTop: '12px',
                                         paddingTop: '12px',
