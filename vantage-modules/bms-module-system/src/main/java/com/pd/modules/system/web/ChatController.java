@@ -5,12 +5,18 @@ import com.pd.common.core.domain.AjaxResult;
 import com.pd.framework.ai.service.AiChatService;
 import com.pd.framework.ai.service.KnowledgeBaseService;
 import com.pd.modules.system.security.LoginUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Chat controller with AI and MCP tool integration
@@ -19,6 +25,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api")
 public class ChatController extends BaseController {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatController.class);
 
     @Autowired(required = false)
     private AiChatService aiChatService;
@@ -320,6 +328,84 @@ public class ChatController extends BaseController {
             return success(knowledgeBaseService.getStats());
         }
         return success(Collections.emptyMap());
+    }
+
+    /**
+     * Streaming chat endpoint (SSE)
+     */
+    @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter chatStream(@RequestBody Map<String, Object> request) {
+        String message = (String) request.get("message");
+        String username = getCurrentUsername();
+        SseEmitter emitter = new SseEmitter(120_000L); // 2 min timeout
+
+        if (aiChatService == null || !aiChatService.isEnabled()) {
+            try {
+                emitter.send(SseEmitter.event().data("AI service is not available. Please ensure Ollama is running."));
+                emitter.complete();
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            }
+            return emitter;
+        }
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                aiChatService.chatStream(message, username)
+                    .doOnNext(token -> {
+                        try {
+                            emitter.send(SseEmitter.event().data(token));
+                        } catch (IOException e) {
+                            log.warn("Failed to send SSE token", e);
+                        }
+                    })
+                    .doOnComplete(() -> emitter.complete())
+                    .doOnError(throwable -> {
+                        try {
+                            emitter.send(SseEmitter.event().data("Error: " + throwable.getMessage()));
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                        emitter.completeWithError(throwable);
+                    })
+                    .subscribe();
+            } catch (Exception e) {
+                log.error("Chat stream error", e);
+                try {
+                    emitter.send(SseEmitter.event().data("Internal error occurred"));
+                } catch (IOException ex) {
+                    // ignore
+                }
+                emitter.completeWithError(e);
+            }
+        });
+
+        return emitter;
+    }
+
+    /**
+     * Get conversation history for current user
+     */
+    @GetMapping("/chat/history")
+    public AjaxResult getConversationHistory() {
+        String username = getCurrentUsername();
+        if (aiChatService != null) {
+            return success(aiChatService.getUserConversationHistory(username));
+        }
+        return success(Collections.emptyList());
+    }
+
+    /**
+     * Clear current user's conversation memory
+     */
+    @PostMapping("/chat/clear-memory")
+    public AjaxResult clearMemory() {
+        String username = getCurrentUsername();
+        if (aiChatService != null) {
+            aiChatService.clearMemory(username);
+            return success("Conversation cleared");
+        }
+        return error("AI service not available");
     }
 
     /**
