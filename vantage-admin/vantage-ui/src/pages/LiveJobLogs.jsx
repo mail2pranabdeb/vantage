@@ -11,7 +11,7 @@ const LiveJobLogs = () => {
     const [logs, setLogs] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    const [autoScroll, setAutoScroll] = useState(true);
+    const [autoScroll, setAutoScroll] = useState(false);
     const [filterStatus, setFilterStatus] = useState('all'); // all, success, failed
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedLog, setSelectedLog] = useState(null);
@@ -107,8 +107,9 @@ const LiveJobLogs = () => {
         };
 
         setLogs(prev => {
-            const updated = [...prev, newLog];
-            return updated.slice(-100); // Keep last 100 logs
+            // Prepend new log to the beginning so newest is always on top
+            const updated = [newLog, ...prev];
+            return updated.slice(0, 100); // Keep last 100 logs
         });
     };
 
@@ -231,9 +232,11 @@ const LiveJobLogs = () => {
     return (
         <div style={{
             height: 'calc(100vh - 70px)',
-            overflow: 'auto',
+            overflow: 'hidden',
             padding: '8px',
-            background: 'var(--bg-primary)'
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            flexDirection: 'column'
         }}>
             {/* Header */}
             <div style={{ 
@@ -462,7 +465,7 @@ const LiveJobLogs = () => {
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {filteredLogs.map((log, idx) => (
+                        {[...filteredLogs].reverse().map((log, idx) => (
                             <div
                                 key={log.id}
                                 onClick={() => setSelectedLog(selectedLog?.id === log.id ? null : log)}
