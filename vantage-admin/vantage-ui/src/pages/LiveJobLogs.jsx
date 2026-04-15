@@ -97,60 +97,33 @@ const LiveJobLogs = () => {
         const newMessage = event.errorMessage || event.message || (newStatus === 'running' ? 'Execution started' : newStatus === 'success' ? 'Execution completed' : 'Execution failed');
 
         setLogs(prev => {
-            // Find existing entry by jobId (ignore status check — always update the same job)
+            // Find existing entry by jobId
             const existingIdx = prev.findIndex(l => l.jobId === event.jobId);
             if (existingIdx >= 0) {
                 const existing = prev[existingIdx];
-                // Only update if the new event represents a more recent state
-                // running → success/failed, or any → running for new starts
-                if (newStatus === 'running' && existing.status !== 'running') {
-                    // New execution started — replace the old entry
-                    const updated = [...prev];
-                    updated[existingIdx] = {
-                        ...existing,
-                        id: event.jobId + '-ws-' + Date.now(),
-                        status: newStatus,
-                        message: newMessage,
-                        duration: 0,
-                        retryCount: 0,
-                        exceptionInfo: '',
-                        type: event.type,
-                        timestamp: event.timestamp || new Date().toISOString()
-                    };
-                    return updated.slice(0, 100);
-                } else if (newStatus !== 'running' && existing.status === 'running') {
-                    // Running → completed/failed
-                    const updated = [...prev];
-                    updated[existingIdx] = {
-                        ...existing,
-                        status: newStatus,
-                        message: newMessage,
-                        duration: event.duration || existing.duration || 0,
-                        retryCount: event.retryCount || existing.retryCount,
-                        exceptionInfo: event.exceptionInfo || existing.exceptionInfo || '',
-                        type: event.type,
-                        timestamp: event.timestamp || existing.timestamp
-                    };
-                    return updated.slice(0, 100);
-                } else if (newStatus !== 'running' && existing.status !== 'running') {
-                    // Both non-running — update the existing one with latest data
-                    const updated = [...prev];
-                    updated[existingIdx] = {
-                        ...existing,
-                        status: newStatus,
-                        message: newMessage,
-                        duration: event.duration || existing.duration || 0,
-                        type: event.type,
-                        timestamp: event.timestamp || existing.timestamp
-                    };
-                    return updated.slice(0, 100);
+                const updated = [...prev];
+                // Update in-place, keeping the same id so expanded view stays open
+                updated[existingIdx] = {
+                    ...existing,
+                    status: newStatus,
+                    message: newMessage,
+                    duration: event.duration || existing.duration || 0,
+                    retryCount: event.retryCount || existing.retryCount || 0,
+                    exceptionInfo: event.exceptionInfo || existing.exceptionInfo || '',
+                    type: event.type,
+                    timestamp: event.timestamp || existing.timestamp
+                };
+                // Reset duration/retry when a new execution starts
+                if (newStatus === 'running') {
+                    updated[existingIdx].duration = 0;
+                    updated[existingIdx].retryCount = 0;
+                    updated[existingIdx].exceptionInfo = '';
                 }
-                // Same status, no update needed
-                return prev;
+                return updated.slice(0, 100);
             }
             // Not found — prepend new log
             const newLog = {
-                id: event.jobId + '-ws-' + Date.now(),
+                id: 'ws-' + event.jobId + '-' + Date.now(),
                 timestamp: event.timestamp || new Date().toISOString(),
                 jobId: event.jobId,
                 jobName: event.jobName,

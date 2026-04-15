@@ -5,6 +5,7 @@ import com.pd.modules.quartz.domain.SysJobLog;
 import com.pd.modules.quartz.infrastructure.repository.SysJobLogRepository;
 import com.pd.modules.quartz.service.JobDependencyService;
 import com.pd.modules.quartz.service.JobNotificationService;
+import com.pd.modules.quartz.service.JobWebSocketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.quartz.Job;
@@ -32,6 +33,9 @@ public abstract class AbstractQuartzJob implements Job {
 
     @Autowired(required = false)
     private JobDependencyService dependencyService;
+
+    @Autowired(required = false)
+    private JobWebSocketService webSocketService;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -131,6 +135,15 @@ public abstract class AbstractQuartzJob implements Job {
         }
 
         log.info("Job {} completed in {} ms with status {}", jobId, executionDuration, jobLog.getStatus());
+
+        // Send WebSocket events for real-time UI updates
+        if (webSocketService != null) {
+            if (success) {
+                webSocketService.sendJobCompleted(jobId, sysJob.getJobName(), "0", executionDuration);
+            } else {
+                webSocketService.sendJobFailed(jobId, sysJob.getJobName(), jobLog.getJobMessage());
+            }
+        }
 
         // Handle post-execution actions
         if (success) {
