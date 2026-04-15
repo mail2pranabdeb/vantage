@@ -93,20 +93,30 @@ const LiveJobLogs = () => {
     };
 
     const addLog = (event) => {
+        const newStatus = event.type === 'JOB_FAILED' ? 'failed' : event.type === 'JOB_STARTED' ? 'running' : 'success';
         const newLog = {
             id: event.jobId + '-' + Date.now(),
             timestamp: event.timestamp || new Date().toISOString(),
             jobId: event.jobId,
             jobName: event.jobName,
             jobGroup: event.jobGroup || 'default',
-            status: event.type === 'JOB_FAILED' ? 'failed' : event.type === 'JOB_STARTED' ? 'running' : 'success',
-            message: event.errorMessage || event.message || 'Execution started',
+            status: newStatus,
+            message: event.errorMessage || event.message || (newStatus === 'running' ? 'Execution started' : newStatus === 'success' ? 'Execution completed' : 'Execution failed'),
             duration: event.duration || 0,
-            retryCount: 0,
+            retryCount: event.retryCount || 0,
+            exceptionInfo: event.exceptionInfo || '',
             type: event.type
         };
 
         setLogs(prev => {
+            // Check if a log for this jobId already exists with 'running' status and update it
+            const existingIdx = prev.findIndex(l => l.jobId === event.jobId && l.status === 'running');
+            if (existingIdx >= 0 && newStatus !== 'running') {
+                // Update the existing running entry with completion data
+                const updated = [...prev];
+                updated[existingIdx] = { ...updated[existingIdx], ...newLog };
+                return updated.slice(0, 100);
+            }
             // Prepend new log to the beginning so newest is always on top
             const updated = [newLog, ...prev];
             return updated.slice(0, 100); // Keep last 100 logs
