@@ -465,7 +465,7 @@ const LiveJobLogs = () => {
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {[...filteredLogs].reverse().map((log, idx) => (
+                        {filteredLogs.map((log, idx) => (
                             <div
                                 key={log.id}
                                 onClick={() => setSelectedLog(selectedLog?.id === log.id ? null : log)}
