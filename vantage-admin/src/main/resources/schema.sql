@@ -1,3 +1,8 @@
+-- =====================================================
+-- VANTAGE ADMIN - Master Database Schema
+-- Standardized for H2 (Oracle Mode)
+-- =====================================================
+
 -- 1. User Table
 drop table if exists sys_user;
 drop sequence if exists sys_user_seq;
@@ -25,6 +30,7 @@ create table sys_user (
   remark            varchar(500)    default null,
   primary key (user_id)
 );
+
 -- 3. Role Table
 drop table if exists sys_role;
 create table sys_role (
@@ -42,6 +48,7 @@ create table sys_role (
   remark            varchar(500)    default null,
   primary key (role_id)
 );
+
 -- 4. Menu Table
 drop table if exists sys_menu;
 create table sys_menu (
@@ -64,6 +71,7 @@ create table sys_menu (
   remark            varchar(500)    default '',
   primary key (menu_id)
 );
+
 -- 5. User-Role Table
 drop table if exists sys_user_role;
 create table sys_user_role (
@@ -71,6 +79,7 @@ create table sys_user_role (
   role_id   bigint not null,
   primary key(user_id, role_id)
 );
+
 -- 6. Role-Menu Table
 drop table if exists sys_role_menu;
 create table sys_role_menu (
@@ -78,6 +87,7 @@ create table sys_role_menu (
   menu_id   bigint not null,
   primary key(role_id, menu_id)
 );
+
 -- 7. Dict Type Table
 drop table if exists sys_dict_type;
 create table sys_dict_type (
@@ -93,6 +103,7 @@ create table sys_dict_type (
   primary key (dict_id)
 );
 create unique index sys_dict_type_index on sys_dict_type (dict_type);
+
 -- 8. Dict Data Table
 drop table if exists sys_dict_data;
 create table sys_dict_data (
@@ -112,6 +123,7 @@ create table sys_dict_data (
   remark          varchar(500)    default null,
   primary key (dict_code)
 );
+
 -- 9. Config Table
 drop table if exists sys_config;
 create table sys_config (
@@ -127,6 +139,7 @@ create table sys_config (
   remark          varchar(500)    default null,
   primary key (config_id)
 );
+
 -- 10. Post Table
 drop table if exists sys_post;
 create table sys_post (
@@ -136,12 +149,13 @@ create table sys_post (
   post_sort       int             not null,
   status          varchar(1)         not null,
   create_by       varchar(64)     default '',
-  create_time     timestamp       default current_timestamp,
+  create_time       timestamp       default current_timestamp,
   update_by       varchar(64)     default '',
   update_time     timestamp       null,
-  remark          varchar(500)    default null,
+  remark            varchar(500)    default null,
   primary key (post_id)
 );
+
 -- 11. User-Post Table
 drop table if exists sys_user_post;
 create table sys_user_post (
@@ -149,25 +163,25 @@ create table sys_user_post (
   post_id   bigint not null,
   primary key(user_id, post_id)
 );
--- 12. Login Info Table
+
+-- 12. Login Info Table (Monitor) - Standardized column sizes
 drop table if exists sys_logininfor;
 drop sequence if exists sys_logininfor_seq;
 create sequence sys_logininfor_seq start with 100 increment by 1;
-create table
-
-(
+create table sys_logininfor (
   info_id         bigint          not null,
   login_name      varchar(50)     default '',
   status          varchar(1)         default '0',
-  ipaddr          varchar(128)    default '',
-  login_location  varchar(255)    default '',
-  browser         varchar(255)    default '',
-  os              varchar(100)    default '',
-  msg             varchar(500)    default '',
+  ipaddr          varchar(255)    default '',
+  login_location  varchar(500)    default '',
+  browser         varchar(500)    default '',
+  os              varchar(255)    default '',
+  msg             varchar(1000)    default '',
   login_time      timestamp       default current_timestamp,
   primary key (info_id)
 );
--- 13. Operation Log Table
+
+-- 13. Operation Log Table (Monitor) - Standardized column sizes
 drop table if exists sys_oper_log;
 drop sequence if exists sys_oper_log_seq;
 create sequence sys_oper_log_seq start with 100 increment by 1;
@@ -175,30 +189,34 @@ create table sys_oper_log (
   oper_id         bigint          not null,
   title           varchar(50)     default '',
   business_type   int             default 0,
-  method          varchar(500)    default '',
+  method          varchar(1000)    default '',
   request_method  varchar(20)     default '',
   operator_type   int             default 0,
   oper_name       varchar(50)     default '',
   dept_name       varchar(50)     default '',
-  oper_url        varchar(500)    default '',
-  oper_ip         varchar(128)    default '',
-  oper_location   varchar(500)    default '',
-  oper_param      varchar(8000)   default '',
-  json_result     varchar(16000)  default '',
+  oper_url        varchar(1000)    default '',
+  oper_ip         varchar(255)    default '',
+  oper_location   varchar(1000)    default '',
+  oper_param      clob,
+  json_result     clob,
   status          int             default 0,
-  error_msg       varchar(8000)   default '',
+  error_msg       clob,
   oper_time       timestamp       default current_timestamp,
   cost_time       bigint          default 0,
+  old_values      clob,
+  new_values      clob,
+  changed_fields  varchar(2000),
   primary key (oper_id)
 );
 create index sys_oper_log_idx on sys_oper_log (oper_time);
+
 -- 14. Job Table (Quartz)
 drop table if exists sys_job;
 create table sys_job (
   job_id              bigint          generated by default as identity,
   job_name            varchar(64)     not null,
   job_group           varchar(64)     default 'DEFAULT',
-  invoke_target       varchar(500)    not null,
+  invoke_target       varchar(500),
   cron_expression     varchar(255)    default '',
   misfire_policy      varchar(20)     default '3',
   concurrent          varchar(1)      default '1',
@@ -219,8 +237,13 @@ create table sys_job (
   time_zone           varchar(50)     default 'UTC',
   allow_holiday       boolean         default true,
   template_name       varchar(64)     default '',
+  job_type            varchar(20)     default 'BEAN',
+  report_id           bigint          default null,
+  report_email_group  varchar(500),
+  webhook_token       varchar(64)     default '',
   primary key (job_id)
 );
+
 -- 15. Job Log Table
 drop table if exists sys_job_log;
 create table sys_job_log (
@@ -228,7 +251,7 @@ create table sys_job_log (
   job_id              bigint          default null,
   job_name            varchar(64)     not null,
   job_group           varchar(64)     not null,
-  invoke_target       varchar(500)    not null,
+  invoke_target       varchar(500),
   job_message         varchar(2000)   default '',
   status              varchar(1)      default '0',
   exception_info      varchar(4000)   default '',
@@ -239,6 +262,7 @@ create table sys_job_log (
   create_time         timestamp       default current_timestamp,
   primary key (job_log_id)
 );
+
 -- 16. Gen Table (Code Generator)
 drop table if exists gen_table;
 create table gen_table (
@@ -270,6 +294,7 @@ create table gen_table (
   remark            varchar(500)    default null,
   primary key (table_id)
 );
+
 -- 17. Gen Table Column
 drop table if exists gen_table_column;
 create table gen_table_column (
@@ -297,7 +322,240 @@ create table gen_table_column (
   update_time     timestamp       null,
   primary key (column_id)
 );
--- Quartz Tables (H2 compatible)
+
+-- 18. Multi-Datasource Tables
+drop table if exists sys_datasource;
+create sequence sys_datasource_seq start with 100 increment by 1;
+create table sys_datasource (
+    datasource_id   bigint          not null,
+    datasource_name varchar(100)    not null,
+    datasource_key  varchar(50)     not null unique,
+    db_type         varchar(20)     not null,
+    url             varchar(500)    not null,
+    username        varchar(100)    not null,
+    password        varchar(500)    not null,
+    driver_class    varchar(200)    not null,
+    status          varchar(1)      default '0',
+    create_by       varchar(64)     default '',
+    create_time     timestamp       default current_timestamp,
+    update_by       varchar(64)     default '',
+    update_time     timestamp       null,
+    remark          varchar(500)    default '',
+    last_test_time  timestamp       null,
+    last_test_status varchar(1)     default '0',
+    primary key (datasource_id)
+);
+
+drop table if exists sys_datasource_meta;
+create sequence sys_datasource_meta_seq start with 100 increment by 1;
+create table sys_datasource_meta (
+    meta_id             bigint          not null,
+    datasource_id       bigint          not null,
+    table_name          varchar(200)    not null,
+    table_comment       varchar(500),
+    columns_meta        clob,
+    last_sync_time      timestamp       default current_timestamp,
+    primary key (meta_id),
+    foreign key (datasource_id) references sys_datasource(datasource_id) on delete cascade
+);
+
+-- 19. Report Module Tables
+drop table if exists sys_report;
+create sequence sys_report_seq start with 100 increment by 1;
+create table sys_report (
+    report_id         bigint          not null,
+    report_name       varchar(100)    not null,
+    report_key        varchar(50)     not null unique,
+    report_type       varchar(20)     default 'SQL',
+    datasource_key    varchar(50)     default 'master',
+    sql_content       clob            not null,
+    params_config     varchar(2000),
+    columns_config    varchar(4000),
+    output_format     varchar(20)     default 'EXCEL',
+    status            varchar(1)      default '0',
+    template_id       bigint          default null,
+    create_by         varchar(64)     default '',
+    create_time       timestamp       default current_timestamp,
+    update_by         varchar(64)     default '',
+    update_time       timestamp       null,
+    remark            varchar(500)    default '',
+    primary key (report_id)
+);
+
+drop table if exists sys_report_exec;
+create sequence sys_report_exec_seq start with 100 increment by 1;
+create table sys_report_exec (
+    exec_id           bigint          not null,
+    report_id         bigint          not null,
+    report_name       varchar(100),
+    exec_time         timestamp       default current_timestamp,
+    exec_params       varchar(2000),
+    output_format     varchar(20),
+    file_path         varchar(500),
+    file_size         bigint,
+    status            varchar(1)      default '0',
+    error_msg         varchar(2000),
+    exec_duration     bigint,
+    create_by         varchar(64),
+    primary key (exec_id)
+);
+
+drop table if exists sys_report_template;
+create sequence sys_report_template_seq start with 100 increment by 1;
+create table sys_report_template (
+    template_id         bigint          not null,
+    template_name       varchar(200)    not null,
+    template_key        varchar(100)    not null,
+    description         varchar(500),
+    datasource_key      varchar(100)    not null,
+    report_mode         varchar(20)     default 'SQL',
+    sql_content         clob,
+    tables_config       clob,
+    columns_config      clob,
+    filters_config      clob,
+    group_by_config     clob,
+    order_by_config     clob,
+    charts_config       clob,
+    layout_config       clob,
+    output_format       varchar(20)     default 'EXCEL',
+    status              varchar(1)      default '0',
+    version             int             default 1,
+    parent_template_id  bigint,
+    change_log          varchar(500),
+    create_by           varchar(64),
+    create_time         timestamp       default current_timestamp,
+    update_by           varchar(64),
+    update_time         timestamp       default current_timestamp,
+    remark              varchar(500),
+    primary key (template_id)
+);
+
+drop table if exists sys_report_email_config;
+create sequence sys_report_email_config_seq start with 100 increment by 1;
+create table sys_report_email_config (
+    config_id           bigint          not null,
+    report_id           bigint          not null,
+    template_id         bigint,
+    recipient_emails    clob,
+    cc_emails           clob,
+    email_subject       varchar(300),
+    email_body          clob,
+    attachment_format   varchar(20)     default 'EXCEL',
+    send_on_success     varchar(1)      default '1',
+    send_on_failure     varchar(1)      default '1',
+    status              varchar(1)      default '0',
+    create_time         timestamp       default current_timestamp,
+    update_time         timestamp       default current_timestamp,
+    primary key (config_id),
+    foreign key (report_id) references sys_report(report_id) on delete cascade
+);
+
+-- 20. Email SMTP & Templates
+drop table if exists sys_email_smtp_config;
+create sequence sys_email_smtp_config_seq start with 100 increment by 1;
+create table sys_email_smtp_config (
+    config_id           bigint          not null,
+    smtp_host           varchar(200)    not null,
+    smtp_port           int             default 587,
+    username            varchar(200)    not null,
+    password            varchar(500)    not null,
+    auth                varchar(1)      default '1',
+    starttls_enable     varchar(1)      default '1',
+    starttls_required   varchar(1)      default '1',
+    ssl_enable          varchar(1)      default '0',
+    timeout             int             default 5000,
+    status              varchar(1)      default '0',
+    create_time         timestamp       default current_timestamp,
+    update_time         timestamp       default current_timestamp,
+    primary key (config_id)
+);
+
+drop table if exists sys_job_email_template;
+create sequence sys_job_email_template_seq start with 100 increment by 1;
+create table sys_job_email_template (
+    template_id        bigint           generated by default as identity,
+    template_name      varchar(100)     not null,
+    template_code      varchar(50)      not null unique,
+    subject            varchar(255)     not null,
+    content            clob             not null,
+    datasource_key     varchar(50),
+    query_sql          clob,
+    include_data_table boolean          default false,
+    data_tables        clob,
+    status             varchar(1)       default '0',
+    create_by          varchar(64)      default '',
+    create_time        timestamp        default current_timestamp,
+    primary key (template_id)
+);
+
+-- 21. AI Knowledge Base
+drop table if exists ai_knowledge;
+drop sequence if exists ai_knowledge_seq;
+create sequence ai_knowledge_seq start with 100 increment by 1;
+create table ai_knowledge (
+  knowledge_id    bigint          not null,
+  title           varchar(200)    not null,
+  content         clob            not null,
+  category        varchar(50)     default '',
+  keywords        varchar(500)    default '',
+  status          varchar(1)      default '1',
+  create_by       varchar(64)     default '',
+  create_time     timestamp       default current_timestamp,
+  update_by       varchar(64)     default '',
+  update_time     timestamp       null,
+  remark          varchar(500)    default null,
+  primary key (knowledge_id)
+);
+
+-- 22. Notification System
+drop table if exists sys_notification;
+create sequence sys_notification_seq start with 100 increment by 1;
+create table sys_notification (
+    notification_id     bigint          not null,
+    user_id             bigint,
+    title               varchar(200)    not null,
+    content             clob,
+    notification_type   varchar(50),
+    channel             varchar(50),
+    status              varchar(1)      default '0',
+    link_url            varchar(500),
+    create_time         timestamp       default current_timestamp,
+    read_time           timestamp       null,
+    expiry_time         timestamp,
+    primary key (notification_id)
+);
+
+-- 23. Advanced Dashboard System
+drop table if exists sys_dashboard;
+create sequence sys_dashboard_seq start with 100 increment by 1;
+create table sys_dashboard (
+    dashboard_id    bigint          not null,
+    dashboard_name  varchar(200)    not null,
+    layout_config   clob,
+    user_id         bigint,
+    is_default      boolean         default false,
+    create_time     timestamp       default current_timestamp,
+    update_time     timestamp,
+    primary key (dashboard_id)
+);
+
+drop table if exists sys_dashboard_widget;
+create table sys_dashboard_widget (
+    widget_id       bigint          primary key,
+    dashboard_id    bigint,
+    widget_type     varchar(50),
+    title           varchar(200),
+    query_sql       clob,
+    chart_type      varchar(50),
+    position_x      int,
+    position_y      int,
+    width           int,
+    height          int,
+    refresh_interval int,
+    create_time     timestamp       default current_timestamp
+);
+
+-- 24. Quartz Core Tables (Standard H2)
 drop table if exists QRTZ_FIRED_TRIGGERS;
 drop table if exists QRTZ_PAUSED_TRIGGER_GRPS;
 drop table if exists QRTZ_SCHEDULER_STATE;
@@ -309,6 +567,7 @@ drop table if exists QRTZ_BLOB_TRIGGERS;
 drop table if exists QRTZ_TRIGGERS;
 drop table if exists QRTZ_JOB_DETAILS;
 drop table if exists QRTZ_CALENDARS;
+
 create table QRTZ_JOB_DETAILS (
   sched_name        varchar(120)    not null,
   job_name          varchar(200)    not null,
@@ -322,6 +581,7 @@ create table QRTZ_JOB_DETAILS (
   job_data          blob            null,
   primary key (sched_name, job_name, job_group)
 );
+
 create table QRTZ_TRIGGERS (
   sched_name     varchar(120)    not null,
   trigger_name   varchar(200)    not null,
@@ -342,6 +602,7 @@ create table QRTZ_TRIGGERS (
   primary key (sched_name, trigger_name, trigger_group),
   foreign key (sched_name, job_name, job_group) references QRTZ_JOB_DETAILS(sched_name, job_name, job_group)
 );
+
 create table QRTZ_SIMPLE_TRIGGERS (
   sched_name     varchar(120)    not null,
   trigger_name   varchar(200)    not null,
@@ -352,6 +613,7 @@ create table QRTZ_SIMPLE_TRIGGERS (
   primary key (sched_name, trigger_name, trigger_group),
   foreign key (sched_name, trigger_name, trigger_group) references QRTZ_TRIGGERS(sched_name, trigger_name, trigger_group)
 );
+
 create table QRTZ_CRON_TRIGGERS (
   sched_name     varchar(120)    not null,
   trigger_name   varchar(200)    not null,
@@ -361,25 +623,20 @@ create table QRTZ_CRON_TRIGGERS (
   primary key (sched_name, trigger_name, trigger_group),
   foreign key (sched_name, trigger_name, trigger_group) references QRTZ_TRIGGERS(sched_name, trigger_name, trigger_group)
 );
-create table QRTZ_BLOB_TRIGGERS (
-  sched_name     varchar(120)    not null,
-  trigger_name   varchar(200)    not null,
-  trigger_group  varchar(200)    not null,
-  blob_data      blob            null,
-  primary key (sched_name, trigger_name, trigger_group),
-  foreign key (sched_name, trigger_name, trigger_group) references QRTZ_TRIGGERS(sched_name, trigger_name, trigger_group)
-);
+
 create table QRTZ_CALENDARS (
   sched_name     varchar(120)    not null,
   calendar_name  varchar(200)    not null,
   calendar       blob            not null,
   primary key (sched_name, calendar_name)
 );
+
 create table QRTZ_PAUSED_TRIGGER_GRPS (
   sched_name     varchar(120)    not null,
   trigger_group  varchar(200)    not null,
   primary key (sched_name, trigger_group)
 );
+
 create table QRTZ_FIRED_TRIGGERS (
   sched_name      varchar(120)    not null,
   entry_id        varchar(95)     not null,
@@ -396,6 +653,7 @@ create table QRTZ_FIRED_TRIGGERS (
   requests_recovery varchar(1)    null,
   primary key (sched_name, entry_id)
 );
+
 create table QRTZ_SCHEDULER_STATE (
   sched_name      varchar(120)    not null,
   instance_name   varchar(200)    not null,
@@ -403,199 +661,9 @@ create table QRTZ_SCHEDULER_STATE (
   checkin_interval bigint         not null,
   primary key (sched_name, instance_name)
 );
+
 create table QRTZ_LOCKS (
   sched_name      varchar(120)    not null,
   lock_name       varchar(40)     not null,
   primary key (sched_name, lock_name)
 );
-create table QRTZ_SIMPROP_TRIGGERS (
-  sched_name     varchar(120)    not null,
-  trigger_name   varchar(200)    not null,
-  trigger_group  varchar(200)    not null,
-  str_prop_1     varchar(512)    null,
-  str_prop_2     varchar(512)    null,
-  str_prop_3     varchar(512)    null,
-  int_prop_1     integer         null,
-  int_prop_2     integer         null,
-  long_prop_1    bigint          null,
-  long_prop_2    bigint          null,
-  dec_prop_1     numeric(13,4)   null,
-  dec_prop_2     numeric(13,4)   null,
-  bool_prop_1    varchar(1)      null,
-  bool_prop_2    varchar(1)      null,
-  primary key (sched_name, trigger_name, trigger_group),
-  foreign key (sched_name, trigger_name, trigger_group) references QRTZ_TRIGGERS(sched_name, trigger_name, trigger_group)
-);
-
--- AI Knowledge Base Table
-drop table if exists ai_knowledge;
-drop sequence if exists ai_knowledge_seq;
-create sequence ai_knowledge_seq start with 100 increment by 1;
-create table ai_knowledge (
-  knowledge_id    bigint          not null,
-  title           varchar(200)    not null,
-  content         clob            not null,
-  category        varchar(50)     default '',
-  keywords        varchar(500)    default '',
-  status          varchar(1)      default '1',
-  create_by       varchar(64)     default '',
-  create_time     timestamp       default current_timestamp,
-  update_by       varchar(64)     default '',
-  update_time     timestamp       null,
-  remark          varchar(500)    default null,
-  primary key (knowledge_id)
-);
-
--- Job Versioning Table
-drop table if exists sys_job_version;
-create table sys_job_version (
-    version_id        BIGINT          generated by default as identity primary key,
-    job_id            BIGINT          not null,
-    version_number    INT             not null,
-    job_name          VARCHAR(64),
-    job_group         VARCHAR(64),
-    invoke_target     VARCHAR(500),
-    cron_expression   VARCHAR(255),
-    misfire_policy    VARCHAR(20),
-    concurrent        VARCHAR(1),
-    status            VARCHAR(1),
-    max_retry_count   INT,
-    retry_interval    INT,
-    timeout_seconds   INT,
-    notify_on_failure BOOLEAN,
-    notification_emails VARCHAR(500),
-    webhook_url       VARCHAR(500),
-    dependent_job_ids VARCHAR(500),
-    time_zone         VARCHAR(50),
-    allow_holiday     BOOLEAN,
-    remark            VARCHAR(500),
-    changed_by        VARCHAR(64),
-    change_reason     VARCHAR(500),
-    create_time       TIMESTAMP       default current_timestamp
-);
-create index idx_job_version_job_id on sys_job_version (job_id);
-create index idx_job_version_number on sys_job_version (version_number);
-
--- Holiday Calendar Table
-drop table if exists sys_holiday;
-create table sys_holiday (
-    holiday_id        BIGINT          generated by default as identity primary key,
-    holiday_name      VARCHAR(100)    not null,
-    holiday_date      DATE            not null,
-    holiday_type      VARCHAR(1)      default '1',
-    is_recurring      BOOLEAN         default false,
-    description       VARCHAR(500),
-    status            VARCHAR(1)      default '0',
-    create_by         VARCHAR(64),
-    create_time       TIMESTAMP       default current_timestamp,
-    update_by         VARCHAR(64),
-    update_time       TIMESTAMP
-);
-create unique index uk_holiday_date on sys_holiday (holiday_date);
-
--- Job Access Control Table
-drop table if exists sys_job_role;
-create table sys_job_role (
-    job_id            BIGINT          not null,
-    role_id           BIGINT          not null,
-    primary key (job_id, role_id)
-);
-create index idx_job_role_job_id on sys_job_role (job_id);
-create index idx_job_role_role_id on sys_job_role (role_id);
-
--- Job Execution History Table
-drop table if exists sys_job_execution;
-create table sys_job_execution (
-    execution_id      BIGINT          generated by default as identity primary key,
-    job_id            BIGINT          not null,
-    job_name          VARCHAR(64),
-    job_group         VARCHAR(64),
-    start_time        TIMESTAMP       not null,
-    end_time          TIMESTAMP,
-    duration_ms       BIGINT,
-    status            VARCHAR(1),
-    trigger_type      VARCHAR(20),
-    retry_count       INT             default 0,
-    error_message     VARCHAR(2000)
-);
-create index idx_job_execution_job_id on sys_job_execution (job_id);
-create index idx_job_execution_start_time on sys_job_execution (start_time);
-create index idx_job_execution_status on sys_job_execution (status);
-  update_by       varchar(64)     default '',
-  update_time     timestamp       null,
-  remark          varchar(500)    default null,
-  primary key (knowledge_id)
-);
-create index ai_knowledge_category_idx on ai_knowledge (category);
-create index ai_knowledge_status_idx on ai_knowledge (status);
-
-CREATE SEQUENCE IF NOT EXISTS sys_notification_seq START WITH 100 INCREMENT BY 1;
-
-CREATE TABLE IF NOT EXISTS sys_notification (
-                                                notification_id   BIGINT PRIMARY KEY,
-                                                user_id         BIGINT,
-                                                title           VARCHAR(200) NOT NULL,
-    content         TEXT,
-    notification_type VARCHAR(50),
-    channel         VARCHAR(50),
-    status          VARCHAR(1) DEFAULT '0',
-    link_url        VARCHAR(500),
-    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    read_time       TIMESTAMP NULL,
-    expiry_time     TIMESTAMP
-    );
-
-CREATE INDEX IF NOT EXISTS idx_notification_user ON sys_notification(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_notification_time ON sys_notification(create_time);
-
-CREATE TABLE IF NOT EXISTS sys_notification_settings (
-                                                         setting_id      BIGINT PRIMARY KEY,
-                                                         user_id         BIGINT,
-                                                         email_enabled   BOOLEAN DEFAULT true,
-                                                         sms_enabled     BOOLEAN DEFAULT false,
-                                                         push_enabled    BOOLEAN DEFAULT true,
-                                                         in_app_enabled  BOOLEAN DEFAULT true
-);
-
-
--- =====================================================
--- ADVANCED REPORTING DASHBOARD
--- =====================================================
-CREATE SEQUENCE IF NOT EXISTS sys_dashboard_seq START WITH 100 INCREMENT BY 1;
-
-CREATE TABLE IF NOT EXISTS sys_dashboard (
-                                             dashboard_id    BIGINT PRIMARY KEY,
-                                             dashboard_name  VARCHAR(200) NOT NULL,
-    layout_config   TEXT,
-    user_id         BIGINT,
-    is_default      BOOLEAN DEFAULT false,
-    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time     TIMESTAMP
-    );
-
-CREATE TABLE IF NOT EXISTS sys_dashboard_widget (
-                                                    widget_id       BIGINT PRIMARY KEY,
-                                                    dashboard_id    BIGINT,
-                                                    widget_type     VARCHAR(50),
-    title           VARCHAR(200),
-    query_sql       TEXT,
-    chart_type      VARCHAR(50),
-    position_x      INT,
-    position_y      INT,
-    width           INT,
-    height          INT,
-    refresh_interval INT,
-    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- -- Dashboard Menu
--- INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
--- VALUES (30, 'Dashboards', 0, 5, '/system/dashboards', '', 'M', '0', '1', '', 'fa fa-bar-chart', '0', 'admin', CURRENT_TIMESTAMP, 'Advanced Dashboards');
---
--- INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 30);
-
-
--- Add before/after columns to sys_oper_log
-ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS old_values TEXT;
-ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS new_values TEXT;
-ALTER TABLE sys_oper_log ADD COLUMN IF NOT EXISTS changed_fields VARCHAR(2000);

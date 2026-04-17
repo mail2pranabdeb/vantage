@@ -138,31 +138,26 @@ const SystemSettings = () => {
     ];
 
     return (
-        <div style={{
-            height: 'calc(100vh - 70px)',
-            overflow: 'auto',
-            padding: '8px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-        }}>
-            <div className="page-header" style={{ marginBottom: '12px' }}>
+        <div className="page-container" style={{ maxWidth: '1400px', margin: '0 auto', gap: '12px' }}>
+            <div className="page-header" style={{ padding: '8px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        background: 'var(--primary-soft)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'white'
+                        color: 'var(--primary-color)',
+                        border: '1px solid var(--primary-soft)'
                     }}>
-                        <Settings size={20} />
+                        <Settings size={18} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>System Settings</h2>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Configure system-wide settings
+                        <h2 style={{ fontSize: '14px', fontWeight: 800, margin: 0 }}>System Control Center</h2>
+                        <p style={{ fontSize: '10px !important', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                            Platform-wide configuration & core service parameters
                         </p>
                     </div>
                 </div>

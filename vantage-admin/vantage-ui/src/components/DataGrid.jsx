@@ -422,6 +422,14 @@ const DataGrid = ({
                     to { transform: rotate(360deg); }
                 }
 
+                /* Grid Wrapper */
+                .ag-grid-wrapper {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                }
+
                 /* Loading State */
                 .ag-loading {
                     padding: 40px 20px;
@@ -639,10 +647,12 @@ const DataGrid = ({
 
                 /* Table */
                 .ag-table-container {
+                    flex: 1;
                     overflow: auto;
                     border: 1px solid var(--border-color);
                     border-top: none;
                     background: var(--bg-secondary);
+                    min-height: 0;
                 }
 
                 .ag-table {

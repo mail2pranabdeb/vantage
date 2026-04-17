@@ -29,6 +29,7 @@ const MenuList = () => {
         visible: '0'
     });
     const [submitting, setSubmitting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchMenus();
@@ -179,6 +180,45 @@ const MenuList = () => {
         }));
     };
 
+    const handleExpandAll = () => {
+        const allIds = {};
+        const collectIds = (items) => {
+            items.forEach(item => {
+                if (item.children && item.children.length > 0) {
+                    allIds[item.menuId] = true;
+                    collectIds(item.children);
+                }
+            });
+        };
+        collectIds(menus);
+        setExpandedNodes(allIds);
+    };
+
+    const handleCollapseAll = () => {
+        setExpandedNodes({});
+    };
+
+    const filterMenus = (items, query) => {
+        if (!query) return items;
+        
+        return items.filter(item => {
+            const matchesCurrent = item.menuName.toLowerCase().includes(query.toLowerCase());
+            const filteredChildren = item.children ? filterMenus(item.children, query) : [];
+            const matchesChildren = filteredChildren.length > 0;
+            
+            if (matchesCurrent || matchesChildren) {
+                // If query is present, we should probably expand parents that have matching children
+                if (matchesChildren) {
+                    setExpandedNodes(prev => ({ ...prev, [item.menuId]: true }));
+                }
+                return true;
+            }
+            return false;
+        });
+    };
+
+    const filteredMenus = filterMenus(menus, searchQuery);
+
     const getMenuIcon = (menuType) => {
         switch(menuType) {
             case 'M': return <Folder size={16} />;
@@ -207,62 +247,113 @@ const MenuList = () => {
             const isExpanded = expandedNodes[menu.menuId];
 
             return (
-                <div key={menu.menuId}>
+                <div key={menu.menuId} style={{ position: 'relative' }}>
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '8px 10px',
-                        background: level === 0 ? 'var(--bg-secondary)' : 'transparent',
+                        padding: '6px 12px',
+                        background: level === 0 ? 'var(--bg-tertiary)' : 'transparent',
                         borderBottom: '1px solid var(--border-color)',
-                        marginLeft: `${level * 20}px`,
-                        transition: 'background 0.2s'
+                        marginLeft: `${level * 24}px`,
+                        position: 'relative',
+                        borderRadius: level > 0 ? '0 8px 8px 0' : '0',
+                        transition: 'all 0.2s ease',
+                        cursor: 'default'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = level === 0 ? 'var(--bg-secondary)' : 'transparent'}
+                    className="menu-tree-row"
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--sidebar-hover-bg)';
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = level === 0 ? 'var(--bg-tertiary)' : 'transparent';
+                        e.currentTarget.style.transform = 'translateX(0)';
+                    }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                        {/* Indentation Guide Line */}
+                        {level > 0 && (
+                            <div style={{
+                                position: 'absolute',
+                                left: '-12px',
+                                top: '0',
+                                bottom: '0',
+                                width: '1px',
+                                background: 'var(--border-color)',
+                                opacity: 0.5
+                            }} />
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
                             {hasChildren ? (
                                 <button
                                     onClick={() => toggleExpand(menu.menuId)}
                                     style={{ 
-                                        background: 'none', 
-                                        border: 'none', 
+                                        background: 'var(--bg-secondary)', 
+                                        border: '1px solid var(--border-color)', 
                                         cursor: 'pointer',
-                                        padding: '4px',
+                                        padding: '2px',
+                                        width: '20px',
+                                        height: '20px',
+                                        borderRadius: '4px',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        color: 'var(--text-secondary)'
+                                        justifyContent: 'center',
+                                        color: 'var(--text-secondary)',
+                                        zIndex: 1
                                     }}
                                 >
-                                    {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                                 </button>
                             ) : (
-                                <span style={{ width: '24px' }} />
+                                <div style={{ width: '20px', display: 'flex', justifyContent: 'center' }}>
+                                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--border-color)' }} />
+                                </div>
                             )}
                             
-                            <span style={{ color: 'var(--primary-color)' }}>
+                            <div style={{ 
+                                width: '28px', 
+                                height: '28px', 
+                                borderRadius: '6px', 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'var(--primary-color)',
+                                flexShrink: 0
+                            }}>
                                 {getMenuIcon(menu.menuType)}
-                            </span>
+                            </div>
                             
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: 500, fontSize: '13px' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {menu.menuName}
                                 </div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                                    {getMenuTypeLabel(menu.menuType)}
-                                    {menu.perms && ` • ${menu.perms}`}
+                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <span style={{ 
+                                        padding: '1px 4px', 
+                                        borderRadius: '4px', 
+                                        background: menu.menuType === 'M' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                                        color: menu.menuType === 'M' ? '#3b82f6' : 'inherit'
+                                    }}>
+                                        {getMenuTypeLabel(menu.menuType)}
+                                    </span>
+                                    {menu.perms && (
+                                        <span style={{ opacity: 0.7 }}>• {menu.perms}</span>
+                                    )}
+                                    <span style={{ opacity: 0.7 }}>• Order: {menu.orderNum}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '4px' }}>
+                        <div style={{ display: 'flex', gap: '4px' }} className="row-actions">
                             {menu.menuType !== 'F' && (
                                 <button
                                     onClick={() => handleAddClick(menu)}
                                     className="btn btn-secondary"
-                                    style={{ padding: '4px 8px', fontSize: '11px' }}
-                                    title="Add submenu"
+                                    style={{ width: '26px', height: '26px', padding: 0 }}
+                                    title="Add sub-menu"
                                 >
                                     <Plus size={14} />
                                 </button>
@@ -270,7 +361,7 @@ const MenuList = () => {
                             <button
                                 onClick={() => handleEditClick(menu)}
                                 className="btn btn-secondary"
-                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                style={{ width: '26px', height: '26px', padding: 0 }}
                                 title="Edit"
                             >
                                 <Edit size={14} />
@@ -279,10 +370,11 @@ const MenuList = () => {
                                 onClick={() => handleDeleteClick(menu)}
                                 className="btn btn-secondary"
                                 style={{ 
-                                    padding: '4px 8px', 
-                                    fontSize: '11px',
+                                    width: '26px', 
+                                    height: '26px', 
+                                    padding: 0,
                                     color: 'var(--danger)',
-                                    borderColor: 'var(--danger)'
+                                    borderColor: 'rgba(239, 68, 68, 0.2)'
                                 }}
                                 title="Delete"
                             >
@@ -291,7 +383,11 @@ const MenuList = () => {
                         </div>
                     </div>
 
-                    {hasChildren && isExpanded && renderMenuTree(menu.children, level + 1)}
+                    {hasChildren && isExpanded && (
+                        <div className="menu-subtree animate-fade-in">
+                            {renderMenuTree(menu.children, level + 1)}
+                        </div>
+                    )}
                 </div>
             );
         });
@@ -311,53 +407,73 @@ const MenuList = () => {
     ];
 
     return (
-        <div style={{
-            height: 'calc(100vh - 50px)',
-            overflow: 'auto',
-            padding: '8px'
-        }}>
-            <div className="page-header" style={{ marginBottom: '12px' }}>
+        <div className="page-container" style={{ position: 'relative' }}>
+            <div className="mesh-container">
+                <div className="mesh-blob" style={{ top: '15%', left: '80%', width: '300px', height: '300px', background: 'rgba(79, 172, 254, 0.1)' }}></div>
+                <div className="mesh-blob" style={{ top: '70%', left: '10%', width: '250px', height: '250px', background: 'rgba(0, 242, 254, 0.1)' }}></div>
+            </div>
+
+            <div className="page-header" style={{ zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}>
-                        <Menu size={20} />
+                    <div className="header-icon-wrapper" style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+                        <Menu size={18} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>Menu Management</h2>
-                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Manage system menus, directories, and buttons
-                        </p>
+                        <h2>Menu Management</h2>
+                        <p>Configure navigation hierarchy and permissions</p>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    {toolbarActions.map((action, idx) => (
-                        <button
-                            key={idx}
-                            className="btn btn-primary"
-                            onClick={action.onClick}
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                            <action.icon size={16} />
-                            {action.label}
-                        </button>
-                    ))}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type="text"
+                            placeholder="Search menus..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                padding: '8px 12px 8px 36px',
+                                borderRadius: '10px',
+                                border: '1px solid var(--border-color)',
+                                background: 'var(--bg-tertiary)',
+                                fontSize: '12px',
+                                width: '220px',
+                                outline: 'none',
+                                transition: 'all 0.2s'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
+                            onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                        />
+                        <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                            <RefreshCw size={14} style={{ animation: loading ? 'spin 2s linear infinite' : 'none' }} />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={handleExpandAll} className="btn btn-secondary" style={{ padding: '8px 12px', borderRadius: '10px' }}>Expand All</button>
+                        <button onClick={handleCollapseAll} className="btn btn-secondary" style={{ padding: '8px 12px', borderRadius: '10px' }}>Collapse All</button>
+                    </div>
+
+                    <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 4px' }} />
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => handleAddClick(null)}
+                        style={{ padding: '8px 16px', borderRadius: '10px' }}
+                    >
+                        <Plus size={16} />
+                        Add Menu
+                    </button>
                 </div>
             </div>
 
             {/* Menu Tree */}
             <div style={{
+                flex: 1,
                 background: 'var(--bg-secondary)',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 border: '1px solid var(--border-color)',
-                overflow: 'hidden'
+                overflow: 'auto',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
             }}>
                 {loading ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -369,8 +485,8 @@ const MenuList = () => {
                         <p>No menus found. Click "Add Root Menu" to create one.</p>
                     </div>
                 ) : (
-                    <div style={{ padding: '10px 0' }}>
-                        {renderMenuTree(menus)}
+                    <div style={{ padding: '4px 0' }}>
+                        {renderMenuTree(filteredMenus)}
                     </div>
                 )}
             </div>

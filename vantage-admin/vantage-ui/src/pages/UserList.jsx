@@ -278,40 +278,26 @@ const UserList = () => {
     ];
 
     return (
-        <div className="page-container">
-            <div className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}>
-                        <User size={16} />
+        <div className="page-container" style={{ position: 'relative' }}>
+            <div className="mesh-container">
+                <div className="mesh-blob" style={{ top: '5%', left: '5%', width: '300px', height: '300px', background: 'rgba(59, 130, 246, 0.1)' }}></div>
+                <div className="mesh-blob" style={{ top: '70%', left: '80%', width: '250px', height: '250px', background: 'rgba(121, 40, 202, 0.1)' }}></div>
+            </div>
+
+            <div className="page-header" style={{ zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="header-icon-wrapper" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                        <User size={18} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>User Management</h2>
-                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                            Manage system users
-                        </p>
+                        <h2>User Management</h2>
+                        <p>Configure system access and security profiles</p>
                     </div>
                 </div>
                 <button
                     className="btn btn-primary"
                     onClick={handleAddClick}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 14px',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        fontSize: '13px'
-                    }}
+                    style={{ padding: '8px 16px', borderRadius: '10px' }}
                 >
                     <Plus size={16} />
                     Add User

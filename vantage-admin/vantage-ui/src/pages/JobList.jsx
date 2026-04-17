@@ -53,6 +53,7 @@ const JobList = () => {
         notificationEmails: '',
         emailTemplateId: '',
         webhookUrl: '',
+        webhookToken: '',
         dependentJobIds: '',
         timeZone: 'UTC',
         allowHoliday: true,
@@ -219,6 +220,7 @@ const JobList = () => {
             notifyOnFailure: false,
             notificationEmails: '',
             webhookUrl: '',
+            webhookToken: '',
             dependentJobIds: '',
             timeZone: 'UTC',
             allowHoliday: true,
@@ -252,6 +254,7 @@ const JobList = () => {
             notifyOnFailure: row.notifyOnFailure || false,
             notificationEmails: row.notificationEmails || '',
             webhookUrl: row.webhookUrl || '',
+            webhookToken: row.webhookToken || '',
             emailTemplateId: row.emailTemplateId || '',
             dependentJobIds: row.dependentJobIds || '',
             timeZone: row.timeZone || 'UTC',
@@ -289,6 +292,7 @@ const JobList = () => {
             notifyOnFailure: row.notifyOnFailure || false,
             notificationEmails: row.notificationEmails || '',
             webhookUrl: row.webhookUrl || '',
+            webhookToken: row.webhookToken || '',
             emailTemplateId: row.emailTemplateId || '',
             dependentJobIds: row.dependentJobIds || '',
             timeZone: row.timeZone || 'UTC',
@@ -569,24 +573,8 @@ const JobList = () => {
             sortable: true,
             align: 'center',
             render: (value) => (
-                <span className={`status-pill ${value === '0' ? 'active' : 'inactive'}`} style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '4px 12px',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    fontWeight: 600
-                }}>
-                    <span style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        background: value === '0' ? '#11998e' : '#6b7280',
-                        display: 'inline-block',
-                        boxShadow: value === '0' ? '0 0 6px #11998e' : 'none',
-                        animation: value === '0' ? 'pulse 2s infinite' : 'none'
-                    }} />
+                <span className={`status-pill ${value === '0' ? '' : 'inactive'}`}>
+                    <div className="pulse-dot" style={{ color: value === '0' ? '#10b981' : '#ef4444' }}></div>
                     {value === '0' ? 'Active' : 'Paused'}
                 </span>
             )
@@ -651,25 +639,25 @@ const JobList = () => {
             {metrics && (
                 <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-                    gap: '12px', 
-                    marginBottom: '20px' 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+                    gap: '16px', 
+                    marginBottom: '24px' 
                 }}>
-                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
-                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Total Jobs</div>
-                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.totalJobs}</div>
+                    <div className="glass-panel" style={{ background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))', borderLeft: '4px solid #667eea' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>TOTAL JOBS</div>
+                        <div style={{ fontSize: '24px', fontWeight: 800 }}>{metrics.totalJobs}</div>
                     </div>
-                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', borderRadius: '12px', color: 'white' }}>
-                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Active</div>
-                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.activeJobs}</div>
+                    <div className="glass-panel" style={{ background: 'linear-gradient(135deg, rgba(17, 153, 142, 0.1), rgba(56, 239, 125, 0.1))', borderLeft: '4px solid #11998e' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>ACTIVE</div>
+                        <div style={{ fontSize: '24px', fontWeight: 800 }}>{metrics.activeJobs}</div>
                     </div>
-                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', borderRadius: '12px', color: 'white' }}>
-                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Paused</div>
-                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.pausedJobs}</div>
+                    <div className="glass-panel" style={{ background: 'linear-gradient(135deg, rgba(240, 147, 251, 0.1), rgba(245, 87, 108, 0.1))', borderLeft: '4px solid #f5576c' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>PAUSED</div>
+                        <div style={{ fontSize: '24px', fontWeight: 800 }}>{metrics.pausedJobs}</div>
                     </div>
-                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', borderRadius: '12px', color: 'white' }}>
-                        <div style={{ fontSize: '11px', opacity: 0.9 }}>Success Rate</div>
-                        <div style={{ fontSize: '28px', fontWeight: 700 }}>{metrics.successRate?.toFixed(1)}%</div>
+                    <div className="glass-panel" style={{ background: 'linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1))', borderLeft: '4px solid #4facfe' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>SUCCESS RATE</div>
+                        <div style={{ fontSize: '24px', fontWeight: 800 }}>{metrics.successRate?.toFixed(1)}%</div>
                     </div>
                 </div>
             )}
@@ -1064,6 +1052,59 @@ const JobList = () => {
                                     disabled={modalMode === 'view'}
                                 />
                             </>
+                        )}
+                    </div>
+
+                    {/* Remote Trigger */}
+                    <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                        <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Globe size={16} /> Remote Trigger (Webhook)
+                        </h4>
+                        <div className="form-group">
+                            <label className="form-label">Webhook Token</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <FormInput
+                                        name="webhookToken"
+                                        value={formData.webhookToken || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="Click Generate or enter a secret token"
+                                        disabled={modalMode === 'view'}
+                                    />
+                                </div>
+                                {modalMode !== 'view' && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => {
+                                            const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                                            setFormData(prev => ({ ...prev, webhookToken: token }));
+                                        }}
+                                        style={{ height: '36px', padding: '0 12px', whiteSpace: 'nowrap' }}
+                                    >
+                                        Generate
+                                    </button>
+                                )}
+                            </div>
+                            <small className="form-help">Use this token to trigger the job via HTTP POST from anywhere on the internet.</small>
+                        </div>
+                        {formData.webhookToken && currentJob?.jobId && (
+                            <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(99,102,241,0.06)', borderRadius: '6px', border: '1px dashed var(--primary)' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', marginBottom: '6px' }}>WEBHOOK ENDPOINT (HTTP POST):</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <code style={{ fontSize: '10px', color: 'var(--text-primary)', wordBreak: 'break-all', flex: 1 }}>
+                                        {window.location.origin}/api/public/job/webhook/{currentJob.jobId}?token={formData.webhookToken}
+                                    </code>
+                                    <button
+                                        type="button"
+                                        onClick={() => copyToClipboard(`${window.location.origin}/api/public/job/webhook/${currentJob.jobId}?token=${formData.webhookToken}`, 'webhook')}
+                                        style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', flexShrink: 0 }}
+                                        title="Copy to clipboard"
+                                    >
+                                        {copiedId === 'webhook' ? <Check size={14} /> : <Copy size={14} />}
+                                    </button>
+                                </div>
+                            </div>
                         )}
                     </div>
 

@@ -192,15 +192,15 @@ const ConfigList = () => {
     };
 
     const columns = [
-        { key: 'configId', header: 'ID', sortable: true, align: 'center' },
+        { key: 'configId', header: 'ID', sortable: true, align: 'center', width: '60px' },
         {
             key: 'configName',
-            header: 'Name',
+            header: 'Configuration Title',
             sortable: true,
             render: (value, row) => (
-                <div>
-                    <div style={{ fontWeight: 600 }}>{value}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{row.configKey}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '13px' }}>{value}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace', letterSpacing: '0.2px' }}>{row.configKey}</div>
                 </div>
             )
         },
@@ -208,33 +208,48 @@ const ConfigList = () => {
             key: 'configValue',
             header: 'Value',
             sortable: true,
+            width: '25%',
             render: (value) => (
-                <span className="badge-outline" style={{ fontSize: '12px' }}>{value}</span>
+                <code style={{ 
+                    fontSize: '11px', 
+                    padding: '2px 6px', 
+                    background: 'var(--bg-tertiary)', 
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '4px',
+                    color: 'var(--primary-color)',
+                    display: 'inline-block',
+                    maxWidth: '300px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                }}>{value}</code>
             )
         },
         {
             key: 'configType',
-            header: 'Type',
+            header: 'Built-in',
             sortable: true,
             align: 'center',
+            width: '80px',
             render: (value) => (
                 <span style={{
-                    padding: '4px 10px',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    background: value === 'Y' ? '#10b98120' : '#3b82f620',
-                    color: value === 'Y' ? '#10b981' : '#3b82f6'
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    background: value === 'Y' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                    color: value === 'Y' ? '#10b981' : '#64748b'
                 }}>
-                    {value === 'Y' ? 'Yes' : 'No'}
+                    {value === 'Y' ? 'System' : 'Custom'}
                 </span>
             )
         },
         {
             key: 'remark',
-            header: 'Remark',
+            header: 'Description',
             sortable: false,
-            render: (value) => <span style={{ color: 'var(--text-muted)' }}>{value || '-'}</span>
+            render: (value) => <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{value || 'No description provided'}</span>
         }
     ];
 
@@ -260,24 +275,25 @@ const ConfigList = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
+            <div className="page-header" style={{ padding: '8px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        background: 'var(--primary-soft)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'white'
+                        color: 'var(--primary-color)',
+                        border: '1px solid var(--primary-soft)'
                     }}>
-                        <Settings size={20} />
+                        <Settings size={18} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>Config Management</h2>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Manage system configuration parameters
+                        <h2 style={{ fontSize: '14px', fontWeight: 800, margin: 0 }}>Configuration Engine</h2>
+                        <p style={{ fontSize: '10px !important', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                            Advanced system parameters & environment variables
                         </p>
                     </div>
                 </div>
@@ -287,14 +303,12 @@ const ConfigList = () => {
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontWeight: 600
+                        gap: '6px',
+                        padding: '6px 12px',
                     }}
                 >
-                    <Plus size={18} />
-                    Add Config
+                    <Plus size={14} />
+                    Add Entry
                 </button>
             </div>
 

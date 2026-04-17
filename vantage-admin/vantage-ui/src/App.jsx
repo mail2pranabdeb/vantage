@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import FloatingChat from './components/FloatingChat';
+import CommandPalette from './components/CommandPalette';
 import { ToastProvider } from './components/Toast';
 import TabBar from './components/TabBar';
 import TabContent from './components/TabContent';
@@ -95,6 +96,20 @@ function App() {
     }]);
   };
 
+  const handleNavigate = (page) => {
+    setTabs(currentTabs => {
+      const existingTab = currentTabs.find(t => t.id === page.id);
+      if (existingTab) {
+        setActiveTabId(existingTab.id);
+        return currentTabs;
+      } else {
+        const newTabs = [...currentTabs, { ...page, timestamp: Date.now() }];
+        setActiveTabId(page.id);
+        return newTabs;
+      }
+    });
+  };
+
   const closeTab = (tabId) => {
     // Prevent closing dashboard (default tab)
     if (tabId === 'dashboard') {
@@ -125,7 +140,7 @@ function App() {
   if (authState === 'loading') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
-        Loading...
+        <div className="pulse-dot" style={{ color: 'var(--primary-color)' }}></div>
       </div>
     );
   }
@@ -136,16 +151,12 @@ function App() {
 
   return (
     <ToastProvider>
+      <CommandPalette onNavigate={handleNavigate} />
       <div className="app-container" style={{ display: 'flex', width: '100vw', height: '100vh', background: 'var(--bg-primary)', overflow: 'hidden' }}>
         <Sidebar 
           isCollapsed={isCollapsed} 
           toggleSidebar={toggleSidebar} 
-          onNavigate={(page) => {
-            if (!tabs.find(t => t.id === page.id)) {
-              addTab(page);
-            }
-            setActiveTabId(page.id);
-          }}
+          onNavigate={handleNavigate}
           activeTabUrl={tabs.find(t => t.id === activeTabId)?.url || null}
         />
         <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -156,20 +167,30 @@ function App() {
                 tabs={tabs}
                 activeTab={activeTabId}
                 onTabClick={(id) => {
-                  // Just update active tab, no navigation needed
                   setActiveTabId(id);
                 }}
                 onTabClose={closeTab}
                 onRefresh={refreshTab}
               />
-              <div style={{ flex: 1, overflow: 'hidden', background: 'var(--bg-primary)' }}>
-                {tabs.map(tab => (
-                  <TabContent
-                    key={tab.id}
-                    tab={tab}
-                    isActive={activeTabId === tab.id}
-                  />
-                ))}
+              <div style={{ flex: 1, overflow: 'hidden', background: 'var(--bg-primary)', padding: '0 8px 8px 8px' }}>
+                <div style={{ 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%', 
+                    overflow: 'hidden', 
+                    borderRadius: '12px',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+                }}>
+                  {tabs.map(tab => (
+                    <TabContent
+                      key={tab.id}
+                      tab={tab}
+                      isActive={activeTabId === tab.id}
+                    />
+                  ))}
+                </div>
               </div>
             </>
           )}

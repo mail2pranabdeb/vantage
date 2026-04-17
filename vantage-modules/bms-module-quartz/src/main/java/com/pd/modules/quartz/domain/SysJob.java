@@ -122,6 +122,10 @@ public class SysJob implements Serializable {
     @Column(name = "template_name", length = 64)
     private String templateName;
 
+    /** Token for external webhook triggering */
+    @Column(name = "webhook_token", length = 64)
+    private String webhookToken;
+
     // Getters and Setters
     public Long getJobId() {
         return jobId;
@@ -337,5 +341,13 @@ public class SysJob implements Serializable {
 
     public void setReportEmailGroup(String reportEmailGroup) {
         this.reportEmailGroup = reportEmailGroup;
+    }
+
+    public String getWebhookToken() {
+        return webhookToken;
+    }
+
+    public void setWebhookToken(String webhookToken) {
+        this.webhookToken = webhookToken;
     }
 }

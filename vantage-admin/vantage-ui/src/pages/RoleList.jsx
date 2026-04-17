@@ -375,44 +375,39 @@ const RoleList = () => {
     ];
 
     return (
-        <div style={{
-            height: 'calc(100vh - 50px)',
-            overflow: 'auto',
-            padding: '8px'
-        }}>
-            <div className="page-header" style={{ marginBottom: '12px' }}>
+        <div className="page-container" style={{ position: 'relative' }}>
+            <div className="mesh-container">
+                <div className="mesh-blob" style={{ top: '10%', left: '10%', width: '300px', height: '300px', background: 'rgba(59, 130, 246, 0.1)' }}></div>
+                <div className="mesh-blob" style={{ top: '60%', left: '70%', width: '250px', height: '250px', background: 'rgba(121, 40, 202, 0.1)' }}></div>
+            </div>
+
+            <div className="page-header" style={{ zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}>
-                        <Shield size={20} />
+                    <div className="header-icon-wrapper" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                        <Shield size={18} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>Role Management</h2>
-                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            Manage roles and permissions
-                        </p>
+                        <h2>Role Management</h2>
+                        <p>Define system access levels and permissions</p>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    {toolbarActions.map((action, idx) => (
-                        <button
-                            key={idx}
-                            className="btn btn-primary"
-                            onClick={action.onClick}
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                            <action.icon size={16} />
-                            {action.label}
-                        </button>
-                    ))}
+                    <button
+                        className="btn btn-secondary"
+                        onClick={fetchRoles}
+                        style={{ padding: '8px 14px', borderRadius: '10px' }}
+                    >
+                        <RefreshCw size={16} />
+                        Refresh
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleAddClick}
+                        style={{ padding: '8px 16px', borderRadius: '10px' }}
+                    >
+                        <Plus size={16} />
+                        Add Role
+                    </button>
                 </div>
             </div>
 

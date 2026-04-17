@@ -77,7 +77,9 @@ const TabContent = ({ tab, isActive }) => {
     return (
         <div style={{
             flex: 1,
-            overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
             background: 'var(--bg-primary)',
             padding: '8px'
         }}>
