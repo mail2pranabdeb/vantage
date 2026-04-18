@@ -40,7 +40,7 @@ const VantageJobList = () => {
             .then(data => {
                 if (data.code === 200) {
                     setJobs(data.rows || []);
-                    addToast('success', `Loaded ${data.rows?.length || 0} job(s)`, 2000);
+
                 } else {
                     addToast('error', data.msg || 'Failed to load jobs', 4000);
                 }

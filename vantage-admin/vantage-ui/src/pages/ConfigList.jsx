@@ -38,7 +38,7 @@ const ConfigList = () => {
                 if (data.code === 200) {
                     setConfigs(data.data || []);
                     if (data.data && data.data.length > 0) {
-                        addToast('success', `Loaded ${data.data.length} config(s)`, 2000);
+
                     }
                 } else {
                     addToast('error', data.msg || 'Failed to load configs', 4000);

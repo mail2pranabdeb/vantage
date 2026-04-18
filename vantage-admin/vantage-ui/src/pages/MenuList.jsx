@@ -47,7 +47,7 @@ const MenuList = () => {
                     const menuTree = buildMenuTree(data.data || []);
                     console.log('Menu tree:', menuTree);
                     setMenus(menuTree);
-                    addToast('success', `Loaded ${data.data.length} menu item(s)`, 2000);
+
                 } else {
                     addToast('error', data.msg || 'Failed to load menus', 4000);
                 }

@@ -37,7 +37,7 @@ const RoleList = () => {
                 setLoading(false);
                 if (data.code === 200) {
                     setRoles(data.data || []);
-                    addToast('success', `Loaded ${data.data.length} role(s)`, 2000);
+
                 } else {
                     addToast('error', data.msg || 'Failed to load roles', 4000);
                 }

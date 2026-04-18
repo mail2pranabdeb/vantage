@@ -33,7 +33,7 @@ const PostList = () => {
                 if (data.code === 200) {
                     setPosts(data.data || []);
                     if (data.data && data.data.length > 0) {
-                        addToast('success', `Loaded ${data.data.length} post(s)`, 2000);
+
                     }
                 } else {
                     addToast('error', data.msg || 'Failed to load posts', 4000);

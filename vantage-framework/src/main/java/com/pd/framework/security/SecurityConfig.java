@@ -7,22 +7,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.time.LocalDateTime;
 
 /**
  * Security configuration for the application.
@@ -33,10 +28,12 @@ import java.time.LocalDateTime;
 public class SecurityConfig {
 
 	private final UserDetailsService userDetailsService;
+	private final ApplicationEventPublisher eventPublisher;
 
-	// Spring will auto-inject the UserDetailsService bean from system module
-	public SecurityConfig(UserDetailsService userDetailsService) {
+	public SecurityConfig(UserDetailsService userDetailsService,
+	                      ApplicationEventPublisher eventPublisher) {
 		this.userDetailsService = userDetailsService;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Bean
@@ -70,52 +67,37 @@ public class SecurityConfig {
 						.loginPage("/login")
 						.loginProcessingUrl("/api/login")
 						.successHandler((req, res, auth) -> {
-							// Publish login success event
 							try {
-								ApplicationEventPublisher publisher = 
-									(ApplicationEventPublisher) req.getServletContext()
-										.getAttribute(ApplicationEventPublisher.class.getName());
-								if (publisher != null && auth.getPrincipal() instanceof UserDetails) {
-									UserDetails userDetails = (UserDetails) auth.getPrincipal();
-									String ip = getClientIp(req);
-									publisher.publishEvent(new LoginSuccessEvent(
-										userDetails.getUsername(),
-										ip,
-										"Unknown",
-										getBrowser(req),
-										getOS(req)
+								if (auth.getPrincipal() instanceof UserDetails userDetails) {
+									eventPublisher.publishEvent(new LoginSuccessEvent(
+											userDetails.getUsername(),
+											getClientIp(req),
+											"Unknown",
+											getBrowser(req),
+											getOS(req)
 									));
 								}
 							} catch (Exception e) {
-								// Ignore event publishing errors
+								// Log but don't fail login
 							}
-							
 							res.setContentType("application/json");
 							res.setStatus(200);
 							res.getWriter().write("{\"code\":200,\"msg\":\"Login successful\"}");
 						})
 						.failureHandler((req, res, exc) -> {
-							// Publish login failure event
 							try {
-								ApplicationEventPublisher publisher = 
-									(ApplicationEventPublisher) req.getServletContext()
-										.getAttribute(ApplicationEventPublisher.class.getName());
-								if (publisher != null) {
-									String username = req.getParameter("username");
-									String ip = getClientIp(req);
-									publisher.publishEvent(new LoginFailureEvent(
+								String username = req.getParameter("username");
+								eventPublisher.publishEvent(new LoginFailureEvent(
 										username != null ? username : "unknown",
-										ip,
+										getClientIp(req),
 										"Unknown",
 										getBrowser(req),
 										getOS(req),
 										exc.getMessage()
-									));
-								}
+								));
 							} catch (Exception e) {
-								// Ignore event publishing errors
+								// Log but don't fail
 							}
-							
 							res.setContentType("application/json");
 							res.setStatus(401);
 							res.getWriter().write("{\"code\":401,\"msg\":\"Invalid credentials\"}");
@@ -134,7 +116,7 @@ public class SecurityConfig {
 
 		return http.build();
 	}
-	
+
 	private String getClientIp(HttpServletRequest request) {
 		String ip = request.getHeader("X-Forwarded-For");
 		if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
@@ -148,24 +130,27 @@ public class SecurityConfig {
 		}
 		return ip;
 	}
-	
+
 	private String getBrowser(HttpServletRequest request) {
-		String userAgent = request.getHeader("User-Agent");
-		if (userAgent == null) return "Unknown";
-		if (userAgent.contains("Chrome")) return "Chrome";
-		if (userAgent.contains("Firefox")) return "Firefox";
-		if (userAgent.contains("Edge")) return "Edge";
-		if (userAgent.contains("Safari")) return "Safari";
-		if (userAgent.contains("MSIE") || userAgent.contains("Trident")) return "IE";
+		String ua = request.getHeader("User-Agent");
+		if (ua == null) return "Unknown";
+		if (ua.contains("Edg")) return "Edge";
+		if (ua.contains("Chrome")) return "Chrome";
+		if (ua.contains("Firefox")) return "Firefox";
+		if (ua.contains("Safari")) return "Safari";
+		if (ua.contains("MSIE") || ua.contains("Trident")) return "IE";
 		return "Unknown";
 	}
-	
+
 	private String getOS(HttpServletRequest request) {
-		String userAgent = request.getHeader("User-Agent");
-		if (userAgent == null) return "Unknown";
-		if (userAgent.toLowerCase().contains("win")) return "Windows";
-		if (userAgent.toLowerCase().contains("mac")) return "Mac";
-		if (userAgent.toLowerCase().contains("linux")) return "Linux";
+		String ua = request.getHeader("User-Agent");
+		if (ua == null) return "Unknown";
+		String lower = ua.toLowerCase();
+		if (lower.contains("win")) return "Windows";
+		if (lower.contains("mac")) return "Mac";
+		if (lower.contains("linux")) return "Linux";
+		if (lower.contains("android")) return "Android";
+		if (lower.contains("iphone") || lower.contains("ipad")) return "iOS";
 		return "Unknown";
 	}
 }

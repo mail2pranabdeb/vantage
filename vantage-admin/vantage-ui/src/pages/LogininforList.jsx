@@ -23,7 +23,7 @@ const LogininforList = () => {
                         addToast('info', 'No login records found. Login to see records here.', 4000);
                     } else {
                         console.log('[Toast] Showing success toast:', dataList.length, 'records');
-                        addToast('success', `Loaded ${dataList.length} login record(s)`, 3000);
+
                     }
                 } else {
                     console.log('[Toast] Showing error toast:', data.msg);
