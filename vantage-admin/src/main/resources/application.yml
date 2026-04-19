@@ -22,7 +22,7 @@ spring:
     show-sql: true
 
 # Data initialization - set to true to load initial data (first run only)
-init-on-fresh-db: true
+init-on-fresh-db: false
 
 tracing:
     sampling:

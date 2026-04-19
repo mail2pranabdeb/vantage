@@ -43,6 +43,8 @@ public class EmailConfigController extends BaseController {
         config.put("password", getConfigValue("mail.smtp.password", getConfigValue("mail.password", "")));
         config.put("enableAuth", "true".equals(getConfigValue("mail.smtp.auth", getConfigValue("mail.enableAuth", "true"))));
         config.put("enableTls", "true".equals(getConfigValue("mail.smtp.starttls.enable", getConfigValue("mail.enableTls", "true"))));
+        config.put("fromEmail", getConfigValue("mail.smtp.fromEmail", getConfigValue("mail.fromEmail", "")));
+        config.put("fromName", getConfigValue("mail.smtp.fromName", getConfigValue("mail.fromName", "")));
         return success(config);
     }
 
@@ -64,6 +66,12 @@ public class EmailConfigController extends BaseController {
             saveOrUpdateConfig("mail.smtp.password", (String) config.get("password"), "SMTP Password");
             saveOrUpdateConfig("mail.smtp.auth", "true".equals(config.get("enableAuth")) ? "true" : "false", "Enable Authentication");
             saveOrUpdateConfig("mail.smtp.starttls.enable", "true".equals(config.get("enableTls")) ? "true" : "false", "Enable STARTTLS");
+            if (config.get("fromEmail") != null) {
+                saveOrUpdateConfig("mail.smtp.fromEmail", (String) config.get("fromEmail"), "SMTP From Email");
+            }
+            if (config.get("fromName") != null) {
+                saveOrUpdateConfig("mail.smtp.fromName", (String) config.get("fromName"), "SMTP From Name");
+            }
             return success("Email configuration saved successfully");
         } catch (Exception e) {
             return error("Failed to save config: " + e.getMessage());

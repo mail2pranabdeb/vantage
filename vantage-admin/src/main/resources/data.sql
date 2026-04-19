@@ -47,9 +47,6 @@ VALUES ('mail enableAuth', 'mail.enableAuth', 'true', 'Y', 'admin', CURRENT_TIME
 INSERT INTO sys_config (config_name, config_key, config_value, config_type, create_by, create_time, remark)
 VALUES ('mail enableTls', 'mail.enableTls', 'true', 'Y', 'admin', CURRENT_TIMESTAMP, 'System setting');
 
-INSERT INTO sys_email_smtp_config (smtp_host, smtp_port, username, password, auth, starttls_enable, starttls_required, ssl_enable, timeout, status)
-VALUES ('smtp.gmail.com', 587, '', '', '1', '1', '1', '0', 5000, '0');
-
 -- 3. Core Menus
 INSERT INTO sys_menu (menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
 VALUES('System Management', 0, 1, '#', '', 'M', '0', '1', '', 'fa fa-gear', '0', 'admin', current_timestamp, 'System Management');
@@ -200,6 +197,9 @@ VALUES('Daily Backup Job', 'DEFAULT', 'BEAN', 'backupService.execute()', '0 0 2 
 
 INSERT INTO sys_job (job_name, job_group, job_type, invoke_target, cron_expression, misfire_policy, concurrent, status, create_by, create_time, remark, notify_on_failure)
 VALUES('Health Check Job', 'DEFAULT', 'BEAN', 'healthCheckService.ping()', '0 */5 * * * ?', '3', '1', '1', 'admin', CURRENT_TIMESTAMP, 'Health check every 5 minutes', false);
+
+INSERT INTO sys_job (job_name, job_group, job_type, report_email_group, report_id, invoke_target, cron_expression, email_template_id, misfire_policy, concurrent, status, create_by, create_time, remark, notify_on_failure)
+VALUES('User Report Job', 'DEFAULT', 'REPORT', '9','1' ,'', '0 */5 * * * ?', '2', '3', '1', '0', 'admin', CURRENT_TIMESTAMP, 'User Reports', false);
 
 -- 9. Reports - sys_report_template for report-designer
 INSERT INTO sys_report_template (template_name, template_key, description, datasource_key, report_mode, sql_content, output_format, status, version)

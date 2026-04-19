@@ -38,6 +38,17 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     @Autowired
     private SysDictDataRepository sysDictDataRepository;
 
+    @Autowired
+    private com.pd.modules.system.service.DynamicMailSenderService dynamicMailSenderService;
+
+    private String getConfigValue(String... keys) {
+        try {
+            return dynamicMailSenderService.getConfigValue(keys);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     protected void runTask(SysJob sysJob) throws Exception {
         // Check if it's a Report Job
@@ -246,11 +257,21 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
                 }
             }
 
-            // Send email
-            MimeMessage message = mailSender.createMimeMessage();
+            // Send email - use dynamic mail sender from database config
+            JavaMailSender dynamicMailSender = dynamicMailSenderService.getMailSender();
+            MimeMessage message = dynamicMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("Vantage Admin <noreply@vantage.com>");
+            String fromEmail = getConfigValue("mail.fromEmail", "mail.username", "mail.smtp.fromEmail");
+            String fromName = getConfigValue("mail.fromName", "mail.username", "mail.smtp.fromName");
+            if (fromEmail == null || fromEmail.isEmpty()) {
+                fromEmail = "noreply@vantage.com";
+            }
+            if (fromName == null || fromName.isEmpty()) {
+                fromName = "Vantage Admin";
+            }
+            String fromAddress = fromName + " <" + fromEmail + ">";
+            helper.setFrom(fromAddress);
             helper.setTo(recipients.split(","));
             helper.setSubject(subject);
             helper.setText(body, true);
