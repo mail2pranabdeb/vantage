@@ -1,21 +1,15 @@
 package com.pd.modules.system.security;
 
-import com.pd.common.event.auth.LoginFailureEvent;
-import com.pd.common.event.auth.LoginSuccessEvent;
 import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysMenuRepository;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,23 +53,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 permissions = Set.of();
             }
             
-            log.info("=== User {} authenticated successfully, publishing LoginSuccessEvent ===", username);
-            // Publish login success event
-            publishLoginSuccess(user);
+            log.info("=== User {} authenticated successfully ===", username);
 
             return new LoginUser(user, permissions);
 
         } catch (UsernameNotFoundException e) {
-            log.info("=== User {} not found, publishing LoginFailureEvent ===", username);
-            // Publish login failure event
-            publishLoginFailure(username, e.getMessage());
-            throw e;
+throw e;
         } catch (Exception e) {
-            log.info("=== Authentication failed for {}: {}, publishing LoginFailureEvent ===", username, e.getMessage());
-            // Publish login failure event
-            publishLoginFailure(username, e.getMessage());
+            log.error("=== Authentication failed for {}: {} ===", username, e.getMessage());
             throw new UsernameNotFoundException("Authentication failed: " + e.getMessage());
         }
+    }
     }
 
     /**
