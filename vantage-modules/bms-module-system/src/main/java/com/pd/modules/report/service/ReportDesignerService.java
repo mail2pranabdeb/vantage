@@ -2,8 +2,6 @@ package com.pd.modules.report.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pd.modules.datasource.domain.SysDatasource;
 import com.pd.modules.datasource.infrastructure.repository.SysDatasourceRepository;
 import com.pd.modules.report.domain.SysReportTemplate;
@@ -22,9 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -282,7 +278,7 @@ public class ReportDesignerService {
             try {
                 JsonNode params = objectMapper.readTree(paramsJson);
                 if (params.isObject()) {
-                    Iterator<Map.Entry<String, JsonNode>> fields = params.fields();
+                    Iterator<Map.Entry<String, JsonNode>> fields = params.properties().iterator();
                     while (fields.hasNext()) {
                         Map.Entry<String, JsonNode> field = fields.next();
                         String placeholder = ":" + field.getKey();

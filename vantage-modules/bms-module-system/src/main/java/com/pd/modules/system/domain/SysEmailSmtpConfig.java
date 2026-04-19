@@ -1,15 +1,16 @@
 package com.pd.modules.system.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sys_email_smtp_config")
+@Data
 public class SysEmailSmtpConfig {
 
     @Id
-    @SequenceGenerator(name = "smtp_config_seq", sequenceName = "sys_email_smtp_config_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "smtp_config_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "config_id")
     private Long configId;
 
@@ -48,31 +49,4 @@ public class SysEmailSmtpConfig {
 
     @Column(name = "update_time")
     private LocalDateTime updateTime;
-
-    public Long getConfigId() { return configId; }
-    public void setConfigId(Long configId) { this.configId = configId; }
-    public String getSmtpHost() { return smtpHost; }
-    public void setSmtpHost(String smtpHost) { this.smtpHost = smtpHost; }
-    public Integer getSmtpPort() { return smtpPort; }
-    public void setSmtpPort(Integer smtpPort) { this.smtpPort = smtpPort; }
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    public String getAuth() { return auth; }
-    public void setAuth(String auth) { this.auth = auth; }
-    public String getStarttlsEnable() { return starttlsEnable; }
-    public void setStarttlsEnable(String starttlsEnable) { this.starttlsEnable = starttlsEnable; }
-    public String getStarttlsRequired() { return starttlsRequired; }
-    public void setStarttlsRequired(String starttlsRequired) { this.starttlsRequired = starttlsRequired; }
-    public String getSslEnable() { return sslEnable; }
-    public void setSslEnable(String sslEnable) { this.sslEnable = sslEnable; }
-    public Integer getTimeout() { return timeout; }
-    public void setTimeout(Integer timeout) { this.timeout = timeout; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
 }

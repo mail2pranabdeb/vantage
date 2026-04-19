@@ -19,4 +19,8 @@ public interface SysJobRepository extends JpaRepository<SysJob, Long> {
 
     @Query("SELECT j FROM SysJob j ORDER BY j.createTime DESC")
     List<SysJob> findAllActive();
+
+    List<SysJob> findByJobNameContainingIgnoreCase(String jobName);
+
+    long countByStatus(String status);
 }

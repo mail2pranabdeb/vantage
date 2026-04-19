@@ -16,6 +16,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
             // Load all permissions from database
-            Set<String> permissions = menuRepository.findAllPerms();
+            Set<String> permissions = menuRepository.findAllPermsList().stream()
+                .flatMap(p -> Arrays.stream(p.split(",")))
+                .filter(p -> p != null && !p.isEmpty())
+                .collect(Collectors.toSet());
             
             log.info("=== User {} loaded with {} permissions ===", username, permissions.size());
             if (permissions.isEmpty()) {

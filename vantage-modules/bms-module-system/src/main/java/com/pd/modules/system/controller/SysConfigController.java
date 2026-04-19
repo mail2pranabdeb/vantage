@@ -6,7 +6,6 @@ import com.pd.modules.system.domain.SysConfig;
 import com.pd.modules.system.infrastructure.repository.SysConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +24,6 @@ public class SysConfigController extends BaseController {
     @Autowired
     private SysConfigRepository configRepository;
 
-    @Autowired
-    private JavaMailSender javaMailSender;
 
     /**
      * Get all configurations

@@ -4,15 +4,13 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.pd.modules.generator.domain.GenTable;
 import com.pd.modules.generator.domain.GenTableColumn;
 import com.pd.modules.generator.infrastructure.repository.GenTableColumnRepository;
 import com.pd.modules.generator.infrastructure.repository.GenTableRepository;
 import com.pd.modules.generator.service.IGenTableService;
 
-/**
- * Code generation service implementation
- */
 @Service
 public class GenTableServiceImpl implements IGenTableService {
 
@@ -24,12 +22,11 @@ public class GenTableServiceImpl implements IGenTableService {
 
     @Override
     public List<GenTable> selectGenTableList(GenTable genTable) {
-        return genTableRepository.findByCondition(genTable);
+        return genTableRepository.findByCondition(genTable.getTableName(), genTable.getTableComment());
     }
 
     @Override
     public List<GenTable> selectDbTableList(GenTable genTable) {
-        // To be implemented - returns database tables
         return List.of();
     }
 
@@ -40,49 +37,52 @@ public class GenTableServiceImpl implements IGenTableService {
 
     @Override
     public List<GenTableColumn> selectGenTableColumnListByTableId(Long tableId) {
-        return genTableColumnRepository.findByTableId(tableId);
+        return genTableColumnRepository.findByTableIdOrderBySort(tableId);
     }
 
     @Override
     public void importGenTable(String tables) {
-        // To be implemented - import table schema from database
     }
 
     @Override
+    @Transactional
     public int updateGenTable(GenTable genTable) {
-        return genTableRepository.update(genTable);
+        genTableRepository.save(genTable);
+        return 1;
     }
 
     @Override
+    @Transactional
     public int deleteGenTableByIds(Long[] tableIds) {
-        return genTableRepository.deleteByIds(tableIds);
+        for (Long tableId : tableIds) {
+            genTableRepository.deleteById(tableId);
+            genTableColumnRepository.deleteByTableId(tableId);
+        }
+        return tableIds.length;
     }
 
     @Override
     public byte[] exportTableData(String tableName) {
-        // To be implemented
         return new byte[0];
     }
 
     @Override
     public byte[] downloadZipData(String tableName) {
-        // To be implemented
         return new byte[0];
     }
 
     @Override
-    public String getProjectSourcePath() {
-        return System.getProperty("user.dir") + "/src/main/java";
+    public Map<String, String> getTemplatePath(String tableName) {
+        return Map.of();
     }
 
     @Override
     public String getPackagePath(String tableName) {
-        return getProjectSourcePath() + "/com/bms/modules";
+        return "";
     }
 
     @Override
-    public Map<String, String> getTemplatePath(String tableName) {
-        // To be implemented - returns template paths for code generation
-        return Map.of();
+    public String getProjectSourcePath() {
+        return "";
     }
 }

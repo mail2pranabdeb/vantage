@@ -3,18 +3,19 @@ package com.pd.modules.report.domain;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import lombok.Data;
 
 /**
  * Report definition entity
  */
 @Entity
 @Table(name = "sys_report")
+@Data
 public class SysReport implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @SequenceGenerator(name = "sys_report_seq", sequenceName = "sys_report_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sys_report_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "report_id")
     private Long reportId;
 
@@ -81,49 +82,4 @@ public class SysReport implements Serializable {
     @Transient
     private String templateName;
 
-    // Getters and Setters
-    public Long getReportId() { return reportId; }
-    public void setReportId(Long reportId) { this.reportId = reportId; }
-    public String getReportName() { return reportName; }
-    public void setReportName(String reportName) { this.reportName = reportName; }
-    public String getReportKey() { return reportKey; }
-    public void setReportKey(String reportKey) { this.reportKey = reportKey; }
-    public String getReportType() { return reportType; }
-    public void setReportType(String reportType) { this.reportType = reportType; }
-    public String getDatasourceKey() { return datasourceKey; }
-    public void setDatasourceKey(String datasourceKey) { this.datasourceKey = datasourceKey; }
-    public String getSqlContent() { return sqlContent; }
-    public void setSqlContent(String sqlContent) { this.sqlContent = sqlContent; }
-    public String getParamsConfig() { return paramsConfig; }
-    public void setParamsConfig(String paramsConfig) { this.paramsConfig = paramsConfig; }
-    public String getColumnsConfig() { return columnsConfig; }
-    public void setColumnsConfig(String columnsConfig) { this.columnsConfig = columnsConfig; }
-    public String getOutputFormat() { return outputFormat; }
-    public void setOutputFormat(String outputFormat) { this.outputFormat = outputFormat; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getCreateBy() { return createBy; }
-    public void setCreateBy(String createBy) { this.createBy = createBy; }
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-    public String getUpdateBy() { return updateBy; }
-    public void setUpdateBy(String updateBy) { this.updateBy = updateBy; }
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
-    public String getRemark() { return remark; }
-    public void setRemark(String remark) { this.remark = remark; }
-    public Boolean getScheduleEnabled() { return scheduleEnabled; }
-    public void setScheduleEnabled(Boolean scheduleEnabled) { this.scheduleEnabled = scheduleEnabled; }
-    public String getScheduleCron() { return scheduleCron; }
-    public void setScheduleCron(String scheduleCron) { this.scheduleCron = scheduleCron; }
-    public Boolean getEmailEnabled() { return emailEnabled; }
-    public void setEmailEnabled(Boolean emailEnabled) { this.emailEnabled = emailEnabled; }
-    public String getEmailRecipients() { return emailRecipients; }
-    public void setEmailRecipients(String emailRecipients) { this.emailRecipients = emailRecipients; }
-    public String getEmailSubject() { return emailSubject; }
-    public void setEmailSubject(String emailSubject) { this.emailSubject = emailSubject; }
-    public Long getTemplateId() { return templateId; }
-    public void setTemplateId(Long templateId) { this.templateId = templateId; }
-    public String getTemplateName() { return templateName; }
-    public void setTemplateName(String templateName) { this.templateName = templateName; }
-}
+    }

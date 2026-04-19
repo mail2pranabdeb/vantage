@@ -14,12 +14,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
 
 @Service
 public class NotificationService {
@@ -31,13 +28,6 @@ public class NotificationService {
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
-
-    private ExecutorService executorService;
-
-    @PostConstruct
-    public void init() {
-        executorService = Executors.newFixedThreadPool(4);
-    }
 
     /**
      * Send in-app notification

@@ -230,9 +230,9 @@ const MenuList = () => {
 
     const getMenuTypeLabel = (menuType) => {
         switch(menuType) {
-            case 'M': return 'Directory';
-            case 'C': return 'Menu';
-            case 'F': return 'Button';
+            case 'M': return 'Menu';
+            case 'C': return 'Submenu';
+            case 'F': return 'Permission';
             default: return menuType;
         }
     };
@@ -546,9 +546,9 @@ const MenuList = () => {
                                 className="form-input"
                                 disabled={submitting}
                             >
-                                <option value="M">Directory</option>
-                                <option value="C">Menu</option>
-                                <option value="F">Button</option>
+                                <option value="M">Menu</option>
+                                <option value="C">Submenu</option>
+                                <option value="F">Permission</option>
                             </select>
                         </div>
                     </div>

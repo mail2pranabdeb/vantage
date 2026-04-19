@@ -43,3 +43,5 @@ data/*.trace.db
 ### Node ###
 **/node/
 **/node_modules/
+.aider*
+.env

@@ -44,7 +44,7 @@ public class ChatController extends BaseController {
     @PostMapping("/chat")
     public AjaxResult chat(@RequestBody Map<String, Object> request) {
         String message = (String) request.get("message");
-        List<Map<String, Object>> conversationHistory = (List<Map<String, Object>>) request.getOrDefault("conversationHistory", new ArrayList<>());
+        @SuppressWarnings("unchecked")
         List<Map<String, Object>> toolResults = (List<Map<String, Object>>) request.getOrDefault("toolResults", null);
 
         // Get current user
@@ -176,8 +176,13 @@ public class ChatController extends BaseController {
 
             // Check for common report types
             if (message.toLowerCase().contains("user")) {
-                List<Map<String, Object>> users = jdbcTemplate.queryForList(
-                    "SELECT user_id, login_name, user_name, status, create_time FROM sys_user LIMIT 10"
+                List<Map<String, Object>> users = jdbcTemplate.query(
+                    con -> {
+                        java.sql.PreparedStatement ps = con.prepareStatement("SELECT user_id, login_name, user_name, status, create_time FROM sys_user");
+                        ps.setMaxRows(10);
+                        return ps;
+                    }, 
+                    new org.springframework.jdbc.core.ColumnMapRowMapper()
                 );
 
                 Map<String, Object> result = new HashMap<>();
@@ -202,8 +207,13 @@ public class ChatController extends BaseController {
             }
 
             if (message.toLowerCase().contains("job")) {
-                List<Map<String, Object>> jobs = jdbcTemplate.queryForList(
-                    "SELECT job_id, job_name, cron_expression, status FROM sys_job LIMIT 10"
+                List<Map<String, Object>> jobs = jdbcTemplate.query(
+                    con -> {
+                        java.sql.PreparedStatement ps = con.prepareStatement("SELECT job_id, job_name, cron_expression, status FROM sys_job");
+                        ps.setMaxRows(10);
+                        return ps;
+                    }, 
+                    new org.springframework.jdbc.core.ColumnMapRowMapper()
                 );
 
                 Map<String, Object> result = new HashMap<>();
@@ -475,6 +485,7 @@ public class ChatController extends BaseController {
     /**
      * Build response from tool execution results
      */
+    @SuppressWarnings("unchecked")
     private Map<String, Object> buildToolResponse(List<Map<String, Object>> toolResults) {
         Map<String, Object> result = new HashMap<>();
         StringBuilder response = new StringBuilder("I've completed the following actions:\n\n");
@@ -533,7 +544,6 @@ public class ChatController extends BaseController {
     /**
      * Extract user details from natural language message
      */
-    @SuppressWarnings("unchecked")
     private Map<String, Object> extractUserDetails(String message) {
         Map<String, Object> details = new HashMap<>();
 

@@ -2,10 +2,13 @@ server:
   port: 8081
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   application:
     name: vantage
   datasource:
-    url: jdbc:h2:file:D:/Projects/vantage-master/data/vantage;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:file:D:/Projects/vantage-master-opencode/data/vantage;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
     driverClassName: org.h2.Driver
     username: sa
     password: vantage123
@@ -15,21 +18,13 @@ spring:
       path: /h2-console
   jpa:
     hibernate:
-      ddl-auto: update  # Create missing tables after schema.sql
+      ddl-auto: update  # Let Hibernate create tables (once), then update
     show-sql: true
 
-# Module initialization flags
-# Set to false to skip data initialization for specific modules
-module:
-  init:
-    system:
-      enabled: true
-    quartz:
-      enabled: true
-    generator:
-      enabled: true
-  init-on-fresh-db: false  # Set to false after first run to skip data initialization
-  tracing:
+# Data initialization - set to true to load initial data (first run only)
+init-on-fresh-db: true
+
+tracing:
     sampling:
       probability: 1.0  # Sample all traces (reduce in production)
 

@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Controller for report designer.
@@ -226,7 +225,7 @@ public class ReportDesignerController extends BaseController {
             logger.info("Preview SQL: {}", sql);
 
             // Replace parameters in SQL (for preview, use empty params)
-            String paramsJson = "{}";
+//             String paramsJson = "{}";
 
             // Execute the SQL directly (not from database)
             List<Map<String, Object>> data = reportDesignerService.executeQuery(

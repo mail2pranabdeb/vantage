@@ -1,6 +1,7 @@
 package com.pd.modules.datasource.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
@@ -8,11 +9,11 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "sys_datasource")
+@Data
 public class SysDatasource {
 
     @Id
-    @SequenceGenerator(name = "sys_datasource_seq", sequenceName = "sys_datasource_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sys_datasource_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "datasource_id")
     private Long datasourceId;
 
@@ -61,37 +62,4 @@ public class SysDatasource {
     @Column(name = "last_test_status", length = 1)
     private String lastTestStatus = "0"; // 0=Success, 1=Failed
 
-    // Getters and Setters
-    public Long getDatasourceId() { return datasourceId; }
-    public void setDatasourceId(Long datasourceId) { this.datasourceId = datasourceId; }
-    public String getDatasourceName() { return datasourceName; }
-    public void setDatasourceName(String datasourceName) { this.datasourceName = datasourceName; }
-    public String getDatasourceKey() { return datasourceKey; }
-    public void setDatasourceKey(String datasourceKey) { this.datasourceKey = datasourceKey; }
-    public String getDbType() { return dbType; }
-    public void setDbType(String dbType) { this.dbType = dbType; }
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    public String getDriverClass() { return driverClass; }
-    public void setDriverClass(String driverClass) { this.driverClass = driverClass; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getCreateBy() { return createBy; }
-    public void setCreateBy(String createBy) { this.createBy = createBy; }
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-    public String getUpdateBy() { return updateBy; }
-    public void setUpdateBy(String updateBy) { this.updateBy = updateBy; }
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
-    public String getRemark() { return remark; }
-    public void setRemark(String remark) { this.remark = remark; }
-    public LocalDateTime getLastTestTime() { return lastTestTime; }
-    public void setLastTestTime(LocalDateTime lastTestTime) { this.lastTestTime = lastTestTime; }
-    public String getLastTestStatus() { return lastTestStatus; }
-    public void setLastTestStatus(String lastTestStatus) { this.lastTestStatus = lastTestStatus; }
-}
+    }

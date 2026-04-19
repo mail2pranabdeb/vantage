@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "sys_oper_log")
-@SequenceGenerator(name = "oper_log_seq", sequenceName = "sys_oper_log_seq", allocationSize = 1)
 @Data
 public class SysOperLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "oper_log_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "oper_id")
     private Long operId;
 
@@ -69,11 +68,11 @@ public class SysOperLog {
     private Long costTime;
 
     @Column(name = "old_values", columnDefinition = "TEXT")
-    private String oldValues; // JSON format - values before change
+    private String oldValues;
 
     @Column(name = "new_values", columnDefinition = "TEXT")
-    private String newValues; // JSON format - values after change
+    private String newValues;
 
     @Column(name = "changed_fields", length = 2000)
-    private String changedFields; // Comma-separated field names that changed
+    private String changedFields;
 }

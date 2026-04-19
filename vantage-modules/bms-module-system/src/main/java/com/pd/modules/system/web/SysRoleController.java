@@ -5,15 +5,12 @@ import com.pd.common.annotation.Log.BusinessType;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.system.domain.SysRole;
-import com.pd.modules.system.infrastructure.repository.SysRoleMenuRepository;
 import com.pd.modules.system.infrastructure.repository.SysRoleRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -21,11 +18,9 @@ import java.util.Optional;
 public class SysRoleController extends BaseController {
 
     private final SysRoleRepository roleRepository;
-    private final SysRoleMenuRepository roleMenuRepository;
 
-    public SysRoleController(SysRoleRepository roleRepository, SysRoleMenuRepository roleMenuRepository) {
+    public SysRoleController(SysRoleRepository roleRepository) {
         this.roleRepository = roleRepository;
-        this.roleMenuRepository = roleMenuRepository;
     }
 
     @PreAuthorize("hasAuthority('system:role:list')")
@@ -39,33 +34,6 @@ public class SysRoleController extends BaseController {
     public AjaxResult getInfo(@PathVariable Long roleId) {
         Optional<SysRole> role = roleRepository.findById(roleId);
         return role.map(this::success).orElseGet(() -> error("Role not found"));
-    }
-
-    @PreAuthorize("hasAuthority('system:role:query')")
-    @GetMapping("/menuIds/{roleId}")
-    public AjaxResult getMenuIds(@PathVariable Long roleId) {
-        List<Long> menuIds = roleMenuRepository.findMenuIdsByRoleId(roleId);
-        return success(menuIds);
-    }
-
-    @PreAuthorize("hasAuthority('system:role:edit')")
-    @Log(title = "Role Management", businessType = BusinessType.UPDATE)
-    @PutMapping("/authDataScope")
-    public AjaxResult authDataScope(@RequestBody Map<String, Object> params) {
-        Long roleId = Long.valueOf(params.get("roleId").toString());
-        List<Integer> menuIds = (List<Integer>) params.get("menuIds");
-
-        // Delete existing role-menu associations
-        roleMenuRepository.deleteByRoleId(roleId);
-
-        // Insert new associations
-        if (menuIds != null && !menuIds.isEmpty()) {
-            for (Integer menuId : menuIds) {
-                roleMenuRepository.insertRoleMenu(roleId, menuId.longValue());
-            }
-        }
-
-        return success("Permissions updated successfully");
     }
 
     @PreAuthorize("hasAuthority('system:role:add')")
@@ -112,7 +80,6 @@ public class SysRoleController extends BaseController {
             return error("Role not found");
         }
 
-        // Soft delete
         role.get().setDelFlag("2");
         role.get().setUpdateTime(LocalDateTime.now());
         role.get().setUpdateBy("admin");

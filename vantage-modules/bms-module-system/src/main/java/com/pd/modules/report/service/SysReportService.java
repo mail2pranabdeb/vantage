@@ -8,11 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.core.io.ByteArrayResource;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,7 +127,7 @@ public class SysReportService {
             String finalSql = sql;
             if (params != null && !params.isEmpty() && !params.equals("{}")) {
                 JsonNode paramNode = objectMapper.readTree(params);
-                Iterator<Map.Entry<String, JsonNode>> fields = paramNode.fields();
+                Iterator<Map.Entry<String, JsonNode>> fields = paramNode.properties().iterator();
                 while (fields.hasNext()) {
                     Map.Entry<String, JsonNode> field = fields.next();
                     String paramName = ":" + field.getKey();

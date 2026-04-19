@@ -55,7 +55,9 @@ public class EntityDiffUtil {
         }
 
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> beforeMap = objectMapper.convertValue(before, Map.class);
+            @SuppressWarnings("unchecked")
             Map<String, Object> afterMap = objectMapper.convertValue(after, Map.class);
 
             List<String> changedFields = new ArrayList<>();

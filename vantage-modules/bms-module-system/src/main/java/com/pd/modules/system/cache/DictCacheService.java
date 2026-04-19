@@ -1,17 +1,13 @@
 package com.pd.modules.system.cache;
 
 import com.pd.modules.system.domain.SysDictData;
-import com.pd.modules.system.domain.SysDictType;
 import com.pd.modules.system.infrastructure.repository.SysDictDataRepository;
-import com.pd.modules.system.infrastructure.repository.SysDictTypeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,15 +19,9 @@ public class DictCacheService {
 
     private static final Logger log = LoggerFactory.getLogger(DictCacheService.class);
 
-    private final SysDictTypeRepository dictTypeRepository;
     private final SysDictDataRepository dictDataRepository;
 
-    @Autowired
-    public DictCacheService(
-            SysDictTypeRepository dictTypeRepository,
-            SysDictDataRepository dictDataRepository
-    ) {
-        this.dictTypeRepository = dictTypeRepository;
+    public DictCacheService(SysDictDataRepository dictDataRepository) {
         this.dictDataRepository = dictDataRepository;
     }
 
@@ -50,14 +40,14 @@ public class DictCacheService {
     @Cacheable(value = "dictLabel", key = "#dictType + '_' + #dictValue")
     public String getDictLabel(String dictType, String dictValue) {
         log.debug("Loading dict label from DB for type: {}, value: {}", dictType, dictValue);
-        Optional<SysDictData> dictDataOpt = dictDataRepository.findByDictTypeAndValue(dictType, dictValue);
+        Optional<SysDictData> dictDataOpt = dictDataRepository.findByDictTypeAndDictValue(dictType, dictValue);
         return dictDataOpt.map(SysDictData::getDictLabel).orElse(null);
     }
 
     /**
      * Clear cache for specific dict type
      */
-    @CacheEvict(value = {"dictData", "dictLabel"}, key = "#dictType")
+    @CacheEvict(value = { "dictData", "dictLabel" }, key = "#dictType")
     public void clearCache(String dictType) {
         log.info("Cache cleared for dict type: {}", dictType);
     }

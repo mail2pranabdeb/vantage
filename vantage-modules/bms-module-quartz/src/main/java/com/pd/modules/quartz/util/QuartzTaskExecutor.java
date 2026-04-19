@@ -9,14 +9,12 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import jakarta.mail.internet.MimeMessage;
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Concrete Quartz job that parses invokeTarget string and executes via reflection.
@@ -192,7 +190,6 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             // Get the email template
             Object templateService = applicationContext.getBean("emailTemplateService");
             java.lang.reflect.Method getTemplateByIdMethod = templateService.getClass().getMethod("getTemplateById", Long.class);
-            @SuppressWarnings("unchecked")
             java.util.Optional<?> templateOpt = (java.util.Optional<?>) getTemplateByIdMethod.invoke(templateService, sysJob.getEmailTemplateId());
 
             if (templateOpt.isEmpty()) {
@@ -301,55 +298,58 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             return "No data available\n";
         }
 
-        Object firstRow = data.get(0);
-        if (firstRow instanceof java.util.Map) {
-            @SuppressWarnings("unchecked")
-            java.util.Map<String, Object> firstMap = (java.util.Map<String, Object>) firstRow;
-            List<String> headers = new ArrayList<>(firstMap.keySet());
-            
-            // Write header
-            csv.append(String.join(",", headers)).append("\n");
-            
-            // Write data rows
-            for (Object row : data) {
+        Object firstRow = data.getFirst();
+        switch (firstRow) {
+            case java.util.Map<?, ?> firstMap -> {
                 @SuppressWarnings("unchecked")
-                java.util.Map<String, Object> rowMap = (java.util.Map<String, Object>) row;
-                List<String> values = new ArrayList<>();
-                for (String header : headers) {
-                    Object val = rowMap.get(header);
-                    String strVal = val != null ? val.toString() : "";
-                    // Escape commas in values
-                    if (strVal.contains(",") || strVal.contains("\"") || strVal.contains("\n")) {
-                        strVal = "\"" + strVal.replace("\"", "\"\"") + "\"";
+                java.util.Map<String, Object> map = (java.util.Map<String, Object>) firstMap;
+                List<String> headers = new ArrayList<>(map.keySet());
+                
+                // Write header
+                csv.append(String.join(",", headers)).append("\n");
+                
+                // Write data rows
+                for (Object row : data) {
+                    @SuppressWarnings("unchecked")
+                    java.util.Map<String, Object> rowMap = (java.util.Map<String, Object>) row;
+                    List<String> values = new ArrayList<>();
+                    for (String header : headers) {
+                        Object val = rowMap.get(header);
+                        String strVal = val != null ? val.toString() : "";
+                        // Escape commas in values
+                        if (strVal.contains(",") || strVal.contains("\"") || strVal.contains("\n")) {
+                            strVal = "\"" + strVal.replace("\"", "\"\"") + "\"";
+                        }
+                        values.add(strVal);
                     }
-                    values.add(strVal);
+                    csv.append(String.join(",", values)).append("\n");
                 }
-                csv.append(String.join(",", values)).append("\n");
             }
-        } else if (firstRow instanceof Object[]) {
-            Object[] firstArray = (Object[]) firstRow;
-            for (int i = 0; i < firstArray.length; i++) {
-                csv.append("Column").append(i + 1);
-                if (i < firstArray.length - 1) csv.append(",");
-            }
-            csv.append("\n");
-            
-            for (Object row : data) {
-                Object[] rowArray = (Object[]) row;
-                for (int i = 0; i < rowArray.length; i++) {
-                    String val = rowArray[i] != null ? rowArray[i].toString() : "";
-                    if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
-                        val = "\"" + val.replace("\"", "\"\"") + "\"";
-                    }
-                    csv.append(val);
-                    if (i < rowArray.length - 1) csv.append(",");
+            case Object[] firstArray -> {
+                for (int i = 0; i < firstArray.length; i++) {
+                    csv.append("Column").append(i + 1);
+                    if (i < firstArray.length - 1) csv.append(",");
                 }
                 csv.append("\n");
+                
+                for (Object row : data) {
+                    Object[] rowArray = (Object[]) row;
+                    for (int i = 0; i < rowArray.length; i++) {
+                        String val = rowArray[i] != null ? rowArray[i].toString() : "";
+                        if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
+                            val = "\"" + val.replace("\"", "\"\"") + "\"";
+                        }
+                        csv.append(val);
+                        if (i < rowArray.length - 1) csv.append(",");
+                    }
+                    csv.append("\n");
+                }
             }
-        } else {
-            csv.append("Data\n");
-            for (Object row : data) {
-                csv.append(row.toString()).append("\n");
+            default -> {
+                csv.append("Data\n");
+                for (Object row : data) {
+                    csv.append(row.toString()).append("\n");
+                }
             }
         }
         
@@ -511,22 +511,15 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     private Class<?>[] getArgumentTypes(Object[] args) {
         Class<?>[] types = new Class<?>[args.length];
         for (int i = 0; i < args.length; i++) {
-            if (args[i] == null) {
-                // For null args, use Object.class but prefer String[] for array positions
-                types[i] = Object.class;
-            } else if (args[i] instanceof Long) {
-                types[i] = Long.class;
-            } else if (args[i] instanceof Integer) {
-                types[i] = Integer.class;
-            } else if (args[i] instanceof Double) {
-                types[i] = Double.class;
-            } else if (args[i] instanceof Boolean) {
-                types[i] = Boolean.class;
-            } else if (args[i] instanceof String[]) {
-                types[i] = String[].class;
-            } else {
-                types[i] = args[i].getClass();
-            }
+            types[i] = switch (args[i]) {
+                case null -> Object.class; // For null args, use Object.class but prefer String[] for array positions
+                case Long l -> Long.class;
+                case Integer n -> Integer.class;
+                case Double d -> Double.class;
+                case Boolean b -> Boolean.class;
+                case String[] s -> String[].class;
+                case Object obj -> obj.getClass();
+            };
         }
         return types;
     }

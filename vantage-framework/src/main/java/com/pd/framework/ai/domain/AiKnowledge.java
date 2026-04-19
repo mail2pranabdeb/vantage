@@ -1,6 +1,7 @@
 package com.pd.framework.ai.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -12,11 +13,11 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "ai_knowledge")
+@Data
 public class AiKnowledge {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ai_knowledge_seq")
-    @SequenceGenerator(name = "ai_knowledge_seq", sequenceName = "ai_knowledge_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "knowledge_id")
     private Long id;
 
@@ -52,7 +53,6 @@ public class AiKnowledge {
     @Column(name = "remark", length = 500)
     private String remark;
 
-    // Constructors
     public AiKnowledge() {}
 
     public AiKnowledge(String title, String content, String category) {
@@ -60,38 +60,4 @@ public class AiKnowledge {
         this.content = content;
         this.category = category;
     }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public String getKeywords() { return keywords; }
-    public void setKeywords(String keywords) { this.keywords = keywords; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public String getCreateBy() { return createBy; }
-    public void setCreateBy(String createBy) { this.createBy = createBy; }
-
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-
-    public String getUpdateBy() { return updateBy; }
-    public void setUpdateBy(String updateBy) { this.updateBy = updateBy; }
-
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
-
-    public String getRemark() { return remark; }
-    public void setRemark(String remark) { this.remark = remark; }
 }

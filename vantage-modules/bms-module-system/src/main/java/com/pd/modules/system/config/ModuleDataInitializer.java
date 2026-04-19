@@ -26,47 +26,27 @@ public class ModuleDataInitializer {
     @Autowired
     private DataSource dataSource;
 
-    @Value("${module.init.system.enabled:true}")
-    private boolean systemModuleEnabled;
-
-    @Value("${module.init-on-fresh-db:true}")
+    @Value("${init-on-fresh-db:false}")
     private boolean initOnFreshDb;
 
     @Bean
-    @Order(0)  // Run BEFORE Hibernate
-    public CommandLineRunner initializeSchema() {
-        return args -> {
-            log.info("=== Schema Initialization Started ===");
-            log.info("Init on Fresh DB: {}", initOnFreshDb);
-            
-            if (!initOnFreshDb) {
-                log.info("=== Skipping schema initialization ===");
-                return;
-            }
-
-            // Run schema.sql FIRST to create all tables
-            log.info("=== Running schema.sql to create all tables ===");
-            runScript("schema.sql");
-            log.info("=== Schema initialization completed ===");
-        };
-    }
-
-    @Bean
-    @Order(1)  // Run AFTER Hibernate
+    @Order(1)  // Run AFTER Hibernate creates tables
     public CommandLineRunner initializeModuleData() {
         return args -> {
             log.info("=== Data Initialization Started ===");
 
-            // Wait for Hibernate to enhance tables
+            // Wait for Hibernate to create tables
             log.info("=== Waiting 3 seconds for Hibernate ===");
             Thread.sleep(3000);
 
-            // Initialize data (users, roles, menus, etc.)
+            // Initialize data (users, roles, menus, etc.) - only if enabled and no admin user
             if (initOnFreshDb && !hasAdminUser()) {
                 log.info("=== No admin user - Running data.sql ===");
                 runScript("data.sql");
             } else if (initOnFreshDb) {
                 log.info("=== Admin user exists - Skipping data.sql ===");
+            } else {
+                log.info("=== Init disabled or admin exists - Skipping ===");
             }
 
             log.info("=== Data Initialization Completed ===");
@@ -89,18 +69,6 @@ public class ModuleDataInitializer {
     private boolean hasAdminUser() {
         try (Connection conn = dataSource.getConnection();
              ResultSet rs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM sys_user WHERE login_name='admin'")) {
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-            return false;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean menuExists(Long menuId) {
-        try (Connection conn = dataSource.getConnection();
-             ResultSet rs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM sys_menu WHERE menu_id=" + menuId)) {
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }

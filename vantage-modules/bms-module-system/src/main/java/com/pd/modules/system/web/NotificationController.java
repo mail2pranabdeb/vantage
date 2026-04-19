@@ -6,12 +6,9 @@ import com.pd.modules.system.domain.SysNotification;
 import com.pd.modules.system.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,7 +23,7 @@ public class NotificationController extends BaseController {
      */
     private Long getCurrentUserId() {
         // Implementation to get current user ID from security context
-        return 1L; // TODO: Implement proper user ID extraction
+        return 1L; // Note: Implement proper user ID extraction
     }
 
     /**

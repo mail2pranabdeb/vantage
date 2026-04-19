@@ -8,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -345,28 +343,6 @@ public class EmailTemplateService {
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;")
                    .replace("'", "&#39;");
-    }
-
-    /**
-     * Process template variables (private version with real job data)
-     */
-    private String processTemplateInternal(String template, SysJob job, SysJobLog jobLog) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        
-        return template
-            .replace("${appName}", appName)
-            .replace("${jobId}", String.valueOf(job.getJobId()))
-            .replace("${jobName}", job.getJobName())
-            .replace("${jobGroup}", job.getJobGroup())
-            .replace("${invokeTarget}", job.getInvokeTarget())
-            .replace("${cronExpression}", job.getCronExpression() != null ? job.getCronExpression() : "N/A")
-            .replace("${executionTime}", jobLog.getStartTime() != null ? jobLog.getStartTime().format(formatter) : "N/A")
-            .replace("${duration}", String.valueOf(jobLog.getExecutionDuration() != null ? jobLog.getExecutionDuration() : 0))
-            .replace("${retryCount}", String.valueOf(jobLog.getRetryCount() != null ? jobLog.getRetryCount() : 0))
-            .replace("${status}", jobLog.getStatus() != null ? ("0".equals(jobLog.getStatus()) ? "Success" : "Failed") : "Unknown")
-            .replace("${message}", jobLog.getJobMessage() != null ? jobLog.getJobMessage() : "N/A")
-            .replace("${exceptionInfo}", jobLog.getExceptionInfo() != null ? jobLog.getExceptionInfo() : "N/A")
-            .replace("${timestamp}", LocalDateTime.now().format(formatter));
     }
 
     /**

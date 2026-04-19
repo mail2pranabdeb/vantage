@@ -54,7 +54,7 @@ public class GeneratorServiceImpl implements GeneratorService {
             table.setTableName(tableName);
             table.setCreateTime(LocalDateTime.now());
             table.setCreateBy("admin");
-            tableRepository.insert(table);
+            tableRepository.save(table);
         }
     }
 
@@ -63,7 +63,7 @@ public class GeneratorServiceImpl implements GeneratorService {
     public void updateTable(GenTable table) {
         table.setUpdateTime(LocalDateTime.now());
         table.setUpdateBy("admin");
-        tableRepository.update(table);
+        tableRepository.save(table);
     }
 
     @Override

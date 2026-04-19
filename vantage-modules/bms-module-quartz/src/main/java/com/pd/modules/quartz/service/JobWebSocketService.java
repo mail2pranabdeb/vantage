@@ -1,6 +1,5 @@
 package com.pd.modules.quartz.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,6 @@ public class JobWebSocketService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     /**
      * Send job execution started event

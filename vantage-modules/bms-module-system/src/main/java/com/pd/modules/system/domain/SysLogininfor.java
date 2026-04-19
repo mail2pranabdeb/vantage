@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "sys_logininfor")
-@SequenceGenerator(name = "logininfor_seq", sequenceName = "sys_logininfor_seq", allocationSize = 1)
 @Data
 public class SysLogininfor {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "logininfor_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "info_id")
     private Long infoId;
 
@@ -31,13 +30,13 @@ public class SysLogininfor {
     @Column(name = "login_location", length = 255)
     private String loginLocation;
 
-    @Column(name = "browser", length = 50)
+    @Column(name = "browser", length = 500)
     private String browser;
 
-    @Column(name = "os", length = 50)
+    @Column(name = "os", length = 255)
     private String os;
 
-    @Column(name = "msg", length = 255)
+    @Column(name = "msg", length = 1000)
     private String msg;
 
     @Column(name = "login_time")

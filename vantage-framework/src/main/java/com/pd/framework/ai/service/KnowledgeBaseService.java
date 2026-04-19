@@ -5,7 +5,6 @@ import com.pd.framework.ai.infrastructure.repository.AiKnowledgeRepository;
 import com.pd.framework.ai.service.AiChatService.KnowledgeDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,6 @@ public class KnowledgeBaseService implements CommandLineRunner {
     private final AiKnowledgeRepository knowledgeRepository;
     private final AiChatService aiChatService;
 
-    @Autowired
     public KnowledgeBaseService(
             AiKnowledgeRepository knowledgeRepository,
             AiChatService aiChatService

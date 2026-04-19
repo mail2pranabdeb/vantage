@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.Data;
 
 /**
  * Holiday calendar entity for job scheduling
  */
 @Entity
 @Table(name = "sys_holiday")
+@Data
 public class SysHoliday implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -47,28 +49,4 @@ public class SysHoliday implements Serializable {
 
     @Column(name = "update_time")
     private LocalDateTime updateTime;
-
-    // Getters and Setters
-    public Long getHolidayId() { return holidayId; }
-    public void setHolidayId(Long holidayId) { this.holidayId = holidayId; }
-    public String getHolidayName() { return holidayName; }
-    public void setHolidayName(String holidayName) { this.holidayName = holidayName; }
-    public LocalDate getHolidayDate() { return holidayDate; }
-    public void setHolidayDate(LocalDate holidayDate) { this.holidayDate = holidayDate; }
-    public String getHolidayType() { return holidayType; }
-    public void setHolidayType(String holidayType) { this.holidayType = holidayType; }
-    public Boolean getRecurring() { return recurring; }
-    public void setRecurring(Boolean recurring) { this.recurring = recurring; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getCreateBy() { return createBy; }
-    public void setCreateBy(String createBy) { this.createBy = createBy; }
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-    public String getUpdateBy() { return updateBy; }
-    public void setUpdateBy(String updateBy) { this.updateBy = updateBy; }
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
 }

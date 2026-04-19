@@ -1,132 +1,57 @@
 package com.pd.modules.system.domain;
 
+import jakarta.persistence.*;
+import lombok.Data;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class SysDictData {
+@Entity
+@Table(name = "sys_dict_data")
+@Data
+public class SysDictData implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "dict_code")
     private Long dictCode;
+
+    @Column(name = "dict_sort")
     private Integer dictSort;
+
+    @Column(name = "dict_label", length = 100)
     private String dictLabel;
+
+    @Column(name = "dict_value", length = 100)
     private String dictValue;
+
+    @Column(name = "dict_type", length = 100)
     private String dictType;
+
+    @Column(name = "css_class", length = 100)
     private String cssClass;
+
+    @Column(name = "list_class", length = 100)
     private String listClass;
+
+    @Column(name = "is_default", length = 1)
     private String isDefault;
+
+    @Column(name = "status", length = 1)
     private String status;
+
+    @Column(name = "create_by", length = 64)
     private String createBy;
+
+    @Column(name = "create_time")
     private LocalDateTime createTime;
+
+    @Column(name = "update_by", length = 64)
     private String updateBy;
+
+    @Column(name = "update_time")
     private LocalDateTime updateTime;
+
+    @Column(name = "remark", length = 500)
     private String remark;
-
-    public Long getDictCode() {
-        return dictCode;
-    }
-
-    public void setDictCode(Long dictCode) {
-        this.dictCode = dictCode;
-    }
-
-    public Integer getDictSort() {
-        return dictSort;
-    }
-
-    public void setDictSort(Integer dictSort) {
-        this.dictSort = dictSort;
-    }
-
-    public String getDictLabel() {
-        return dictLabel;
-    }
-
-    public void setDictLabel(String dictLabel) {
-        this.dictLabel = dictLabel;
-    }
-
-    public String getDictValue() {
-        return dictValue;
-    }
-
-    public void setDictValue(String dictValue) {
-        this.dictValue = dictValue;
-    }
-
-    public String getDictType() {
-        return dictType;
-    }
-
-    public void setDictType(String dictType) {
-        this.dictType = dictType;
-    }
-
-    public String getCssClass() {
-        return cssClass;
-    }
-
-    public void setCssClass(String cssClass) {
-        this.cssClass = cssClass;
-    }
-
-    public String getListClass() {
-        return listClass;
-    }
-
-    public void setListClass(String listClass) {
-        this.listClass = listClass;
-    }
-
-    public String getIsDefault() {
-        return isDefault;
-    }
-
-    public void setIsDefault(String isDefault) {
-        this.isDefault = isDefault;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
 }

@@ -1,10 +1,12 @@
 package com.pd.modules.system.domain;
 
 import java.io.Serializable;
+import lombok.Data;
 
 /**
  * Role-Dept relationship entity - sys_role_dept
  */
+@Data
 public class SysRoleDept implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -19,22 +21,6 @@ public class SysRoleDept implements Serializable {
 
     public SysRoleDept(Long roleId, Long deptId) {
         this.roleId = roleId;
-        this.deptId = deptId;
-    }
-
-    public Long getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(Long roleId) {
-        this.roleId = roleId;
-    }
-
-    public Long getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(Long deptId) {
         this.deptId = deptId;
     }
 }

@@ -25,8 +25,7 @@ public class SysMenuController extends BaseController {
 
     @GetMapping("/tree")
     public AjaxResult getMenuTree() {
-        Long userId = 1L;
-        List<SysMenu> menus = menuRepository.findMenuTreeByUserId(userId);
+        List<SysMenu> menus = menuRepository.findAllMenus();
         return success(buildMenuTree(menus, 0L));
     }
 

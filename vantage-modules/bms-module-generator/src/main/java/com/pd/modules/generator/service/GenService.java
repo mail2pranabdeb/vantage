@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -17,26 +20,57 @@ public class GenService {
     private JdbcTemplate jdbcTemplate;
 
     /**
-     * Get all tables from database
+     * Get all tables from database using standard JDBC MetaData
      */
     public List<Map<String, Object>> getDatabaseTables() {
-        String sql = "SELECT table_name AS tableName, table_comment AS tableComment, create_time AS createTime " +
-                     "FROM information_schema.tables " +
-                     "WHERE table_schema = 'PUBLIC' AND table_type = 'BASE TABLE' " +
-                     "ORDER BY table_name";
-        return jdbcTemplate.queryForList(sql);
+        return jdbcTemplate.execute((Connection conn) -> {
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
+            List<Map<String, Object>> tables = new ArrayList<>();
+            while (rs.next()) {
+                String tableName = rs.getString("TABLE_NAME");
+                String remarks = rs.getString("REMARKS");
+                Map<String, Object> map = new HashMap<>();
+                map.put("tableName", tableName);
+                map.put("tableComment", remarks != null ? remarks : tableName);
+                map.put("createTime", java.time.LocalDateTime.now()); // MetaData doesn't standardly provide create time
+                tables.add(map);
+            }
+            tables.sort(Comparator.comparing(m -> (String) m.get("tableName")));
+            return tables;
+        });
     }
 
     /**
-     * Get table columns
+     * Get table columns using standard JDBC MetaData
      */
     public List<Map<String, Object>> getTableColumns(String tableName) {
-        String sql = "SELECT column_name AS columnName, data_type AS dataType, " +
-                     "column_comment AS columnComment, is_nullable AS isNullable " +
-                     "FROM information_schema.columns " +
-                     "WHERE table_name = ? AND table_schema = 'PUBLIC' " +
-                     "ORDER BY ordinal_position";
-        return jdbcTemplate.queryForList(sql, tableName.toUpperCase());
+        return jdbcTemplate.execute((Connection conn) -> {
+            DatabaseMetaData metaData = conn.getMetaData();
+            // Try uppercase first (standard for H2/Oracle)
+            ResultSet rs = metaData.getColumns(null, null, tableName.toUpperCase(), "%");
+            List<Map<String, Object>> columns = new ArrayList<>();
+            while (rs.next()) {
+                addColMeta(rs, columns);
+            }
+            if (columns.isEmpty()) {
+                // Try original case (Postgres/MySQL)
+                rs = metaData.getColumns(null, null, tableName, "%");
+                while (rs.next()) {
+                    addColMeta(rs, columns);
+                }
+            }
+            return columns;
+        });
+    }
+
+    private void addColMeta(ResultSet rs, List<Map<String, Object>> columns) throws java.sql.SQLException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("COLUMN_NAME", rs.getString("COLUMN_NAME"));
+        map.put("DATA_TYPE", rs.getString("TYPE_NAME"));
+        map.put("columnComment", rs.getString("REMARKS"));
+        map.put("isNullable", "YES".equalsIgnoreCase(rs.getString("IS_NULLABLE")) ? "1" : "0");
+        columns.add(map);
     }
 
     /**

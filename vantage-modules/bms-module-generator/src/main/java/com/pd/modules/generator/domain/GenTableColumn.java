@@ -1,255 +1,83 @@
 package com.pd.modules.generator.domain;
 
+import jakarta.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import lombok.Data;
 
-/**
- * Code generation table column entity - gen_table_column
- */
-public class GenTableColumn {
+@Entity
+@Table(name = "gen_table_column")
+@Data
+public class GenTableColumn implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    /** Column ID */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "column_id")
     private Long columnId;
 
-    /** Table ID */
+    @Column(name = "table_id")
     private Long tableId;
 
-    /** Column name */
+    @Column(name = "column_name", length = 200)
     private String columnName;
 
-    /** Column comment */
+    @Column(name = "column_comment", length = 500)
     private String columnComment;
 
-    /** Column type */
+    @Column(name = "column_type", length = 100)
     private String columnType;
 
-    /** Java type */
+    @Column(name = "java_type", length = 500)
     private String javaType;
 
-    /** Java field */
+    @Column(name = "java_field", length = 200)
     private String javaField;
 
-    /** Is primary key (1=yes) */
+    @Column(name = "is_pk", length = 1)
     private String isPk;
 
-    /** Is incremented (1=yes) */
+    @Column(name = "is_increment", length = 1)
     private String isIncrement;
 
-    /** Is required (1=yes) */
+    @Column(name = "is_required", length = 1)
     private String isRequired;
 
-    /** Is insert field (1=yes) */
+    @Column(name = "is_insert", length = 1)
     private String isInsert;
 
-    /** Is edit field (1=yes) */
+    @Column(name = "is_edit", length = 1)
     private String isEdit;
 
-    /** Is list field (1=yes) */
+    @Column(name = "is_list", length = 1)
     private String isList;
 
-    /** Is query field (1=yes) */
+    @Column(name = "is_query", length = 1)
     private String isQuery;
 
-    /** Query type */
+    @Column(name = "query_type", length = 200)
     private String queryType;
 
-    /** Display type */
+    @Column(name = "html_type", length = 200)
     private String htmlType;
 
-    /** Dictionary type */
+    @Column(name = "dict_type", length = 200)
     private String dictType;
 
-    /** Sort order */
+    @Column(name = "sort")
     private Integer sort;
 
-    /** Create by */
+    @Column(name = "create_by", length = 64)
     private String createBy;
 
-    /** Create time */
+    @Column(name = "create_time")
     private LocalDateTime createTime;
 
-    /** Update by */
+    @Column(name = "update_by", length = 64)
     private String updateBy;
 
-    /** Update time */
+    @Column(name = "update_time")
     private LocalDateTime updateTime;
-
-    // Getters and Setters
-
-    public Long getColumnId() {
-        return columnId;
-    }
-
-    public void setColumnId(Long columnId) {
-        this.columnId = columnId;
-    }
-
-    public Long getTableId() {
-        return tableId;
-    }
-
-    public void setTableId(Long tableId) {
-        this.tableId = tableId;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
-
-    public String getColumnComment() {
-        return columnComment;
-    }
-
-    public void setColumnComment(String columnComment) {
-        this.columnComment = columnComment;
-    }
-
-    public String getColumnType() {
-        return columnType;
-    }
-
-    public void setColumnType(String columnType) {
-        this.columnType = columnType;
-    }
-
-    public String getJavaType() {
-        return javaType;
-    }
-
-    public void setJavaType(String javaType) {
-        this.javaType = javaType;
-    }
-
-    public String getJavaField() {
-        return javaField;
-    }
-
-    public void setJavaField(String javaField) {
-        this.javaField = javaField;
-    }
-
-    public String getIsPk() {
-        return isPk;
-    }
-
-    public void setIsPk(String isPk) {
-        this.isPk = isPk;
-    }
-
-    public String getIsIncrement() {
-        return isIncrement;
-    }
-
-    public void setIsIncrement(String isIncrement) {
-        this.isIncrement = isIncrement;
-    }
-
-    public String getIsRequired() {
-        return isRequired;
-    }
-
-    public void setIsRequired(String isRequired) {
-        this.isRequired = isRequired;
-    }
-
-    public String getIsInsert() {
-        return isInsert;
-    }
-
-    public void setIsInsert(String isInsert) {
-        this.isInsert = isInsert;
-    }
-
-    public String getIsEdit() {
-        return isEdit;
-    }
-
-    public void setIsEdit(String isEdit) {
-        this.isEdit = isEdit;
-    }
-
-    public String getIsList() {
-        return isList;
-    }
-
-    public void setIsList(String isList) {
-        this.isList = isList;
-    }
-
-    public String getIsQuery() {
-        return isQuery;
-    }
-
-    public void setIsQuery(String isQuery) {
-        this.isQuery = isQuery;
-    }
-
-    public String getQueryType() {
-        return queryType;
-    }
-
-    public void setQueryType(String queryType) {
-        this.queryType = queryType;
-    }
-
-    public String getHtmlType() {
-        return htmlType;
-    }
-
-    public void setHtmlType(String htmlType) {
-        this.htmlType = htmlType;
-    }
-
-    public String getDictType() {
-        return dictType;
-    }
-
-    public void setDictType(String dictType) {
-        this.dictType = dictType;
-    }
-
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
-
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
 
     public boolean isSuperColumn() {
         return "true".equals(isPk) || "true".equals(isIncrement);

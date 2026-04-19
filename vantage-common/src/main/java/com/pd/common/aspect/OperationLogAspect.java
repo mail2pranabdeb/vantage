@@ -8,7 +8,6 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * Aspect for automatic operation logging.
@@ -268,11 +266,11 @@ public class OperationLogAspect {
             if (auth != null && auth.isAuthenticated()
                     && !(auth.getPrincipal() instanceof String)
                     && !"anonymousUser".equals(auth.getPrincipal())) {
-                Object principal = auth.getPrincipal();
-                if (principal instanceof UserDetails) {
-                    return ((UserDetails) principal).getUsername();
-                }
-                return principal.toString();
+                
+                return switch (auth.getPrincipal()) {
+                    case UserDetails ud -> ud.getUsername();
+                    case Object obj -> obj.toString();
+                };
             }
         } catch (Exception e) {
             log.debug("=== Failed to extract current user ===");
@@ -372,8 +370,7 @@ public class OperationLogAspect {
         // Try to extract entity from common response wrappers
         try {
             // If result is AjaxResult (extends HashMap), try to get data field
-            if (result instanceof HashMap) {
-                HashMap<?, ?> map = (HashMap<?, ?>) result;
+            if (result instanceof HashMap<?, ?> map) {
                 Object data = map.get("data");
                 if (data != null && isEntityCandidate(data)) {
                     return data;

@@ -13,12 +13,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableJpaRepositories
 @EnableJpaAuditing
-@EnableAspectJAutoProxy  // Enable AOP aspects for operation logging
-@EnableAsync  // Enable async event listeners
+@EnableAspectJAutoProxy
+@EnableAsync
 public class VantageAdminApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(VantageAdminApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(VantageAdminApplication.class, args);
+    }
 
 }
