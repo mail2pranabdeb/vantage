@@ -142,7 +142,7 @@ public class EmailTemplateService {
         LocalDateTime now = LocalDateTime.now();
 
         if (job == null) {
-            // Use sample data for preview
+            // Use sample data for preview - preserve ${dataTable} for later substitution
             return template
                 .replace("${appName}", appName)
                 .replace("${jobId}", "1")
@@ -159,7 +159,8 @@ public class EmailTemplateService {
                 .replace("${timestamp}", now.format(formatter))
                 .replace("${reportName}", "Sample Report")
                 .replace("${reportFormat}", "CSV")
-                .replace("${totalRows}", "10");
+                .replace("${totalRows}", "10")
+                .replace("${dataTable}", "${dataTable}"); // Preserve for preview replacement
         }
 
         return template
@@ -178,7 +179,8 @@ public class EmailTemplateService {
             .replace("${timestamp}", now.format(formatter))
             .replace("${reportName}", job.getJobName())
             .replace("${reportFormat}", "CSV")
-            .replace("${totalRows}", "0");
+            .replace("${totalRows}", "0")
+            .replace("${dataTable}", "${dataTable}"); // Preserve for live job replacement
     }
 
     /**
@@ -250,6 +252,7 @@ public class EmailTemplateService {
      */
     public String executeMultipleQueriesAndRenderTables(String dataTablesJson) {
         if (namedJdbcTemplate == null || dataTablesJson == null || dataTablesJson.isEmpty()) {
+            log.warn("executeMultipleQueriesAndRenderTables: namedJdbcTemplate or dataTablesJson is empty/null");
             return "";
         }
 

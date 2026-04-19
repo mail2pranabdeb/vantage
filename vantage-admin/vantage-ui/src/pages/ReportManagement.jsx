@@ -29,7 +29,7 @@ const ReportManagement = () => {
 
     const fetchTemplates = () => {
         setLoading(true);
-        fetch('/api/system/report-designer/templates')
+        fetch('/api/system/report/templates')
             .then(res => res.json())
             .then(data => {
                 setLoading(false);

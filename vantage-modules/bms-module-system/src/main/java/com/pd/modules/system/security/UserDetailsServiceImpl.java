@@ -21,12 +21,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final SysUserRepository userRepository;
     private final SysMenuRepository menuRepository;
-    private final ApplicationEventPublisher eventPublisher;
 
-    public UserDetailsServiceImpl(SysUserRepository userRepository, SysMenuRepository menuRepository, ApplicationEventPublisher eventPublisher) {
+    public UserDetailsServiceImpl(SysUserRepository userRepository, SysMenuRepository menuRepository) {
         this.userRepository = userRepository;
         this.menuRepository = menuRepository;
-        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -36,7 +34,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             SysUser user = userRepository.findByLoginName(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
-            // Load all permissions from database
             Set<String> permissions = menuRepository.findAllPermsList().stream()
                 .flatMap(p -> Arrays.stream(p.split(",")))
                 .filter(p -> p != null && !p.isEmpty())
@@ -47,7 +44,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 log.error("=== ERROR: No permissions in database! Check sys_menu table! ===");
             }
             
-            // If no permissions found, return empty set
             if (permissions == null || permissions.isEmpty()) {
                 log.warn("=== WARNING: No permissions found in database! ===");
                 permissions = Set.of();
@@ -58,87 +54,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             return new LoginUser(user, permissions);
 
         } catch (UsernameNotFoundException e) {
-throw e;
+            throw e;
         } catch (Exception e) {
             log.error("=== Authentication failed for {}: {} ===", username, e.getMessage());
             throw new UsernameNotFoundException("Authentication failed: " + e.getMessage());
         }
-    }
-    }
-
-    /**
-     * Publish login success event
-     */
-    private void publishLoginSuccess(SysUser user) {
-        log.info("=== publishLoginSuccess called for user: {} ===", user.getLoginName());
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            HttpServletRequest request = attributes.getRequest();
-            LoginSuccessEvent event = new LoginSuccessEvent(
-                user.getLoginName(),
-                getClientIp(request),
-                "",  // location (can be added with IP geolocation service)
-                request.getHeader("User-Agent"),
-                getOS(request.getHeader("User-Agent"))
-            );
-            log.info("=== Publishing LoginSuccessEvent: user={}, ip={} ===", event.getLoginName(), event.getIpAddress());
-            eventPublisher.publishEvent(event);
-            log.info("=== LoginSuccessEvent published ===");
-        } else {
-            log.warn("=== No request attributes available, cannot publish LoginSuccessEvent ===");
-        }
-    }
-
-    /**
-     * Publish login failure event
-     */
-    private void publishLoginFailure(String username, String message) {
-        log.info("=== publishLoginFailure called for user: {} ===", username);
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            HttpServletRequest request = attributes.getRequest();
-            LoginFailureEvent event = new LoginFailureEvent(
-                username,
-                getClientIp(request),
-                "",  // location
-                request.getHeader("User-Agent"),
-                getOS(request.getHeader("User-Agent")),
-                message
-            );
-            log.info("=== Publishing LoginFailureEvent: user={}, ip={}, msg={} ===", event.getLoginName(), event.getIpAddress(), event.getMessage());
-            eventPublisher.publishEvent(event);
-            log.info("=== LoginFailureEvent published ===");
-        } else {
-            log.warn("=== No request attributes available, cannot publish LoginFailureEvent ===");
-        }
-    }
-
-    /**
-     * Get client IP address
-     */
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        // Fix: Convert 0:0:0:0:0:0:0:1 or 0.0.0.0 to 127.0.0.1
-        if ("0:0:0:0:0:0:0:1".equals(ip) || "0.0.0.0".equals(ip)) {
-            ip = "127.0.0.1";
-        }
-        return ip;
-    }
-
-    /**
-     * Extract OS from User-Agent
-     */
-    private String getOS(String userAgent) {
-        if (userAgent == null) return "Unknown";
-        if (userAgent.toLowerCase().contains("windows")) return "Windows";
-        if (userAgent.toLowerCase().contains("mac")) return "Mac";
-        if (userAgent.toLowerCase().contains("linux")) return "Linux";
-        return "Unknown";
     }
 }

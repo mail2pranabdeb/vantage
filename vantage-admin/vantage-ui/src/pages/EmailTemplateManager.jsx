@@ -66,11 +66,16 @@ const EmailTemplateManager = () => {
         fetch('/api/system/datasource/list')
             .then(res => res.json())
             .then(data => {
-                if (data.code === 200) {
-                    setDatasources((data.data || []).filter(d => d.status === '0'));
+                if (data.code === 200 && data.data) {
+                    setDatasources(data.data.filter(d => d.status === '0'));
+                } else {
+                    setDatasources([]);
                 }
             })
-            .catch(err => console.error("Failed to fetch datasources:", err));
+            .catch(err => {
+                console.error("Failed to fetch datasources:", err);
+                setDatasources([]);
+            });
     };
 
     const fetchTemplates = () => {
@@ -79,12 +84,15 @@ const EmailTemplateManager = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    setTemplates(data.data || []);
+                    setTemplates(Array.isArray(data.data) ? data.data : []);
+                } else {
+                    setTemplates([]);
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch templates:", err);
+                setTemplates([]);
                 setLoading(false);
             });
     };
@@ -99,7 +107,8 @@ const EmailTemplateManager = () => {
             emailBody: '',
             isDefault: false,
             isActive: true,
-            remark: ''
+            remark: '',
+            dataTables: []
         });
         setIsModalOpen(true);
     };
@@ -107,7 +116,6 @@ const EmailTemplateManager = () => {
     const handleEditClick = (template) => {
         setModalMode('edit');
         setCurrentTemplate(template);
-        // Parse dataTables JSON if present
         let dt = [];
         try {
             if (template.dataTables) dt = JSON.parse(template.dataTables);
@@ -153,25 +161,24 @@ const EmailTemplateManager = () => {
         });
     };
 
-    // Data table management
     const addDataTable = () => {
         setFormData(prev => ({
             ...prev,
-            dataTables: [...prev.dataTables, { datasourceKey: '', query: '', label: '', enabled: true }]
+            dataTables: [...(prev.dataTables || []), { datasourceKey: '', query: '', label: '', enabled: true }]
         }));
     };
 
     const removeDataTable = (idx) => {
         setFormData(prev => ({
             ...prev,
-            dataTables: prev.dataTables.filter((_, i) => i !== idx)
+            dataTables: (prev.dataTables || []).filter((_, i) => i !== idx)
         }));
     };
 
     const updateDataTable = (idx, field, value) => {
         setFormData(prev => ({
             ...prev,
-            dataTables: prev.dataTables.map((dt, i) => i === idx ? { ...dt, [field]: value } : dt)
+            dataTables: (prev.dataTables || []).map((dt, i) => i === idx ? { ...dt, [field]: value } : dt)
         }));
     };
 

@@ -1,7 +1,9 @@
 package com.pd.modules.quartz.util;
 
 import com.pd.modules.quartz.domain.SysJob;
+import com.pd.modules.system.infrastructure.repository.SysDictDataRepository;
 import org.slf4j.Logger;
+import java.lang.reflect.Method;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -9,7 +11,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import jakarta.mail.internet.MimeMessage;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,6 +34,9 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
 
     @Autowired
     private org.springframework.context.ApplicationContext applicationContext;
+
+    @Autowired
+    private SysDictDataRepository sysDictDataRepository;
 
     @Override
     protected void runTask(SysJob sysJob) throws Exception {
@@ -133,16 +137,13 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
                 String[] dictCodes = emailGroup.split(",");
                 StringBuilder groupEmails = new StringBuilder();
                 
-                Object dictRepo = applicationContext.getBean("sysDictDataRepository");
-                java.lang.reflect.Method findByIdMethod = dictRepo.getClass().getMethod("findById", Long.class);
-                
                 for (String dictCodeStr : dictCodes) {
                     dictCodeStr = dictCodeStr.trim();
                     if (dictCodeStr.isEmpty()) continue;
                     
                     try {
                         Long dictCode = Long.parseLong(dictCodeStr);
-                        java.util.Optional<?> optDict = (java.util.Optional<?>) findByIdMethod.invoke(dictRepo, dictCode);
+                        Optional<?> optDict = sysDictDataRepository.findById(dictCode);
                         if (optDict.isPresent()) {
                             Object dictData = optDict.get();
                             String dictValue = (String) dictData.getClass().getMethod("getDictValue").invoke(dictData);

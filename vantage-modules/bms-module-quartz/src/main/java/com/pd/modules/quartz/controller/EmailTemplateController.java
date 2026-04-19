@@ -4,6 +4,8 @@ import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.modules.quartz.domain.EmailTemplate;
 import com.pd.modules.quartz.service.EmailTemplateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/system/email-template")
 public class EmailTemplateController extends BaseController {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailTemplateController.class);
 
     @Autowired
     private EmailTemplateService emailTemplateService;
@@ -118,14 +122,20 @@ public class EmailTemplateController extends BaseController {
             String body = (String) request.getOrDefault("emailBody", "");
             String dataTablesJson = (String) request.get("dataTables");
 
+            log.info("Preview request - body contains dataTable placeholder: {}", body.contains("${dataTable}"));
+            log.info("Preview request - dataTablesJson: {}", dataTablesJson);
+
             // Process template variables
             String renderedSubject = emailTemplateService.processTemplate(subject, null, null);
             String renderedBody = emailTemplateService.processTemplate(body, null, null);
+            log.info("Preview request - after processTemplate body has ${dataTable}: {}", renderedBody.contains("${dataTable}"));
 
             String dataTableHtml = "";
             if (dataTablesJson != null && !dataTablesJson.isEmpty()) {
                 dataTableHtml = emailTemplateService.executeMultipleQueriesAndRenderTables(dataTablesJson);
+                log.info("Preview request - dataTableHtml generated, length: {}, contains tables: {}", dataTableHtml.length(), dataTableHtml.contains("<table"));
                 renderedBody = renderedBody.replace("${dataTable}", dataTableHtml);
+                log.info("Preview request - after replace, body contains table: {}", renderedBody.contains("<table"));
             } else {
                 renderedBody = renderedBody.replace("${dataTable}", "");
             }
@@ -135,6 +145,7 @@ public class EmailTemplateController extends BaseController {
             result.put("body", renderedBody);
             return result;
         } catch (Exception e) {
+            log.error("Preview failed", e);
             return error("Preview failed: " + e.getMessage());
         }
     }

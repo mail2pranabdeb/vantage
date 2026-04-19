@@ -180,9 +180,30 @@ VALUES('New Years Day', '2026-01-01', 1, 'National Holiday', '0');
 INSERT INTO sys_holiday (holiday_name, holiday_date, holiday_type, description, status)
 VALUES('Christmas Day', '2026-12-25', 1, 'National Holiday', '0');
 
--- 6. Email Templates
-INSERT INTO sys_job_email_template (template_name, template_code, subject, content, status, create_by, create_time)
-VALUES('Job Failure Notification', 'JOB_FAILURE', '[Vantage] Job Failed: ${jobName}', 'A scheduled job has failed. Reason: ${message}', '0', 'admin', CURRENT_TIMESTAMP);
+-- 6. Datasources
+INSERT INTO sys_datasource (datasource_name, datasource_key, db_type, url, username, password, driver_class, status, create_time)
+VALUES('Primary Database', 'primary', 'H2', 'jdbc:h2:file:D:/Projects/vantage-master-opencode/data/vantage', 'sa', 'vantage123', 'org.h2.Driver', '0', CURRENT_TIMESTAMP);
 
-INSERT INTO sys_job_email_template (template_name, template_code, subject, content, status, create_by, create_time)
-VALUES('Job Success Notification', 'JOB_SUCCESS', '[Vantage] Job Completed: ${jobName}', 'A scheduled job has completed successfully.', '0', 'admin', CURRENT_TIMESTAMP);
+INSERT INTO sys_datasource (datasource_name, datasource_key, db_type, url, username, password, driver_class, status, create_time)
+VALUES('MySQL Demo', 'MYSQL', 'MySQL', 'jdbc:mysql://localhost:3306/vantage', 'root', '', 'com.mysql.cj.jdbc.Driver', '1', CURRENT_TIMESTAMP);
+
+-- 7. Email Templates
+INSERT INTO sys_job_email_template (template_name, template_type, email_subject, email_body, is_default, is_active, create_time)
+VALUES('Job Failure Alert', 'JOB_FAILURE', '[${appName}] Job Failed: ${jobName}', '<h2>Job Failure Notification</h2><p>A scheduled job has failed.</p><p><strong>Job:</strong> ${jobName}</p><p><strong>Error:</strong> ${message}</p>${dataTable}', true, true, CURRENT_TIMESTAMP);
+
+INSERT INTO sys_job_email_template (template_name, template_type, email_subject, data_tables, email_body, is_default, is_active, create_time)
+VALUES('Job Success Alert', 'JOB_SUCCESS', '[${appName}] Job Completed: ${jobName}', '[{"datasourceKey":"primary","query":"select * from sys_user","label":"Users:","enabled":true},{"datasourceKey":"primary","query":"select * from sys_role","label":"Roles:","enabled":true}]','<h2>Job Success Notification</h2><p>A scheduled job has completed.</p><p><strong>Duration:</strong> ${duration}ms</p>${dataTable}', true, true, CURRENT_TIMESTAMP);
+
+-- 8. Jobs (Quartz scheduled jobs)
+INSERT INTO sys_job (job_name, job_group, job_type, invoke_target, cron_expression, misfire_policy, concurrent, status, create_by, create_time, remark, notify_on_failure)
+VALUES('Daily Backup Job', 'DEFAULT', 'BEAN', 'backupService.execute()', '0 0 2 * * ?', '3', '1', '1', 'admin', CURRENT_TIMESTAMP, 'Daily backup at 2 AM', false);
+
+INSERT INTO sys_job (job_name, job_group, job_type, invoke_target, cron_expression, misfire_policy, concurrent, status, create_by, create_time, remark, notify_on_failure)
+VALUES('Health Check Job', 'DEFAULT', 'BEAN', 'healthCheckService.ping()', '0 */5 * * * ?', '3', '1', '1', 'admin', CURRENT_TIMESTAMP, 'Health check every 5 minutes', false);
+
+-- 9. Reports - sys_report_template for report-designer
+INSERT INTO sys_report_template (template_name, template_key, description, datasource_key, report_mode, sql_content, output_format, status, version)
+VALUES('User List Report', 'USER_LIST', 'List of all users', 'master', 'SQL', 'SELECT user_id, login_name, user_name, email FROM sys_user', 'EXCEL', '0', 1);
+
+INSERT INTO sys_report_template (template_name, template_key, description, datasource_key, report_mode, sql_content, output_format, status, version)
+VALUES('Role List Report', 'ROLE_LIST', 'Role List Report', 'master', 'SQL', 'SELECT role_id, role_name, role_key FROM sys_role', 'EXCEL', '0', 1);

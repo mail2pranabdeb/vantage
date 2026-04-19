@@ -126,7 +126,7 @@ public class SysReportController extends BaseController {
     /**
      * Get available templates for report creation
      */
-    @PreAuthorize("hasAuthority('system:report:add')")
+    @PreAuthorize("hasAuthority('system:report:list')")
     @GetMapping("/templates")
     public AjaxResult getTemplates() {
         return success(reportDesignerService.findAll());
@@ -135,7 +135,7 @@ public class SysReportController extends BaseController {
     /**
      * Get a specific template by ID
      */
-    @PreAuthorize("hasAuthority('system:report:add')")
+    @PreAuthorize("hasAuthority('system:report:list')")
     @GetMapping("/template/{templateId}")
     public AjaxResult getTemplate(@PathVariable Long templateId) {
         return reportDesignerService.findById(templateId)
