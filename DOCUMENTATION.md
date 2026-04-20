@@ -479,6 +479,65 @@ For issues or questions:
 
 ---
 
+---
+
+## New Features (2026-04)
+
+### Job Analytics Dashboard
+**Location:** Dashboard → Job Metrics
+
+**New Metrics:**
+- Most Failed Jobs (last 30 days)
+- Slowest Jobs (average execution time)
+- `/api/system/job-dashboard/trend` - execution trends
+
+### Job Health Monitoring
+**Endpoint:** `GET /api/system/job-dashboard/health`
+
+**Returns:**
+- `stuckJobs` - Jobs running > 1 hour
+- `missedJobs` - Active jobs not run in 24 hours
+- `frequentFailures` - Jobs with 3+ failures in 7 days
+- `healthStatus` - "healthy" or "warning"
+
+### Email Templates with Data Tables
+**Location:** System Management → Email Templates
+
+**Features:**
+- Create HTML email templates with variables: `${jobName}`, `${message}`, `${executionTime}`
+- Add Data Tables from SQL queries executed at template preview/send time
+- Use `${dataTable}` placeholder in email body
+- Support multiple data tables with custom SQL
+
+**Example Data Table:**
+```json
+[{
+  "datasourceKey": "primary",
+  "query": "SELECT * FROM sys_user LIMIT 10",
+  "label": "Users:",
+  "enabled": true
+}]
+```
+
+### Dynamic SMTP Configuration
+SMTP settings are now stored in `sys_config` table and read at runtime:
+- `mail.host` - SMTP server
+- `mail.port` - SMTP port
+- `mail.username` - SMTP username
+- `mail.password` - SMTP password
+- `mail.fromEmail` - From email address
+- `mail.fromName` - From display name
+
+### External Job Trigger (Webhook)
+**Endpoint:** `POST /api/public/job/webhook/{jobId}?token={token}`
+
+**Security:** Each job has a unique `webhookToken` for secure triggering.
+
+### Job Dependencies
+Jobs can trigger dependent jobs after successful completion using `dependent_job_ids` field.
+
+---
+
 **Version:** 1.0.0  
-**Last Updated:** 2026-03-27  
-**Build:** Complete (29/29 features)
+**Last Updated:** 2026-04-20  
+**Build:** Complete (36+ features)

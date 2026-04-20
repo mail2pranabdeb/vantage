@@ -68,6 +68,39 @@ public class JobMetricsService {
                         java.util.stream.Collectors.counting()));
         metrics.put("jobsByGroup", jobsByGroup);
 
+        // Most failed jobs (last 30 days)
+        metrics.put("mostFailedJobs", jobLogRepository.findRecentFailed(10).stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        log -> log.getJobName() + " (" + log.getJobGroup() + ")",
+                        java.util.stream.Collectors.counting()))
+                .entrySet().stream()
+                .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
+                .limit(5)
+                .map(entry -> {
+                    Map<String, Object> jobStat = new HashMap<>();
+                    jobStat.put("jobName", entry.getKey());
+                    jobStat.put("failureCount", entry.getValue());
+                    return jobStat;
+                })
+                .toList());
+
+        // Slowest jobs
+        metrics.put("slowestJobs", jobLogRepository.findAll().stream()
+                .filter(log -> log.getExecutionDuration() != null)
+                .collect(java.util.stream.Collectors.groupingBy(
+                        log -> log.getJobName() + " (" + log.getJobGroup() + ")",
+                        java.util.stream.Collectors.averagingLong(log -> log.getExecutionDuration())))
+                .entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
+                .limit(5)
+                .map(entry -> {
+                    Map<String, Object> jobStat = new HashMap<>();
+                    jobStat.put("jobName", entry.getKey());
+                    jobStat.put("avgDuration", Math.round(entry.getValue()));
+                    return jobStat;
+                })
+                .toList());
+
         return metrics;
     }
 
@@ -102,5 +135,78 @@ public class JobMetricsService {
                     return data;
                 })
                 .toList();
+    }
+
+    /**
+     * Get job health status - detect stuck and missed jobs
+     */
+    public Map<String, Object> getJobHealth() {
+        Map<String, Object> health = new HashMap<>();
+        
+        List<SysJob> allJobs = jobRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        
+        // Jobs running for too long (stuck) - running more than 1 hour
+        List<Map<String, Object>> stuckJobs = jobLogRepository.findAll().stream()
+                .filter(log -> log.getEndTime() == null && log.getStartTime() != null)
+                .filter(log -> log.getStartTime().isBefore(now.minusHours(1)))
+                .map(log -> {
+                    Map<String, Object> job = new HashMap<>();
+                    job.put("jobName", log.getJobName());
+                    job.put("jobGroup", log.getJobGroup());
+                    job.put("startTime", log.getStartTime());
+                    job.put("runningFor", java.time.Duration.between(log.getStartTime(), now).toMinutes());
+                    return job;
+                })
+                .toList();
+        
+        // Jobs that haven't run in expected time (based on cron)
+        // For simplicity, check jobs not run in the last 24 hours that are active
+        List<Map<String, Object>> missedJobs = allJobs.stream()
+                .filter(job -> "0".equals(job.getStatus()))
+                .filter(job -> job.getCronExpression() != null && !job.getCronExpression().isEmpty())
+                .filter(job -> {
+                    // Check last execution time from logs
+                    return !jobLogRepository.findAll().stream()
+                            .filter(log -> log.getJobName().equals(job.getJobName()))
+                            .anyMatch(log -> log.getStartTime() != null && log.getStartTime().isAfter(now.minusHours(24)));
+                })
+                .map(job -> {
+                    Map<String, Object> jobInfo = new HashMap<>();
+                    jobInfo.put("jobName", job.getJobName());
+                    jobInfo.put("jobGroup", job.getJobGroup());
+                    jobInfo.put("cronExpression", job.getCronExpression());
+                    jobInfo.put("lastExpected", "within 24 hours");
+                    return jobInfo;
+                })
+                .toList();
+        
+        // Jobs with frequent failures
+        List<Map<String, Object>> frequentFailures = allJobs.stream()
+                .filter(job -> job.getJobName() != null)
+                .map(job -> {
+                    long failures = jobLogRepository.findAll().stream()
+                            .filter(log -> log.getJobName().equals(job.getJobName()))
+                            .filter(log -> log.getStartTime() != null && log.getStartTime().isAfter(now.minusDays(7)))
+                            .filter(log -> "1".equals(log.getStatus()))
+                            .count();
+                    if (failures >= 3) {
+                        Map<String, Object> jobStat = new HashMap<>();
+                        jobStat.put("jobName", job.getJobName());
+                        jobStat.put("jobGroup", job.getJobGroup());
+                        jobStat.put("failuresInWeek", failures);
+                        return jobStat;
+                    }
+                    return null;
+                })
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        
+        health.put("stuckJobs", stuckJobs);
+        health.put("missedJobs", missedJobs);
+        health.put("frequentFailures", frequentFailures);
+        health.put("healthStatus", stuckJobs.isEmpty() && frequentFailures.size() < 3 ? "healthy" : "warning");
+        
+        return health;
     }
 }

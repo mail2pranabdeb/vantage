@@ -22,6 +22,9 @@ const ReportManagement = () => {
     const [templateVersions, setTemplateVersions] = useState([]);
     const [scheduleCode, setScheduleCode] = useState('');
     const [scheduleEmail, setScheduleEmail] = useState('');
+    const [executeParams, setExecuteParams] = useState('{}');
+    const [isParamModalOpen, setIsParamModalOpen] = useState(false);
+    const [pendingExecuteReport, setPendingExecuteReport] = useState(null);
 
     useEffect(() => {
         fetchTemplates();
@@ -73,10 +76,22 @@ const ReportManagement = () => {
     };
 
     const handleExecute = (row) => {
+        // Check if template has paramsConfig - if so, show param modal
+        if (row.paramsConfig && row.paramsConfig !== '[]' && row.paramsConfig !== '{}') {
+            setPendingExecuteReport(row);
+            setExecuteParams(row.paramsConfig || '{}');
+            setIsParamModalOpen(true);
+            return;
+        }
+        // Otherwise execute directly
+        executeReport(row, '{}');
+    };
+
+    const executeReport = (row, params) => {
         fetch(`/api/system/report-designer/execute/${row.templateId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: '{}'
+            body: params
         })
             .then(res => res.json())
             .then(data => {
@@ -86,6 +101,14 @@ const ReportManagement = () => {
                 } else addToast('error', data.msg || 'Execution failed', 5000);
             })
             .catch(() => addToast('error', 'Execution failed', 5000));
+    };
+
+    const handleParamExecute = () => {
+        setIsParamModalOpen(false);
+        if (pendingExecuteReport) {
+            executeReport(pendingExecuteReport, executeParams);
+            setPendingExecuteReport(null);
+        }
     };
 
     const handleActivate = (row) => {
@@ -316,6 +339,30 @@ const ReportManagement = () => {
                             <li>Set cron expression (e.g., <code style={{ background: 'var(--bg-primary)', padding: '2px 6px', borderRadius: '4px' }}>0 0 9 * * ?</code> for daily 9 AM)</li>
                             <li>Enable and save</li>
                         </ol>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Execute Parameters Modal */}
+            <Modal isOpen={isParamModalOpen} onClose={() => setIsParamModalOpen(false)} title="Report Parameters" size="medium">
+                <div style={{ padding: '16px' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                        Enter parameter values for this report. Use JSON format.
+                    </p>
+                    <div className="form-group">
+                        <label className="form-label">Parameters (JSON)</label>
+                        <textarea 
+                            className="form-input" 
+                            rows={8}
+                            value={executeParams}
+                            onChange={e => setExecuteParams(e.target.value)}
+                            placeholder='{"status": "0", "startDate": "2026-01-01"}'
+                            style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                        <button className="btn btn-secondary" onClick={() => setIsParamModalOpen(false)}>Cancel</button>
+                        <button className="btn btn-primary" onClick={handleParamExecute}>Execute</button>
                     </div>
                 </div>
             </Modal>

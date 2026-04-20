@@ -157,6 +157,8 @@ const Dashboard = ({ tab }) => {
             .catch(err => console.error("Failed to fetch logs:", err));
     };
 
+    const [jobHealth, setJobHealth] = useState(null);
+
     useEffect(() => {
         // Initial data load
         fetch('/api/system/job-dashboard/metrics')
@@ -169,6 +171,13 @@ const Dashboard = ({ tab }) => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) setTrendData(data.data);
+            });
+
+        // Fetch job health
+        fetch('/api/system/job-dashboard/health')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) setJobHealth(data.data);
             });
 
         updateMetrics();
@@ -276,6 +285,65 @@ const Dashboard = ({ tab }) => {
                             Backend: High Availability Replica
                         </p>
                     </div>
+                </div>
+
+                {/* Job Health Section */}
+                <div className="glass-panel" style={{ padding: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Job Health</h3>
+                        {jobHealth && (
+                            <span style={{ 
+                                padding: '4px 10px', 
+                                borderRadius: '8px', 
+                                fontSize: '11px', 
+                                fontWeight: 700,
+                                background: jobHealth.healthStatus === 'healthy' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                                color: jobHealth.healthStatus === 'healthy' ? '#10b981' : '#ef4444'
+                            }}>
+                                {jobHealth.healthStatus === 'healthy' ? '✓ Healthy' : '⚠ Warning'}
+                            </span>
+                        )}
+                    </div>
+                    {jobHealth ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {jobHealth.stuckJobs && jobHealth.stuckJobs.length > 0 && (
+                                <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                                        <AlertTriangle size={14} style={{ color: '#ef4444' }} />
+                                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444' }}>Stuck Jobs ({jobHealth.stuckJobs.length})</span>
+                                    </div>
+                                    {jobHealth.stuckJobs.slice(0, 3).map((job, idx) => (
+                                        <p key={idx} style={{ margin: 0, fontSize: '10px', color: 'var(--text-muted)' }}>
+                                            {job.jobName} - Running {job.runningFor} min
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
+                            {jobHealth.frequentFailures && jobHealth.frequentFailures.length > 0 && (
+                                <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                                        <AlertTriangle size={14} style={{ color: '#f59e0b' }} />
+                                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b' }}>Frequent Failures ({jobHealth.frequentFailures.length})</span>
+                                    </div>
+                                    {jobHealth.frequentFailures.slice(0, 3).map((job, idx) => (
+                                        <p key={idx} style={{ margin: 0, fontSize: '10px', color: 'var(--text-muted)' }}>
+                                            {job.jobName} - {job.failuresInWeek} failures/week
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
+                            {(!jobHealth.stuckJobs?.length && !jobHealth.frequentFailures?.length) && (
+                                <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <CheckCircle size={14} style={{ color: '#10b981' }} />
+                                        <span style={{ fontSize: '12px', color: '#10b981' }}>All jobs running healthy</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Loading job health...</p>
+                    )}
                 </div>
             </div>
 

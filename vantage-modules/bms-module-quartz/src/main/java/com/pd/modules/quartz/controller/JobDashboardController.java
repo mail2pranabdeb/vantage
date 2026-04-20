@@ -36,4 +36,13 @@ public class JobDashboardController extends BaseController {
         List<Map<String, Object>> trend = jobMetricsService.getExecutionTrend(days);
         return success(trend);
     }
+
+    /**
+     * Get job health status (stuck, missed, frequent failures)
+     */
+    @GetMapping("/health")
+    public AjaxResult getHealth() {
+        Map<String, Object> health = jobMetricsService.getJobHealth();
+        return success(health);
+    }
 }
