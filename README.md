@@ -165,12 +165,54 @@ Enterprise automation built on Quartz.
 | **Reports** | `POST /api/system/report/execute` | Immediate report generation |
 | **Config** | `PUT /api/system/configs` | Batch update system settings |
 | **Logs** | `GET /api/system/job-logs` | Live log stream access |
+| **Job Health** | `GET /api/system/job-dashboard/health` | Job health monitoring |
+| **Job Trends** | `GET /api/system/job-dashboard/trend` | Execution analytics |
+| **Email Templates** | `GET /api/system/email-template/list` | Email templates |
+| **Webhook Trigger** | `POST /api/public/job/webhook/{jobId}?token=xxx` | External job trigger |
+
+---
+
+## ✨ New Features (2026)
+
+### Job Health Monitoring
+- Stuck job detection (>1 hour running)
+- Frequent failure alerts (3+ failures/week)
+- `/api/system/job-dashboard/health` endpoint
+- Dashboard widget showing job health status
+
+### Report Parameters
+- Parameter input dialog for parameterized reports
+- JSON parameter support in report execution
+- Save parameters with report template
+
+### Email Templates with Data Tables
+- Dynamic SQL queries embedded in emails
+- `${dataTable}` placeholder for rendered results
+- Multiple data sources per template
+
+### Dynamic SMTP Configuration
+- SMTP settings stored in database (`sys_config`)
+- Runtime reload without restart
+- Supports Gmail, Office 365, custom SMTP
+
+### PWA Support
+- Offline-capable web app
+- Installable on desktop/mobile
+- Service worker caching
+
+### External Job Trigger
+- Secure webhook API: `/api/public/job/webhook/{jobId}?token=xxx`
+- Per-job webhook tokens
+
+### Job Dependencies
+- Chain jobs with `dependent_job_ids` field
+- Auto-trigger dependent jobs on success
 
 ---
 
 ## 🚀 Future Roadmap
+- [x] **Mobile Dashboard**: PWA support added
 - [ ] **AI-Powered Insights**: Anomaly detection in job execution patterns
-- [ ] **Mobile Dashboard**: Responsive PWA for administrative tasks
 - [ ] **Gantt Timeline**: Visualizer for complex job dependency chains
 - [ ] **PDF Previewer**: Integrated browser-based PDF report viewer
 
