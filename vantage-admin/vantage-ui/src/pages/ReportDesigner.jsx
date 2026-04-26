@@ -16,6 +16,7 @@ const ReportDesigner = ({ tab }) => {
     const [datasources, setDatasources] = useState([]);
     const [tables, setTables] = useState([]);
     const [previewData, setPreviewData] = useState(null);
+    const [previewParams, setPreviewParams] = useState('{}');
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('datasource'); // datasource, columns, sql, preview, email
     
@@ -114,11 +115,24 @@ const ReportDesigner = ({ tab }) => {
 
     const executePreview = () => {
         setLoading(true);
-        const payload = template.reportMode === 'SQL' 
-            ? { ...template }
-            : { ...template, sqlContent: buildSql() };
+        
+        let params = {};
+        try {
+            params = JSON.parse(previewParams || '{}');
+        } catch (e) {
+            alert('Invalid JSON in parameters');
+            setLoading(false);
+            return;
+        }
+        
+        const payload = {
+            ...template,
+            sqlContent: template.reportMode === 'SQL' ? template.sqlContent : buildSql()
+        };
 
-        fetch('/api/system/report-designer/preview', {
+        const queryString = Object.keys(params).length > 0 ? `?params=${encodeURIComponent(JSON.stringify(params))}` : '';
+
+        fetch(`/api/system/report-designer/preview${queryString}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -128,10 +142,12 @@ const ReportDesigner = ({ tab }) => {
             if (data.code === 200) {
                 setPreviewData(data.data);
                 setActiveTab('preview');
+            } else {
+                alert(data.msg || 'Preview failed');
             }
             setLoading(false);
         })
-        .catch(() => setLoading(false));
+        .catch(() => { setLoading(false); });
     };
 
     const buildSql = () => {
@@ -172,6 +188,28 @@ const ReportDesigner = ({ tab }) => {
         });
     };
 
+    const activateTemplate = () => {
+        if (!template.templateId) {
+            alert('Please save the template first');
+            return;
+        }
+        if (!confirm('Create a new version and activate? This will increment the version number.')) return;
+
+        fetch(`/api/system/report-designer/templates/${template.templateId}/activate`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                alert('New version activated successfully!');
+                setTemplate(data.data);
+            } else {
+                alert(data.msg || 'Activate failed');
+            }
+        });
+    };
+
     const exportReport = (format) => {
         const params = JSON.stringify({});
         window.open(`/api/system/report-designer/export/${template.templateId}?params=${encodeURIComponent(params)}&format=${format}`, '_blank');
@@ -190,9 +228,14 @@ const ReportDesigner = ({ tab }) => {
             <div className="page-header">
                 <h2>Report Designer</h2>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="btn btn-primary" onClick={saveTemplate} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button className="btn btn-secondary" onClick={saveTemplate} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Save size={16} /> Save
                     </button>
+                    {template.templateId && (
+                        <button className="btn btn-primary" onClick={activateTemplate} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Play size={16} /> Activate
+                        </button>
+                    )}
                     <button className="btn btn-secondary" onClick={executePreview} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Play size={16} /> {loading ? 'Running...' : 'Preview'}
                     </button>
@@ -355,20 +398,41 @@ const ReportDesigner = ({ tab }) => {
 
                 {/* Preview Tab */}
                 {activeTab === 'preview' && (
-                    <div>
-                        <h3 style={{ marginBottom: '16px' }}>Preview Results</h3>
+                    <div style={{ height: 'calc(100vh - 280px)', display: 'flex', flexDirection: 'column' }}>
+                        <h3 style={{ marginBottom: '12px', flexShrink: 0 }}>Preview Results</h3>
+                        <div className="form-group" style={{ marginBottom: '8px', flexShrink: 0 }}>
+                            <label className="form-label">Parameters (JSON)</label>
+                            <textarea
+                                className="form-input"
+                                rows={2}
+                                value={previewParams || '{}'}
+                                onChange={e => setPreviewParams(e.target.value)}
+                                placeholder='{"status": "0"}'
+                                style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                            />
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                Example: status = "0". Use :paramName in SQL
+                            </p>
+                        </div>
+                        <button className="btn btn-primary" onClick={executePreview} disabled={loading} style={{ marginBottom: '8px', flexShrink: 0 }}>
+                            <Play size={14} /> {loading ? 'Running...' : 'Run Preview'}
+                        </button>
                         {previewData ? (
-                            <>
-                                <p style={{ marginBottom: '12px', fontSize: '13px' }}>
+                            <div style={{ flex: 1, overflow: 'auto', minHeight: '200px' }}>
+                                <p style={{ marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)', flexShrink: 0 }}>
                                     {previewData.count} rows returned
-                                    {previewData.sql && <pre style={{ background: 'var(--bg-tertiary)', padding: '8px', borderRadius: '6px', fontSize: '12px', maxHeight: '100px', overflow: 'auto' }}>{previewData.sql}</pre>}
                                 </p>
-                                <div style={{ overflow: 'auto', maxHeight: '400px' }}>
-                                    <table className="ag-table">
-                                        <thead>
+                                {previewData.sql && (
+                                    <pre style={{ background: 'var(--bg-tertiary)', padding: '6px', borderRadius: '4px', fontSize: '10px', maxHeight: '50px', overflow: 'auto', marginBottom: '6px', whiteSpace: 'pre-wrap' }}>
+                                        {previewData.sql}
+                                    </pre>
+                                )}
+                                <div style={{ overflow: 'auto', flex: 1, border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                                    <table className="ag-table" style={{ minWidth: '100%' }}>
+                                        <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-tertiary)' }}>
                                             <tr>
                                                 {previewData.data.length > 0 && Object.keys(previewData.data[0]).map(key => (
-                                                    <th key={key}>{key}</th>
+                                                    <th key={key} style={{ padding: '6px 8px', textAlign: 'left', whiteSpace: 'nowrap' }}>{key}</th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -376,16 +440,18 @@ const ReportDesigner = ({ tab }) => {
                                             {previewData.data.map((row, idx) => (
                                                 <tr key={idx}>
                                                     {Object.values(row).map((val, i) => (
-                                                        <td key={i}>{val !== null ? val.toString() : '-'}</td>
+                                                        <td key={i} style={{ padding: '4px 8px' }}>{val !== null ? val.toString() : '-'}</td>
                                                     ))}
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
-                            </>
+                            </div>
                         ) : (
-                            <p style={{ color: 'var(--text-muted)' }}>Click Preview to execute and see results</p>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                                <p>Click Run Preview to see results</p>
+                            </div>
                         )}
                     </div>
                 )}
@@ -418,21 +484,23 @@ const ReportDesigner = ({ tab }) => {
                             </h4>
                             <ol style={{ fontSize: '13px', lineHeight: '2', paddingLeft: '20px' }}>
                                 <li><strong>Save this report template</strong> using the Save button above</li>
-                                <li>Note the <code style={{ background: 'var(--bg-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px' }}>Template ID</code> shown after saving</li>
+                                <li><strong>Activate</strong> the report using the Activate button to create a new version</li>
                                 <li>Go to <strong>Job Scheduling → Add Job</strong></li>
+                                <li>Set Job Name (e.g., "Sales Report Email")</li>
+                                <li>Set Job Group (e.g., "reports")</li>
                                 <li>Set invoke target:
                                     <pre style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', fontSize: '11px', marginTop: '8px', overflow: 'auto' }}>
-reportExecutionJob.executeAndEmailTemplate(TEMPLATE_ID, 'EXCEL', ['user@email.com'], null, 'Daily Report', 'Please find the attached report.', '{}')</pre>
+reportExecutionJob.execute(TEMPLATE_ID, 'EXCEL', ['user@email.com'], null, 'Report Subject', 'Email body text', '{}')</pre>
                                 </li>
-                                <li>Set cron expression (e.g., <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>0 9 * * *</code> for daily at 9 AM)</li>
-                                <li>Enable the job and the report will be emailed automatically</li>
+                                <li>Set cron expression (e.g., <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>0 0 9 * * ?</code> for daily at 9 AM)</li>
+                                <li>Enable the job and save - the report will be emailed automatically</li>
                             </ol>
                         </div>
 
                         <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
                             <h4 style={{ marginBottom: '8px', color: '#3b82f6' }}>Quick Test</h4>
                             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                                Click the Excel or CSV button above to download the current report and verify the output format.
+                                Use the Preview button to test your report with parameters before scheduling.
                             </p>
                         </div>
                     </div>

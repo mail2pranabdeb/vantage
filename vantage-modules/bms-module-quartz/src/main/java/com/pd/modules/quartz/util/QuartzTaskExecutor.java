@@ -119,9 +119,15 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
                 java.lang.reflect.Method getOutputFormatMethod = template.getClass().getMethod("getOutputFormat");
                 String outputFormat = (String) getOutputFormatMethod.invoke(template);
 
-                // Execute report
+                // Get saved report parameters from job, use empty JSON if not set
+                String reportParams = sysJob.getReportParams();
+                if (reportParams == null) {
+                    reportParams = "{}";
+                }
+
+                // Execute report with saved parameters
                 java.lang.reflect.Method executeTemplateMethod = reportService.getClass().getMethod("executeTemplate", Long.class, String.class);
-                List<?> data = (List<?>) executeTemplateMethod.invoke(reportService, templateId, "{}");
+                List<?> data = (List<?>) executeTemplateMethod.invoke(reportService, templateId, reportParams);
 
                 // Send email
                 sendReportEmail(sysJob, templateName, outputFormat, data);
@@ -222,12 +228,23 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             String subject = processReportTemplate(templateSubject, templateName, outputFormat, data, sysJob);
             String body = processReportTemplate(templateBody, templateName, outputFormat, data, sysJob);
 
-            // Execute multiple data table queries and render HTML tables if configured
+            // Job's emailTemplateParams overrides template's runtimeParams
+            String paramsToUse = sysJob.getEmailTemplateParams();
+            if (paramsToUse == null || paramsToUse.isEmpty()) {
+                try {
+                    java.lang.reflect.Method getRuntimeParamsMethod = template.getClass().getMethod("getRuntimeParams");
+                    paramsToUse = (String) getRuntimeParamsMethod.invoke(template);
+                } catch (Exception e) {
+                    log.debug("Could not get runtimeParams from template: {}", e.getMessage());
+                }
+            }
+            log.info("Using params for data table queries: {}", paramsToUse);
+            
             if (dataTablesJson != null && !dataTablesJson.isEmpty()) {
                 try {
                     Object tplService = applicationContext.getBean("emailTemplateService");
-                    java.lang.reflect.Method executeMultiQueryMethod = tplService.getClass().getMethod("executeMultipleQueriesAndRenderTables", String.class);
-                    String dataTableHtml = (String) executeMultiQueryMethod.invoke(tplService, dataTablesJson);
+                    java.lang.reflect.Method executeMultiQueryMethod = tplService.getClass().getMethod("executeMultipleQueriesAndRenderTables", String.class, String.class);
+                    String dataTableHtml = (String) executeMultiQueryMethod.invoke(tplService, dataTablesJson, paramsToUse);
                     body = body.replace("${dataTable}", dataTableHtml);
                 } catch (Exception e) {
                     log.error("Failed to execute template data table queries", e);
@@ -298,7 +315,7 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String appName = "Vantage";
 
-        return template
+        String result = template
             .replace("${appName}", appName)
             .replace("${jobId}", String.valueOf(sysJob.getJobId()))
             .replace("${jobName}", sysJob.getJobName())
@@ -308,6 +325,27 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             .replace("${totalRows}", String.valueOf(data.size()))
             .replace("${executionTime}", LocalDateTime.now().format(formatter))
             .replace("${timestamp}", LocalDateTime.now().format(formatter));
+
+        // Add report parameters from job to template variables
+        String reportParams = sysJob.getReportParams();
+        if (reportParams != null && !reportParams.trim().isEmpty() && !reportParams.equals("{}")) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                com.fasterxml.jackson.databind.JsonNode params = mapper.readTree(reportParams);
+                if (params.isObject()) {
+                    java.util.Iterator<java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = params.fields();
+                    while (fields.hasNext()) {
+                        java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> field = fields.next();
+                        result = result.replace("${param." + field.getKey() + "}", field.getValue().asText());
+                        result = result.replace("${" + field.getKey() + "}", field.getValue().asText());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse report params for email template", e);
+            }
+        }
+
+        return result;
     }
 
     /**

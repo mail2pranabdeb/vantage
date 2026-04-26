@@ -36,7 +36,11 @@ public class ReportDesignerController extends BaseController {
 
     @PreAuthorize("hasAuthority('system:report:template:query')")
     @GetMapping("/templates")
-    public AjaxResult listTemplates() {
+    public AjaxResult listTemplates(@RequestParam(required = false, defaultValue = "false") Boolean allVersions) {
+        if (allVersions) {
+            List<SysReportTemplate> templates = reportDesignerService.findAllVersions();
+            return success(templates);
+        }
         List<SysReportTemplate> templates = reportDesignerService.findAll();
         return success(templates);
     }
@@ -218,14 +222,18 @@ public class ReportDesignerController extends BaseController {
 
     @PreAuthorize("hasAuthority('system:report:template:query')")
     @PostMapping("/preview")
-    public AjaxResult previewReport(@RequestBody SysReportTemplate template) {
+    public AjaxResult previewReport(@RequestBody SysReportTemplate template,
+                            @RequestParam(required = false) String params) {
         try {
             // Build SQL from template (visual builder or manual SQL)
             String sql = reportDesignerService.buildSqlFromTemplate(template);
-            logger.info("Preview SQL: {}", sql);
+            logger.info("Preview SQL before params: {}", sql);
 
-            // Replace parameters in SQL (for preview, use empty params)
-//             String paramsJson = "{}";
+            // Replace parameters in SQL
+            if (params != null && !params.isEmpty()) {
+                sql = replaceParamsInSql(sql, params);
+                logger.info("Preview SQL after params: {}", sql);
+            }
 
             // Execute the SQL directly (not from database)
             List<Map<String, Object>> data = reportDesignerService.executeQuery(
@@ -240,5 +248,27 @@ public class ReportDesignerController extends BaseController {
             logger.error("Failed to preview report", e);
             return error("Preview failed: " + e.getMessage());
         }
+    }
+
+    /**
+     * Replace parameter placeholders in SQL with actual values
+     */
+    private String replaceParamsInSql(String sql, String paramsJson) {
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode params = mapper.readTree(paramsJson);
+            if (params.isObject()) {
+                java.util.Iterator<java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = params.fields();
+                while (fields.hasNext()) {
+                    java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> field = fields.next();
+                    String placeholder = ":" + field.getKey();
+                    String value = field.getValue().asText();
+                    sql = sql.replace(placeholder, "'" + value.replace("'", "''") + "'");
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to parse params JSON: {}", e.getMessage());
+        }
+        return sql;
     }
 }

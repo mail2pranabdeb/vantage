@@ -137,13 +137,14 @@ public class EmailTemplateService {
     /**
      * Process template variables (public version for preview, uses sample data)
      */
-    public String processTemplate(String template, SysJob job, SysJobLog jobLog) {
+public String processTemplate(String template, SysJob job, SysJobLog jobLog) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
+        String result;
 
         if (job == null) {
             // Use sample data for preview - preserve ${dataTable} for later substitution
-            return template
+            result = template
                 .replace("${appName}", appName)
                 .replace("${jobId}", "1")
                 .replace("${jobName}", "Sample Report Job")
@@ -160,31 +161,51 @@ public class EmailTemplateService {
                 .replace("${reportName}", "Sample Report")
                 .replace("${reportFormat}", "CSV")
                 .replace("${totalRows}", "10")
-                .replace("${dataTable}", "${dataTable}"); // Preserve for preview replacement
+                .replace("${dataTable}", "${dataTable}");
+        } else {
+            result = template
+                .replace("${appName}", appName)
+                .replace("${jobId}", String.valueOf(job.getJobId()))
+                .replace("${jobName}", job.getJobName())
+                .replace("${jobGroup}", job.getJobGroup())
+                .replace("${invokeTarget}", job.getInvokeTarget())
+                .replace("${cronExpression}", job.getCronExpression() != null ? job.getCronExpression() : "N/A")
+                .replace("${executionTime}", jobLog != null && jobLog.getStartTime() != null ? jobLog.getStartTime().format(formatter) : "N/A")
+                .replace("${duration}", String.valueOf(jobLog != null && jobLog.getExecutionDuration() != null ? jobLog.getExecutionDuration() : 0))
+                .replace("${retryCount}", String.valueOf(jobLog != null && jobLog.getRetryCount() != null ? jobLog.getRetryCount() : 0))
+                .replace("${status}", jobLog != null && jobLog.getStatus() != null ? ("0".equals(jobLog.getStatus()) ? "Success" : "Failed") : "Unknown")
+                .replace("${message}", jobLog != null && jobLog.getJobMessage() != null ? jobLog.getJobMessage() : "N/A")
+                .replace("${exceptionInfo}", jobLog != null && jobLog.getExceptionInfo() != null ? jobLog.getExceptionInfo() : "N/A")
+                .replace("${timestamp}", now.format(formatter))
+                .replace("${reportName}", job.getJobName())
+                .replace("${reportFormat}", "CSV")
+                .replace("${totalRows}", "0")
+                .replace("${dataTable}", "${dataTable}");
+            
+            // Add report parameters from job to template variables
+            String reportParams = job.getReportParams();
+            if (reportParams != null && !reportParams.trim().isEmpty() && !reportParams.equals("{}")) {
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    com.fasterxml.jackson.databind.JsonNode params = mapper.readTree(reportParams);
+                    if (params.isObject()) {
+                        java.util.Iterator<java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = params.fields();
+                        while (fields.hasNext()) {
+                            java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> field = fields.next();
+                            result = result.replace("${param." + field.getKey() + "}", field.getValue().asText());
+                            result = result.replace("${" + field.getKey() + "}", field.getValue().asText());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to parse report params for email template", e);
+                }
+            }
         }
 
-        return template
-            .replace("${appName}", appName)
-            .replace("${jobId}", String.valueOf(job.getJobId()))
-            .replace("${jobName}", job.getJobName())
-            .replace("${jobGroup}", job.getJobGroup())
-            .replace("${invokeTarget}", job.getInvokeTarget())
-            .replace("${cronExpression}", job.getCronExpression() != null ? job.getCronExpression() : "N/A")
-            .replace("${executionTime}", jobLog != null && jobLog.getStartTime() != null ? jobLog.getStartTime().format(formatter) : "N/A")
-            .replace("${duration}", String.valueOf(jobLog != null && jobLog.getExecutionDuration() != null ? jobLog.getExecutionDuration() : 0))
-            .replace("${retryCount}", String.valueOf(jobLog != null && jobLog.getRetryCount() != null ? jobLog.getRetryCount() : 0))
-            .replace("${status}", jobLog != null && jobLog.getStatus() != null ? ("0".equals(jobLog.getStatus()) ? "Success" : "Failed") : "Unknown")
-            .replace("${message}", jobLog != null && jobLog.getJobMessage() != null ? jobLog.getJobMessage() : "N/A")
-            .replace("${exceptionInfo}", jobLog != null && jobLog.getExceptionInfo() != null ? jobLog.getExceptionInfo() : "N/A")
-            .replace("${timestamp}", now.format(formatter))
-            .replace("${reportName}", job.getJobName())
-            .replace("${reportFormat}", "CSV")
-            .replace("${totalRows}", "0")
-            .replace("${dataTable}", "${dataTable}"); // Preserve for live job replacement
+        return result;
     }
 
-    /**
-     * Execute SQL query against a datasource and render results as HTML table
+    /* Execute SQL query against a datasource and render results as HTML table
      */
     public String executeQueryAndRenderTable(String datasourceKey, String querySql) {
         if (namedJdbcTemplate == null) {
@@ -250,10 +271,23 @@ public class EmailTemplateService {
     /**
      * Execute multiple SQL queries and render all results as HTML tables
      */
-    public String executeMultipleQueriesAndRenderTables(String dataTablesJson) {
+    public String executeMultipleQueriesAndRenderTables(String dataTablesJson, String paramsJson) {
         if (namedJdbcTemplate == null || dataTablesJson == null || dataTablesJson.isEmpty()) {
             log.warn("executeMultipleQueriesAndRenderTables: namedJdbcTemplate or dataTablesJson is empty/null");
             return "";
+        }
+
+        // Parse params JSON if provided
+        java.util.Map<String, Object> paramsMap = java.util.Collections.emptyMap();
+        if (paramsJson != null && !paramsJson.isEmpty()) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                paramsMap = mapper.readValue(paramsJson, java.util.Map.class);
+                log.info("Parsed {} params for data table queries", paramsMap.size());
+            } catch (Exception e) {
+                log.warn("Failed to parse params JSON, using empty map: {}", e.getMessage());
+                paramsMap = java.util.Collections.emptyMap();
+            }
         }
 
         try {
@@ -273,10 +307,10 @@ public class EmailTemplateService {
                 String query = (String) tableConfig.get("query");
                 if (query == null || query.trim().isEmpty()) continue;
 
-                // Execute query
+                // Execute query with params
                 List<Map<String, Object>> rows;
                 try {
-                    rows = namedJdbcTemplate.queryForList(query, java.util.Collections.emptyMap());
+                    rows = namedJdbcTemplate.queryForList(query, paramsMap);
                 } catch (Exception e) {
                     log.error("Failed to execute query for table '{}': {}", label, e.getMessage());
                     allTablesHtml.append("<h3 style='color:var(--danger);margin-top:20px;'>")

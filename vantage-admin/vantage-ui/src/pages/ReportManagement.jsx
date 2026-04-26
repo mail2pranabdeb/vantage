@@ -25,6 +25,7 @@ const ReportManagement = () => {
     const [executeParams, setExecuteParams] = useState('{}');
     const [isParamModalOpen, setIsParamModalOpen] = useState(false);
     const [pendingExecuteReport, setPendingExecuteReport] = useState(null);
+    const [paramModalAction, setParamModalAction] = useState('execute');
 
     useEffect(() => {
         fetchTemplates();
@@ -32,7 +33,7 @@ const ReportManagement = () => {
 
     const fetchTemplates = () => {
         setLoading(true);
-        fetch('/api/system/report/templates')
+        fetch('/api/system/report-designer/templates?allVersions=true')
             .then(res => res.json())
             .then(data => {
                 setLoading(false);
@@ -75,16 +76,18 @@ const ReportManagement = () => {
             });
     };
 
-    const handleExecute = (row) => {
-        // Check if template has paramsConfig - if so, show param modal
-        if (row.paramsConfig && row.paramsConfig !== '[]' && row.paramsConfig !== '{}') {
-            setPendingExecuteReport(row);
-            setExecuteParams(row.paramsConfig || '{}');
-            setIsParamModalOpen(true);
-            return;
-        }
-        // Otherwise execute directly
-        executeReport(row, '{}');
+const handleExecute = (row) => {
+        setParamModalAction('execute');
+        setPendingExecuteReport(row);
+        setExecuteParams('{}');
+        setIsParamModalOpen(true);
+    };
+
+    const handleExportWithParams = (row) => {
+        setParamModalAction('export');
+        setPendingExecuteReport(row);
+        setExecuteParams('{}');
+        setIsParamModalOpen(true);
     };
 
     const executeReport = (row, params) => {
@@ -96,41 +99,77 @@ const ReportManagement = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    addToast('success', `${data.data?.length || 0} rows returned`, 5000);
-                    if (window.confirm('Download results as Excel?')) handleExport(row, row.outputFormat || 'EXCEL');
-                } else addToast('error', data.msg || 'Execution failed', 5000);
+                    const rowCount = data.data?.length || 0;
+                    if (rowCount > 0) {
+                        addToast('success', `${rowCount} rows returned`, 3000);
+                    } else if (rowCount === 0) {
+                        addToast('info', 'No data returned', 5000);
+                    }
+                } else {
+                    addToast('error', data.msg || 'Execution failed', 5000);
+                }
             })
             .catch(() => addToast('error', 'Execution failed', 5000));
     };
 
+    const handleDirectDownload = (url, filename) => {
+        fetch(url)
+            .then(res => res.blob())
+            .then(blob => {
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(downloadUrl);
+            })
+            .catch(() => {
+                window.open(url, '_blank');
+            });
+    };
+
     const handleParamExecute = () => {
         setIsParamModalOpen(false);
-        if (pendingExecuteReport) {
+        if (!pendingExecuteReport) return;
+        
+        if (paramModalAction === 'export') {
+            const format = pendingExecuteReport.outputFormat || 'EXCEL';
+            const params = executeParams || '{}';
+            handleDirectDownload(`/api/system/report-designer/export/${pendingExecuteReport.templateId}?format=${format}&params=${encodeURIComponent(params)}`, `${pendingExecuteReport.templateName}.${format.toLowerCase()}`);
+            addToast('success', 'Report exported successfully', 3000);
+        } else {
             executeReport(pendingExecuteReport, executeParams);
-            setPendingExecuteReport(null);
         }
+        setPendingExecuteReport(null);
     };
 
     const handleActivate = (row) => {
         if (!confirm(`Activate this report? This will set status to Active and increment version.`)) return;
-        
-        fetch(`/api/system/report-designer/templates/${row.templateId}/activate`, { 
+
+        fetch(`/api/system/report-designer/templates/${row.templateId}/activate`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' }
         })
         .then(res => res.json())
         .then(data => {
             if (data.code === 200) {
-                addToast('success', data.msg);
+                addToast('success', data.msg || 'Report activated successfully', 3000);
                 fetchTemplates();
             } else {
-                addToast('error', data.msg);
+                addToast('error', data.msg || 'Failed to activate report', 5000);
             }
+        })
+        .catch(err => {
+            console.error("Failed to activate report:", err);
+            addToast('error', 'Failed to activate report', 5000);
         });
     };
 
     const handleExport = (row, format) => {
-        window.open(`/api/system/report-designer/export/${row.templateId}?format=${format}`, '_blank');
+        const filename = `${row.templateName || 'report'}.${format.toLowerCase()}`;
+        handleDirectDownload(`/api/system/report-designer/export/${row.templateId}?format=${format}`, filename);
     };
 
     const handleViewVersions = (row) => {
@@ -207,17 +246,19 @@ const ReportManagement = () => {
                     <thead>
                         <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)' }}>
                             <th style={{ padding: '10px', textAlign: 'left' }}>Report Name</th>
+                            <th style={{ padding: '10px', textAlign: 'left' }}>Report Code</th>
                             <th style={{ padding: '10px', textAlign: 'center' }}>Datasource</th>
                             <th style={{ padding: '10px', textAlign: 'center' }}>Format</th>
                             <th style={{ padding: '10px', textAlign: 'center' }}>Version</th>
-                            <th style={{ padding: '10px', textAlign: 'center', width: '380px' }}>Actions</th>
+                            <th style={{ padding: '10px', textAlign: 'center' }}>Used in Jobs</th>
+                            <th style={{ padding: '10px', textAlign: 'center', width: '280px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</td></tr>
+                            <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</td></tr>
                         ) : templates.length === 0 ? (
-                            <tr><td colSpan={5} style={{ padding: '60px', textAlign: 'center' }}>
+                            <tr><td colSpan={7} style={{ padding: '60px', textAlign: 'center' }}>
                                 <FileText size={48} style={{ color: 'var(--text-muted)', opacity: 0.3, marginBottom: '16px' }} />
                                 <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No reports found</p>
                                 <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Click "New Report" to design one</p>
@@ -227,14 +268,18 @@ const ReportManagement = () => {
                                 <tr key={t.templateId} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                     <td style={{ padding: '10px' }}>
                                         <div style={{ fontWeight: 600 }}>{t.templateName}</div>
-                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{t.templateKey}</div>
-                                        {t.description && <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>{t.description}</div>}
                                     </td>
+                                    <td style={{ padding: '10px', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-muted)' }}>{t.templateKey}</td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#3b82f620', color: '#3b82f6' }}>{t.datasourceKey}</span></td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: '#8b5cf620', color: '#8b5cf6' }}>{t.outputFormat}</span></td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
                                         <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, background: t.status === '0' ? '#10b98120' : '#f59e0b20', color: t.status === '0' ? '#10b981' : '#f59e0b' }}>
                                             {t.status === '0' ? `Active v${t.version}` : `v${t.version}`}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                                        <span style={{ padding: '4px 8px', borderRadius: '8px', fontSize: '10px', background: '#6366f120', color: '#6366f1' }}>
+                                            -
                                         </span>
                                     </td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
@@ -245,10 +290,9 @@ const ReportManagement = () => {
                                                 </button>
                                             )}
                                             <button onClick={() => handleEditInDesigner(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Edit in Designer"><Code size={14} /></button>
-                                            <button onClick={() => handleExecute(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Execute"><Play size={14} /></button>
+                                            <button onClick={() => handleExportWithParams(t)} className="btn btn-primary" style={{ padding: '4px 12px', fontSize: '11px' }} title="Execute and Export"><Play size={14} /> Export</button>
                                             <button onClick={() => handleScheduleHelp(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Get Schedule Code"><Calendar size={14} /></button>
                                             <button onClick={() => handleViewVersions(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Versions"><Clock size={14} /></button>
-                                            <button onClick={() => handleExport(t, t.outputFormat || 'EXCEL')} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }} title="Export"><Download size={14} /></button>
                                             <button onClick={() => handleDelete(t)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--danger)', borderColor: 'var(--danger)' }} title="Delete"><Trash2 size={14} /></button>
                                         </div>
                                     </td>
@@ -344,7 +388,7 @@ const ReportManagement = () => {
             </Modal>
 
             {/* Execute Parameters Modal */}
-            <Modal isOpen={isParamModalOpen} onClose={() => setIsParamModalOpen(false)} title="Report Parameters" size="medium">
+            <Modal isOpen={isParamModalOpen} onClose={() => setIsParamModalOpen(false)} title={paramModalAction === 'export' ? 'Export Report' : 'Execute Report'} size="medium">
                 <div style={{ padding: '16px' }}>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
                         Enter parameter values for this report. Use JSON format.
@@ -362,7 +406,7 @@ const ReportManagement = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
                         <button className="btn btn-secondary" onClick={() => setIsParamModalOpen(false)}>Cancel</button>
-                        <button className="btn btn-primary" onClick={handleParamExecute}>Execute</button>
+                        <button className="btn btn-primary" onClick={handleParamExecute}>{paramModalAction === 'export' ? 'Export' : 'Execute'}</button>
                     </div>
                 </div>
             </Modal>

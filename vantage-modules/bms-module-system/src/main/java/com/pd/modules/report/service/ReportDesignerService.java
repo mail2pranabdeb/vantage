@@ -52,6 +52,14 @@ public class ReportDesignerService {
         return templateRepository.findAllActive();
     }
 
+    public List<SysReportTemplate> findAllVersions() {
+        return templateRepository.findAll();
+    }
+
+    public List<Map<String, Object>> getJobsUsingTemplate(Long templateId) {
+        return Collections.emptyList();
+    }
+
     public Optional<SysReportTemplate> findById(Long templateId) {
         return templateRepository.findById(templateId);
     }
@@ -66,18 +74,9 @@ public class ReportDesignerService {
 
     @Transactional
     public SysReportTemplate save(SysReportTemplate template) {
-        // Auto-increment version when editing existing template
-        if (template.getTemplateId() != null) {
-            Optional<SysReportTemplate> existing = templateRepository.findById(template.getTemplateId());
-            if (existing.isPresent()) {
-                SysReportTemplate existingTpl = existing.get();
-                Integer maxVersion = templateRepository.findMaxVersionByTemplateKey(existingTpl.getTemplateKey());
-                template.setVersion((maxVersion != null ? maxVersion : 0) + 1);
-                template.setParentTemplateId(existingTpl.getParentTemplateId() != null ? existingTpl.getParentTemplateId() : existingTpl.getTemplateId());
-                template.setCreateTime(existingTpl.getCreateTime());
-                template.setCreateBy(existingTpl.getCreateBy());
-            }
-        } else {
+        // Save without auto-incrementing version
+        // Version will only be incremented when Activate button is clicked
+        if (template.getTemplateId() == null) {
             template.setVersion(1);
         }
         template.setUpdateTime(LocalDateTime.now());
@@ -273,12 +272,15 @@ public class ReportDesignerService {
         SysReportTemplate template = templateOpt.get();
         String sql = buildSqlFromTemplate(template);
 
-        // Replace parameters in SQL
-        if (paramsJson != null && !paramsJson.isEmpty()) {
+        // Replace dynamic system variables FIRST
+        sql = replaceDynamicVariables(sql);
+
+        // Replace parameters in SQL - handle all cases
+        if (paramsJson != null && !paramsJson.trim().isEmpty() && !paramsJson.equals("{}")) {
             try {
                 JsonNode params = objectMapper.readTree(paramsJson);
-                if (params.isObject()) {
-                    Iterator<Map.Entry<String, JsonNode>> fields = params.properties().iterator();
+                if (params.isObject() && params.size() > 0) {
+                    Iterator<Map.Entry<String, JsonNode>> fields = params.fields();
                     while (fields.hasNext()) {
                         Map.Entry<String, JsonNode> field = fields.next();
                         String placeholder = ":" + field.getKey();
@@ -289,12 +291,89 @@ public class ReportDesignerService {
             } catch (Exception e) {
                 log.error("Failed to parse params JSON", e);
             }
+        } else {
+            // No params provided - replace ALL parameter placeholders with NULL
+            // This handles cases like :status, :date, etc that were not replaced by dynamic variables
+            java.util.regex.Pattern paramPattern = java.util.regex.Pattern.compile(":([a-zA-Z_][a-zA-Z0-9_]*)");
+            java.util.regex.Matcher paramMatcher = paramPattern.matcher(sql);
+            while (paramMatcher.find()) {
+                sql = sql.replace(":" + paramMatcher.group(1), "NULL");
+            }
         }
 
         log.info("Executing report template {}: {}", template.getTemplateName(), sql);
 
         // Execute using the template's datasource
         return executeQuery(template.getDatasourceKey(), sql);
+    }
+
+    /**
+     * Replace dynamic system variables with actual values
+     * Supported variables:
+     * - ${SYSDATE} or ${SYSDATE:yyyy-MM-dd} - Current date
+     * - ${SYSDATETIME} or ${SYSDATETIME:yyyy-MM-dd HH:mm:ss} - Current datetime
+     * - ${YEAR} - Current year
+     * - ${MONTH} - Current month
+     * - ${DAY} - Current day
+     */
+    private String replaceDynamicVariables(String sql) {
+        if (sql == null || sql.isEmpty()) {
+            return sql;
+        }
+
+        java.time.LocalDate now = java.time.LocalDate.now();
+        java.time.LocalDateTime now_dt = java.time.LocalDateTime.now();
+
+        // Replace ${SYSDATE} or ${SYSDATE:format}
+        java.util.regex.Pattern sysdatePattern = java.util.regex.Pattern.compile("\\$\\{SYSDATE(?::([^}]+))?\\}");
+        java.util.regex.Matcher sysdateMatcher = sysdatePattern.matcher(sql);
+        while (sysdateMatcher.find()) {
+            String format = sysdateMatcher.group(1);
+            String value;
+            if (format != null) {
+                value = now.format(java.time.format.DateTimeFormatter.ofPattern(format));
+            } else {
+                value = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+            sql = sysdateMatcher.replaceAll("'" + value + "'");
+            sysdateMatcher = sysdatePattern.matcher(sql);
+        }
+
+        // Replace ${SYSDATETIME} or ${SYSDATETIME:format}
+        java.util.regex.Pattern sysdtPattern = java.util.regex.Pattern.compile("\\$\\{SYSDATETIME(?::([^}]+))?\\}");
+        java.util.regex.Matcher sysdtMatcher = sysdtPattern.matcher(sql);
+        while (sysdtMatcher.find()) {
+            String format = sysdtMatcher.group(1);
+            String value;
+            if (format != null) {
+                value = now_dt.format(java.time.format.DateTimeFormatter.ofPattern(format));
+            } else {
+                value = now_dt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            }
+            sql = sysdtMatcher.replaceAll("'" + value + "'");
+            sysdtMatcher = sysdtPattern.matcher(sql);
+        }
+
+        // Replace ${YEAR}
+        sql = sql.replace("${YEAR}", String.valueOf(now.getYear()));
+
+        // Replace ${MONTH} (with leading zero)
+        int month = now.getMonthValue();
+        sql = sql.replace("${MONTH}", String.format("%02d", month));
+
+        // Replace ${DAY} (with leading zero)
+        int day = now.getDayOfMonth();
+        sql = sql.replace("${DAY}", String.format("%02d", day));
+
+        // Replace ${PREV_DAY} - Previous day
+        java.time.LocalDate prevDay = now.minusDays(1);
+        sql = sql.replace("${PREV_DAY}", prevDay.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
+        // Replace ${NEXT_DAY} - Next day
+        java.time.LocalDate nextDay = now.plusDays(1);
+        sql = sql.replace("${NEXT_DAY}", nextDay.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
+        return sql;
     }
 
     /**

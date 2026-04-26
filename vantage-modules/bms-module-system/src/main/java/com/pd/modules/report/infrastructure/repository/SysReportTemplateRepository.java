@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -27,4 +29,8 @@ public interface SysReportTemplateRepository extends JpaRepository<SysReportTemp
 
     @Query("SELECT MAX(r.version) FROM SysReportTemplate r WHERE r.templateKey = :templateKey")
     Integer findMaxVersionByTemplateKey(@Param("templateKey") String templateKey);
+
+    default List<Map<String, Object>> findJobsUsingTemplate(Long templateId) {
+        return Collections.emptyList();
+    }
 }

@@ -11,9 +11,9 @@ A premium, enterprise-grade business management system built with **Spring Boot 
 ## ⚡ Quick Start
 
 ### Prerequisites
-- **Java 17+** (Java 21 recommended)
-- **Node.js 20+**
-- **Maven 3.6+**
+- **Java 21+** (Required)
+- **Node.js 22.12+** (Required for Vite 7.x)
+- **Maven 3.8+**
 
 ### 1. Build
 ```bash
@@ -32,7 +32,7 @@ mvnw.cmd spring-boot:run
 
 - **App URL**: [http://localhost:8081](http://localhost:8081)
 - **H2 Console**: [http://localhost:8081/h2-console](http://localhost:8081/h2-console)
-- **Default Credentials**: `admin` / `admin123`
+- **Default Credentials**: `admin` / `123456`
 
 ### First Run - Load Initial Data
 To load initial data (users, roles, menus), set in `application.yml`:
@@ -172,7 +172,7 @@ Enterprise automation built on Quartz.
 
 ---
 
-## ✨ New Features (2026)
+## ✨ New Features (2026-04)
 
 ### Job Health Monitoring
 - Stuck job detection (>1 hour running)
@@ -184,6 +184,18 @@ Enterprise automation built on Quartz.
 - Parameter input dialog for parameterized reports
 - JSON parameter support in report execution
 - Save parameters with report template
+- **Dynamic System Variables** - Auto-replaced at execution time:
+  - `${SYSDATE}` - Current date (yyyy-MM-dd)
+  - `${SYSDATETIME}` - Current datetime
+  - `${YEAR}` / `${MONTH}` / `${DAY}` - Date parts
+  - `${PREV_DAY}` / `${NEXT_DAY}` - Relative dates
+  - Format: `${SYSDATE:dd/MM/yyyy}` for custom formats
+
+Example SQL:
+```sql
+SELECT * FROM sales WHERE sale_date = '${SYSDATE}'
+SELECT * FROM users WHERE created >= '${PREV_DAY}'
+```
 
 ### Email Templates with Data Tables
 - Dynamic SQL queries embedded in emails

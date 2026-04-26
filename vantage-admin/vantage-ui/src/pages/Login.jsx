@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, User, ArrowRight } from 'lucide-react';
 
+// TEMPORARY TESTING - Auto-fill credentials
+const TEST_USERNAME = 'admin';
+const TEST_PASSWORD = '123456';
+
 const Login = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState(TEST_USERNAME);
+    const [password, setPassword] = useState(TEST_PASSWORD);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -154,7 +158,6 @@ const Login = () => {
                             marginTop: '8px',
                             background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
                             color: 'white',
-                            border: 'none',
                             borderRadius: '12px',
                             fontWeight: 700,
                             letterSpacing: '0.5px',
@@ -164,7 +167,8 @@ const Login = () => {
                             justifyContent: 'center',
                             gap: '10px',
                             cursor: 'pointer',
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.3s ease',
+                            border: '2px solid #fbbf24'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px)';

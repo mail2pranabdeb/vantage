@@ -36,6 +36,14 @@ public class SysJob implements Serializable {
     @Column(name = "report_id")
     private Long reportId;
 
+    /** Report Parameters (JSON) for runtime override */
+    @Column(name = "report_params", length = 1000)
+    private String reportParams;
+
+    /** Email Template Parameters (JSON) for email template data tables */
+    @Column(name = "email_template_params", length = 1000)
+    private String emailTemplateParams;
+
     /** Report Email Group Key (from Dictionary) */
     @Column(name = "report_email_group", length = 500)
     private String reportEmailGroup;
@@ -127,4 +135,12 @@ public class SysJob implements Serializable {
     /** Token for external webhook triggering */
     @Column(name = "webhook_token", length = 64)
     private String webhookToken;
+
+    public String getEmailTemplateParams() {
+        return emailTemplateParams;
+    }
+
+    public void setEmailTemplateParams(String emailTemplateParams) {
+        this.emailTemplateParams = emailTemplateParams;
+    }
 }

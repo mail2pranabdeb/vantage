@@ -206,6 +206,41 @@ WHERE status = :status
 AND create_time >= :startDate
 ```
 
+### Dynamic System Variables for Reports
+**Available Variables (auto-replaced at execution time):**
+- `${SYSDATE}` - Current date (format: yyyy-MM-dd)
+- `${SYSDATE:dd/MM/yyyy}` - Date with custom format
+- `${SYSDATETIME}` - Current datetime (format: yyyy-MM-dd HH:mm:ss)
+- `${SYSDATETIME:mm/dd/yyyy HH:mm}` - Datetime with custom format
+- `${YEAR}` - Current year (e.g., 2026)
+- `${MONTH}` - Current month with leading zero (e.g., 04)
+- `${DAY}` - Current day with leading zero (e.g., 25)
+- `${PREV_DAY}` - Previous day (yyyy-MM-dd)
+- `${NEXT_DAY}` - Next day (yyyy-MM-dd)
+
+**Using Dynamic Variables in SQL:**
+```sql
+-- Get today's sales
+SELECT * FROM sales WHERE sale_date = '${SYSDATE}'
+
+-- Get yesterday's data
+SELECT * FROM users WHERE created_date >= '${PREV_DAY}'
+
+-- Get current month's orders
+SELECT * FROM orders WHERE month = '${MONTH}' AND year = '${YEAR}'
+
+-- Custom format example
+SELECT * FROM events WHERE event_date >= '${SYSDATE:dd-MMM-yyyy}'
+```
+
+**Runtime Parameter Override:**
+When executing a report job manually, you can override parameters via the popup modal. JSON format:
+```json
+{"status": "0", "category": "SALES"}
+```
+
+These dynamic variables are replaced automatically at job execution time - both for manual runs and scheduled runs via Quartz!
+
 ### 5. Code Generation
 **Location:** Tool → Code Generation
 
@@ -539,5 +574,5 @@ Jobs can trigger dependent jobs after successful completion using `dependent_job
 ---
 
 **Version:** 1.0.0  
-**Last Updated:** 2026-04-20  
-**Build:** Complete (36+ features)
+**Last Updated:** 2026-04-26  
+**Build:** Complete (40+ features)

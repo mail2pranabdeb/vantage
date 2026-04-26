@@ -2,6 +2,7 @@ package com.pd.modules.quartz.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -91,9 +92,38 @@ public class SysJobController extends BaseController {
      * Run job immediately
      */
     @PostMapping("/run")
-    public AjaxResult run(@RequestBody SysJob job) throws SchedulerException {
-        Long jobLogId = sysJobService.run(job);
-        return success(jobLogId);
+    public AjaxResult run(@RequestBody java.util.Map<String, Object> request) throws SchedulerException {
+        // Extract jobId and optional params from request
+        Long jobId = request.get("jobId") != null ? ((Number) request.get("jobId")).longValue() : null;
+        String overrideParams = request.get("params") != null ? (String) request.get("params") : null;
+        String overrideEmailParams = request.get("emailTemplateParams") != null ? (String) request.get("emailTemplateParams") : null;
+
+        if (jobId == null) {
+            return error("Job ID is required");
+        }
+
+        // Fetch job from database
+        SysJob job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // Use override params for this run only (don't save to database)
+        final String originalParams = job.getReportParams();
+        final String originalEmailParams = job.getEmailTemplateParams();
+        if (overrideParams != null && !overrideParams.trim().isEmpty()) {
+            job.setReportParams(overrideParams);
+        }
+        
+        // Use override email template params for this run only
+        if (overrideEmailParams != null && !overrideEmailParams.trim().isEmpty()) {
+            job.setEmailTemplateParams(overrideEmailParams);
+        }
+
+        try {
+            Long jobLogId = sysJobService.run(job);
+            return success(jobLogId);
+        } finally {
+            // Restore original params so override doesn't persist
+            job.setReportParams(originalParams);
+        }
     }
 
     /**

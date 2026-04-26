@@ -55,10 +55,10 @@ INSERT INTO sys_menu (menu_name, parent_id, order_num, url, target, menu_type, v
 VALUES('Job Management', 0, 2, '#', '', 'M', '0', '1', '', 'fa fa-tasks', '0', 'admin', current_timestamp, 'Scheduled Job Management');
 
 INSERT INTO sys_menu (menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
-VALUES('Code Gen Management', 0, 3, '#', '', 'M', '0', '1', '', 'fa fa-code', '0', 'admin', current_timestamp, 'Code Generator');
+VALUES('Code Gen Management', 0, 4, '#', '', 'M', '0', '1', '', 'fa fa-code', '0', 'admin', current_timestamp, 'Code Generator');
 
 INSERT INTO sys_menu (menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)
-VALUES('Report Management', 0, 4, '#', '', 'M', '0', '1', '', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Report Management');
+VALUES('Report Management', 0, 3, '#', '', 'M', '0', '1', '', 'fa fa-file-text', '0', 'admin', CURRENT_TIMESTAMP, 'Report Management');
 
 -- System Management children (parent_id from System Management)
 INSERT INTO sys_menu (menu_name, parent_id, order_num, url, target, menu_type, visible, is_refresh, perms, icon, status, create_by, create_time, remark)

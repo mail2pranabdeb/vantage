@@ -121,9 +121,11 @@ public class EmailTemplateController extends BaseController {
             String subject = (String) request.getOrDefault("emailSubject", "");
             String body = (String) request.getOrDefault("emailBody", "");
             String dataTablesJson = (String) request.get("dataTables");
+            String params = (String) request.get("params");
 
             log.info("Preview request - body contains dataTable placeholder: {}", body.contains("${dataTable}"));
             log.info("Preview request - dataTablesJson: {}", dataTablesJson);
+            log.info("Preview request - params: {}", params);
 
             // Process template variables
             String renderedSubject = emailTemplateService.processTemplate(subject, null, null);
@@ -132,7 +134,7 @@ public class EmailTemplateController extends BaseController {
 
             String dataTableHtml = "";
             if (dataTablesJson != null && !dataTablesJson.isEmpty()) {
-                dataTableHtml = emailTemplateService.executeMultipleQueriesAndRenderTables(dataTablesJson);
+                dataTableHtml = emailTemplateService.executeMultipleQueriesAndRenderTables(dataTablesJson, params);
                 log.info("Preview request - dataTableHtml generated, length: {}, contains tables: {}", dataTableHtml.length(), dataTableHtml.contains("<table"));
                 renderedBody = renderedBody.replace("${dataTable}", dataTableHtml);
                 log.info("Preview request - after replace, body contains table: {}", renderedBody.contains("<table"));

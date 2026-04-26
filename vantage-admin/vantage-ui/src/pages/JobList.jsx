@@ -13,7 +13,7 @@ import SockJS from 'sockjs-client';
 import { useToast } from '../components/Toast';
 
 const JobList = () => {
-    const toast = useToast();
+    const { addToast } = useToast();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,13 +35,19 @@ const JobList = () => {
     const [submitting, setSubmitting] = useState(false);
     const [activeReports, setActiveReports] = useState([]);
     const [emailGroups, setEmailGroups] = useState([]);
+    const [isParamModalOpen, setIsParamModalOpen] = useState(false);
+    const [pendingRunJob, setPendingRunJob] = useState(null);
+    const [runParams, setRunParams] = useState('');
+    const [runEmailParams, setRunEmailParams] = useState('');
     const [formData, setFormData] = useState({
         jobName: '',
         jobGroup: '',
         invokeTarget: '',
         jobType: 'BEAN',
         reportId: '',
+        reportParams: '',
         reportEmailGroup: [],
+        emailTemplateParams: '',
         cronExpression: '',
         misfirePolicy: '3',
         concurrent: '1',
@@ -87,48 +93,13 @@ const JobList = () => {
                 wsClientRef.current.deactivate();
             }
         };
-    }, []);
+}, []);
 
-    useEffect(() => {
+useEffect(() => {
         fetchJobs();
-        fetchJobTemplates();
+        fetchActiveReports();
         fetchEmailTemplates();
-        fetchMetrics();
-        
-        // Fetch active reports for dropdown
-        fetch('/api/system/report-designer/active-templates')
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 200) setActiveReports(data.data || []);
-            });
-
-        // Fetch email templates for dropdown
-        fetch('/api/system/email-template/active')
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 200) {
-                    const templates = data.data || [];
-                    setEmailTemplates(templates);
-                    // Auto-select default template for new jobs
-                    const defaultTpl = templates.find(t => t.isDefault) || templates[0];
-                    if (defaultTpl) {
-                        setFormData(prev => ({ ...prev, emailTemplateId: String(defaultTpl.templateId) }));
-                    }
-                }
-            })
-            .catch(err => console.error("Failed to fetch email templates:", err));
-
-        // Fetch email groups from dictionary
-        fetch('/api/system/dict/data/type/sys_report_email_group')
-            .then(res => res.json())
-            .then(data => {
-                console.log("Email groups response:", data);
-                if (data.code === 200) {
-                    setEmailGroups(data.data || []);
-                    console.log("Email groups set:", data.data);
-                }
-            })
-            .catch(err => console.error("Failed to fetch email groups:", err));
+        fetchEmailGroups();
     }, []);
 
     const fetchJobTemplates = () => {
@@ -151,6 +122,31 @@ const JobList = () => {
                 }
             })
             .catch(err => console.error("Failed to fetch email templates:", err));
+    };
+
+    const fetchActiveReports = () => {
+        fetch('/api/system/report-designer/active-templates')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    setActiveReports(data.data || []);
+                }
+            })
+            .catch(err => console.error("Failed to fetch active reports:", err));
+    };
+
+    const fetchEmailGroups = () => {
+        fetch('/api/system/dict/data/type/sys_report_email_group')
+            .then(res => res.json())
+            .then(data => {
+                console.log("Email groups response:", data);
+                if (data.code === 200) {
+                    setEmailGroups(data.data || []);
+                } else {
+                    console.error("Failed to fetch email groups:", data.msg);
+                }
+            })
+            .catch(err => console.error("Failed to fetch email groups:", err));
     };
 
     const fetchJobs = () => {
@@ -208,6 +204,7 @@ const JobList = () => {
             invokeTarget: '',
             jobType: 'BEAN',
             reportId: '',
+            reportParams: '',
             reportEmailGroup: [],
             emailTemplateId: defaultTemplateId,
             cronExpression: '',
@@ -243,6 +240,7 @@ const JobList = () => {
             invokeTarget: row.invokeTarget || '',
             jobType: row.jobType || 'BEAN',
             reportId: row.reportId || '',
+            reportParams: row.reportParams || '',
             reportEmailGroup: emailGroupArray,
             cronExpression: row.cronExpression || '',
             misfirePolicy: String(row.misfirePolicy || '3'),
@@ -256,6 +254,7 @@ const JobList = () => {
             webhookUrl: row.webhookUrl || '',
             webhookToken: row.webhookToken || '',
             emailTemplateId: row.emailTemplateId || '',
+            emailTemplateParams: row.emailTemplateParams || '',
             dependentJobIds: row.dependentJobIds || '',
             timeZone: row.timeZone || 'UTC',
             allowHoliday: row.allowHoliday !== undefined ? row.allowHoliday : true,
@@ -270,18 +269,22 @@ const JobList = () => {
     const handleViewClick = (row) => {
         setModalMode('view');
         setCurrentJob(row);
-        // Parse email group - split comma-separated string to array for multi-select
+        
         let emailGroupArray = [];
         if (row.reportEmailGroup) {
             emailGroupArray = row.reportEmailGroup.split(',').map(s => s.trim()).filter(s => s);
         }
-        setFormData({
+        
+        // Direct assignment - emailTemplateParams exists in row
+        const newFormData = {
             jobName: row.jobName || '',
             jobGroup: row.jobGroup || '',
             invokeTarget: row.invokeTarget || '',
             jobType: row.jobType || 'BEAN',
             reportId: row.reportId || '',
+            reportParams: row.reportParams || '',
             reportEmailGroup: emailGroupArray,
+            emailTemplateParams: 'TEST_FIXED' || row.emailTemplateParams || '',
             cronExpression: row.cronExpression || '',
             misfirePolicy: String(row.misfirePolicy || '3'),
             concurrent: String(row.concurrent || '1'),
@@ -298,8 +301,13 @@ const JobList = () => {
             timeZone: row.timeZone || 'UTC',
             allowHoliday: row.allowHoliday !== undefined ? row.allowHoliday : true,
             remark: row.remark || ''
-        });
+        };
+        
+        setFormData(newFormData);
         setIsModalOpen(true);
+        
+        console.log('FINAL - newFormData.emailTemplateParams:', newFormData.emailTemplateParams);
+        console.log('FINAL - row.emailTemplateParams:', row.emailTemplateParams);
     };
 
     const handleDeleteClick = (row) => {
@@ -323,6 +331,15 @@ const JobList = () => {
     };
 
     const handleRunClick = (row) => {
+        // For REPORT jobs, prompt for parameters override
+        if (row.jobType === 'REPORT' && row.reportId) {
+            setPendingRunJob(row);
+            setRunParams(row.reportParams || '{}');
+            setRunEmailParams(row.emailTemplateParams || '');
+            setIsParamModalOpen(true);
+            return;
+        }
+
         if (window.confirm(`Run job "${row.jobName}" now?`)) {
             fetch(`/api/system/job/run`, {
                 method: 'POST',
@@ -333,20 +350,61 @@ const JobList = () => {
             .then(data => {
                 if (data.code === 200) {
                     const jobLogId = data.data;
-                    toast.success(`Job executed successfully. Run ID: ${jobLogId}`);
+                    addToast('success', `Job executed successfully. Run ID: ${jobLogId}`, 3000);
                 } else {
-                    toast.error(data.msg || 'Failed to run job');
+                    addToast('error', data.msg || 'Failed to run job', 5000);
                 }
             })
             .catch(err => {
                 console.error("Failed to run job:", err);
-                toast.error('Failed to run job');
+                addToast('error', 'Failed to run job', 5000);
             });
         }
     };
 
+    const handleParamRun = () => {
+        if (!pendingRunJob) return;
+
+        setIsParamModalOpen(false);
+        const body = { jobId: pendingRunJob.jobId };
+
+        // Add override params if provided
+        if (runParams && runParams.trim()) {
+            body.params = runParams;
+        }
+        
+        // Add email template params if provided
+        if (runEmailParams && runEmailParams.trim()) {
+            body.emailTemplateParams = runEmailParams;
+        }
+
+        fetch(`/api/system/job/run`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                addToast('success', `Job executed. Run ID: ${data.data}`, 3000);
+            } else {
+                addToast('error', data.msg || 'Failed to run job', 5000);
+            }
+        })
+        .catch(err => {
+            console.error("Failed to run job:", err);
+            addToast('error', 'Failed to run job', 5000);
+        });
+
+        setPendingRunJob(null);
+        setRunParams('');
+        setRunEmailParams('');
+    };
+
     const handlePauseClick = (row) => {
         const newStatus = row.status === '0' ? '1' : '0';
+        if (!window.confirm(`${newStatus === '0' ? 'Activate' : 'Pause'} job "${row.jobName}"?`)) return;
+        
         fetch(`/api/system/job/changeStatus`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -355,14 +413,15 @@ const JobList = () => {
         .then(res => res.json())
         .then(data => {
             if (data.code === 200) {
+                addToast('success', `Job ${newStatus === '0' ? 'activated' : 'paused'} successfully`, 3000);
                 fetchJobs();
             } else {
-                alert(data.msg || 'Failed to update job status');
+                addToast('error', data.msg || 'Failed to update job status', 5000);
             }
         })
         .catch(err => {
             console.error("Failed to update job status:", err);
-            alert('Failed to update job status');
+            addToast('error', 'Failed to update job status', 5000);
         });
     };
 
@@ -567,16 +626,63 @@ const JobList = () => {
                 </div>
             )
         },
-        {
+{
             key: 'status',
             header: 'Status',
             sortable: true,
             align: 'center',
-            render: (value) => (
-                <span className={`status-pill ${value === '0' ? '' : 'inactive'}`}>
-                    <div className="pulse-dot" style={{ color: value === '0' ? '#10b981' : '#ef4444' }}></div>
-                    {value === '0' ? 'Active' : 'Paused'}
-                </span>
+            render: (value, row) => (
+                <div 
+                    style={{ 
+                        position: 'relative', 
+                        width: '36px', 
+                        height: '20px',
+                        display: 'inline-block',
+                        cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                        const newStatus = value === '0' ? '1' : '0';
+                        fetch(`/api/system/job/changeStatus`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobId: row.jobId, status: newStatus })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.code === 200) {
+                                addToast('success', `Job ${newStatus === '0' ? 'activated' : 'paused'}`, 3000);
+                                fetchJobs();
+                            } else {
+                                addToast('error', data.msg || 'Failed to update job status', 5000);
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Failed to update job status:", err);
+                            addToast('error', 'Failed to update job status', 5000);
+                        });
+                    }}
+                >
+                    <span style={{
+                        position: 'absolute',
+                        width: '36px',
+                        height: '20px',
+                        background: value === '0' ? '#10b981' : '#9ca3af',
+                        borderRadius: '20px',
+                        transition: 'background 0.3s'
+                    }}>
+                        <span style={{
+                            position: 'absolute',
+                            top: '2px',
+                            left: value === '0' ? '18px' : '2px',
+                            width: '16px',
+                            height: '16px',
+                            background: 'white',
+                            borderRadius: '50%',
+                            transition: 'left 0.3s',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                        }} />
+                    </span>
+                </div>
             )
         },
         {
@@ -798,27 +904,39 @@ const JobList = () => {
 
                         {formData.jobType === 'REPORT' ? (
                             <>
-                            <div className="form-group">
-                                <label className="form-label">Select Active Report</label>
-                                <select
-                                    name="reportId"
-                                    value={formData.reportId}
-                                    onChange={handleInputChange}
-                                    className="form-input"
-                                    required
-                                    disabled={modalMode === 'view'}
-                                >
-                                    <option value="">-- Select a Report --</option>
-                                    {activeReports.map(r => (
-                                        <option key={r.templateId} value={r.templateId}>
-                                            {r.templateName} (v{r.version})
-                                        </option>
-                                    ))}
-                                </select>
-                                <small className="form-help">Only activated reports appear here</small>
-                            </div>
+<div className="form-group">
+                                    <label className="form-label">Select Active Report</label>
+                                    <select
+                                        name="reportId"
+                                        value={formData.reportId}
+                                        onChange={handleInputChange}
+                                        className="form-input"
+                                        required
+                                        disabled={modalMode === 'view'}
+                                    >
+                                        <option value="">-- Select a Report --</option>
+                                        {activeReports.map(r => (
+                                            <option key={r.templateId} value={r.templateId}>
+                                                {r.templateName} (v{r.version})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <small className="form-help">Only activated reports appear here</small>
+                                </div>
 
-                            <div className="form-group">
+                                <div className="form-group">
+                                    <label className="form-label">Report Parameters (JSON)</label>
+                                    <FormInput
+                                        name="reportParams"
+                                        value={formData.reportParams}
+                                        onChange={handleInputChange}
+                                        placeholder='{"status": "0", "date": "2026-01-01"}'
+                                        disabled={modalMode === 'view'}
+                                    />
+                                    <small className="form-help">Optional: JSON parameters for the report</small>
+                                </div>
+
+                                <div className="form-group">
                                 <label className="form-label">
                                     Email Template <span style={{ color: 'var(--danger)' }}>*</span>
                                 </label>
@@ -846,6 +964,20 @@ const JobList = () => {
                                         window.location.href = '/#/system/email-templates';
                                     }}>Manage Templates</a>
                                 </small>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Email Template Parameters (JSON)</label>
+                                <textarea
+                                    name="emailTemplateParams"
+                                    value={formData.emailTemplateParams || ''}
+                                    onChange={handleInputChange}
+                                    placeholder='{"status": "0"}'
+                                    disabled={modalMode === 'view'}
+                                    className="form-input"
+                                    style={{ height: '60px', fontFamily: 'monospace', fontSize: '12px' }}
+                                />
+                                <small className="form-help">Optional: Override params for email template data tables</small>
                             </div>
                             </>
                         ) : (
@@ -1174,6 +1306,46 @@ const JobList = () => {
                             disabled={modalMode === 'view'}
                             style={{ resize: 'vertical' }}
                         />
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Run Parameters Modal */}
+            <Modal
+                isOpen={isParamModalOpen}
+                onClose={() => setIsParamModalOpen(false)}
+                title={"Run Parameters"}
+                size="small"
+            >
+                <div style={{ padding: '16px' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                        Enter JSON parameters to override saved values. Leave empty to use saved params.
+                    </p>
+                    <div className="form-group">
+                        <label className="form-label">Report Parameters (JSON)</label>
+                        <textarea
+                            className="form-input"
+                            rows={3}
+                            value={runParams}
+                            onChange={(e) => setRunParams(e.target.value)}
+                            placeholder='{"status": "0"}'
+                            style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Email Template Parameters (JSON)</label>
+                        <textarea
+                            className="form-input"
+                            rows={3}
+                            value={runEmailParams}
+                            onChange={(e) => setRunEmailParams(e.target.value)}
+                            placeholder='{"status": "0"}'
+                            style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                        <button className="btn btn-secondary" onClick={() => setIsParamModalOpen(false)}>Cancel</button>
+                        <button className="btn btn-primary" onClick={handleParamRun}>Run Job</button>
                     </div>
                 </div>
             </Modal>

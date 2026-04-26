@@ -9,16 +9,18 @@ const EmailTemplateManager = () => {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [modalMode, setModalMode] = useState('add');
-    const [currentTemplate, setCurrentTemplate] = useState(null);
-    const [selectedTemplate, setSelectedTemplate] = useState(null);
-    const [copiedId, setCopiedId] = useState(null);
-    const [activeTab, setActiveTab] = useState('html');
+const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewContent, setPreviewContent] = useState({ subject: '', body: '' });
     const [previewLoading, setPreviewLoading] = useState(false);
+    const [previewParams, setPreviewParams] = useState('');
     const [datasources, setDatasources] = useState([]);
     const [submitting, setSubmitting] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [currentTemplate, setCurrentTemplate] = useState(null);
+    const [activeTab, setActiveTab] = useState('html');
+    const [previewTemplate, setPreviewTemplate] = useState(null);
+    const [showParamsModal, setShowParamsModal] = useState(false);
+    const [tempPreviewParams, setTempPreviewParams] = useState('');
 
     const [formData, setFormData] = useState({
         templateName: '',
@@ -28,7 +30,8 @@ const EmailTemplateManager = () => {
         isDefault: false,
         isActive: true,
         remark: '',
-        dataTables: []  // [{datasourceKey, query, label, enabled}]
+        dataTables: [],
+        previewParams: ''
     });
 
     const templateTypes = [
@@ -108,8 +111,10 @@ const EmailTemplateManager = () => {
             isDefault: false,
             isActive: true,
             remark: '',
-            dataTables: []
+            dataTables: [],
+            previewParams: ''
         });
+        setPreviewParams('');
         setIsModalOpen(true);
     };
 
@@ -128,8 +133,10 @@ const EmailTemplateManager = () => {
             isDefault: template.isDefault || false,
             isActive: template.isActive || true,
             remark: template.remark || '',
-            dataTables: dt
+            dataTables: dt,
+            previewParams: template.previewParams || ''
         });
+        setPreviewParams(template.previewParams || '');
         setIsModalOpen(true);
     };
 
@@ -141,7 +148,65 @@ const EmailTemplateManager = () => {
             body: JSON.stringify({
                 emailSubject: formData.emailSubject,
                 emailBody: formData.emailBody,
-                dataTables: formData.dataTables.length > 0 ? JSON.stringify(formData.dataTables) : null
+                dataTables: formData.dataTables.length > 0 ? JSON.stringify(formData.dataTables) : null,
+                params: previewParams || null
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setPreviewLoading(false);
+            if (data.code === 200) {
+                setPreviewContent({ subject: data.subject || '', body: data.body || '' });
+                setIsPreviewOpen(true);
+            } else {
+                alert(data.msg || 'Preview failed');
+            }
+        })
+        .catch(err => {
+            setPreviewLoading(false);
+            console.error("Preview failed:", err);
+            alert('Preview failed');
+        });
+    };
+
+    const handleListPreviewClick = (template) => {
+        console.log('handleListPreviewClick - template:', template);
+        console.log('handleListPreviewClick - previewParams:', template.previewParams);
+        
+        setPreviewTemplate(template);
+        setTempPreviewParams(template.previewParams || '');
+        setShowParamsModal(true);
+    };
+
+    const confirmPreviewWithParams = () => {
+        if (!previewTemplate) return;
+        
+        let dt = [];
+        try {
+            if (previewTemplate.dataTables) dt = JSON.parse(previewTemplate.dataTables);
+        } catch(e) { /* ignore */ }
+        setFormData({
+            templateName: previewTemplate.templateName || '',
+            templateType: previewTemplate.templateType || 'JOB_FAILURE',
+            emailSubject: previewTemplate.emailSubject || '',
+            emailBody: previewTemplate.emailBody || '',
+            isDefault: previewTemplate.isDefault || false,
+            isActive: previewTemplate.isActive || true,
+            remark: previewTemplate.remark || '',
+            dataTables: dt,
+            previewParams: tempPreviewParams || ''
+        });
+        setPreviewParams(tempPreviewParams || '');
+        setShowParamsModal(false);
+        setPreviewLoading(true);
+        fetch('/api/system/email-template/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                emailSubject: previewTemplate.emailSubject,
+                emailBody: previewTemplate.emailBody,
+                dataTables: previewTemplate.dataTables,
+                params: tempPreviewParams || previewTemplate.previewParams || null
             })
         })
         .then(res => res.json())
@@ -257,13 +322,20 @@ const EmailTemplateManager = () => {
         const url = modalMode === 'add' ? '/api/system/email-template' : '/api/system/email-template';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
         
+        console.log('handleSubmit - formData:', formData);
+        console.log('handleSubmit - previewParams field:', formData.previewParams);
+        console.log('handleSubmit - previewParams state:', previewParams);
+        
         // Build body manually, converting dataTables array to JSON string
-        const { dataTables, ...restFormData } = formData;
+        const { dataTables, previewParams: pp, ...restFormData } = formData;
         const body = {
             ...restFormData,
             templateId: modalMode === 'edit' ? currentTemplate.templateId : null,
-            dataTables: dataTables.length > 0 ? JSON.stringify(dataTables) : null
+            dataTables: dataTables.length > 0 ? JSON.stringify(dataTables) : null,
+            previewParams: pp && pp.trim() ? pp : (previewParams && previewParams.trim() ? previewParams : null)
         };
+
+        console.log('handleSubmit - request body:', body);
 
         fetch(url, {
             method,
@@ -447,7 +519,7 @@ const EmailTemplateManager = () => {
                             borderTop: '1px solid var(--border-color)'
                         }}>
                             <button
-                                onClick={() => handlePreviewClick(template)}
+                                onClick={() => handleListPreviewClick(template)}
                                 className="btn btn-secondary"
                                 style={{ flex: 1, padding: '8px', fontSize: '12px' }}
                             >
@@ -542,7 +614,7 @@ const EmailTemplateManager = () => {
                 title={modalMode === 'add' ? 'Create Template' : 'Edit Template'}
                 size="large"
                 footer={
-                    <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <button
                             className="btn btn-secondary"
                             onClick={() => setIsModalOpen(false)}
@@ -550,6 +622,15 @@ const EmailTemplateManager = () => {
                         >
                             Cancel
                         </button>
+                        <input
+                            type="text"
+                            value={previewParams}
+                            onChange={(e) => setPreviewParams(e.target.value)}
+                            placeholder='{"status": "0"}'
+                            className="form-input"
+                            style={{ width: '180px', fontSize: '12px', padding: '6px 10px' }}
+                            title="JSON parameters for data table queries"
+                        />
                         <button
                             className="btn btn-secondary"
                             onClick={handlePreviewClick}
@@ -589,7 +670,7 @@ const EmailTemplateManager = () => {
                             <Save size={16} />
                             {modalMode === 'add' ? 'Create' : 'Save'}
                         </button>
-                    </>
+                    </div>
                 }
             >
                 <div style={{ maxHeight: '75vh', overflowY: 'auto', paddingRight: '8px' }}>
@@ -912,8 +993,27 @@ const EmailTemplateManager = () => {
                 onClose={() => setIsPreviewOpen(false)}
                 title="Live Email Preview"
                 size="large"
+                showCloseButton={true}
+                footer={
+                    <button className="btn btn-primary" onClick={() => setIsPreviewOpen(false)}>
+                        Close
+                    </button>
+                }
             >
-                {previewContent.subject && (
+                {previewLoading ? (
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                        <div style={{
+                            width: '24px',
+                            height: '24px',
+                            border: '3px solid var(--primary)',
+                            borderBottomColor: 'transparent',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite',
+                            margin: '0 auto'
+                        }} />
+                        <p style={{ marginTop: '12px', color: 'var(--text-muted)' }}>Generating preview...</p>
+                    </div>
+                ) : (
                     <div>
                         <div style={{
                             padding: '12px',
@@ -923,7 +1023,7 @@ const EmailTemplateManager = () => {
                         }}>
                             <strong style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Subject:</strong>
                             <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                                {previewContent.subject}
+                                {previewContent.subject || '(no subject)'}
                             </div>
                         </div>
                         <div style={{
@@ -935,10 +1035,49 @@ const EmailTemplateManager = () => {
                             maxHeight: '60vh',
                             overflow: 'auto'
                         }}>
-                            <div dangerouslySetInnerHTML={{ __html: previewContent.body }} />
+                            <div dangerouslySetInnerHTML={{ __html: previewContent.body || '<p>No content</p>' }} />
                         </div>
                     </div>
                 )}
+            </Modal>
+
+            {/* Params Input Modal for List Preview */}
+            <Modal
+                isOpen={showParamsModal}
+                onClose={() => setShowParamsModal(false)}
+                title="Preview Parameters"
+                size="small"
+                footer={
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-secondary" onClick={() => setShowParamsModal(false)}>
+                            Cancel
+                        </button>
+                        <button className="btn btn-primary" onClick={confirmPreviewWithParams}>
+                            Generate Preview
+                        </button>
+                    </div>
+                }
+            >
+                <div style={{ padding: '16px 0' }}>
+                    <p style={{ marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                        Enter JSON parameters for data table queries (optional)
+                    </p>
+                    <textarea
+                        value={tempPreviewParams}
+                        onChange={(e) => setTempPreviewParams(e.target.value)}
+                        placeholder='{"status": "0"}'
+                        className="form-input"
+                        style={{ 
+                            width: '100%', 
+                            height: '100px', 
+                            fontFamily: 'monospace',
+                            fontSize: '12px'
+                        }}
+                    />
+                    <p style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                        Saved params: {previewTemplate?.previewParams || '(none)'}
+                    </p>
+                </div>
             </Modal>
         </div>
     );

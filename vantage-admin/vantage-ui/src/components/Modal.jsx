@@ -8,7 +8,8 @@ const Modal = ({
     size = 'medium',
     compact = false,
     showCloseButton = true,
-    footer
+    footer,
+    closeOnOverlayClick = true
 }) => {
     if (!isOpen) return null;
 
@@ -20,7 +21,7 @@ const Modal = ({
     };
 
     return (
-        <div className="modal-overlay" onClick={showCloseButton ? onClose : undefined}>
+        <div className="modal-overlay" onClick={closeOnOverlayClick ? onClose : undefined}>
             <div 
                 className={`modal-content ${sizeClasses[size]} ${compact ? 'compact' : ''}`}
                 onClick={(e) => e.stopPropagation()}

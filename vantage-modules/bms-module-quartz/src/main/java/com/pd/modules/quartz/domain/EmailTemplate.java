@@ -71,6 +71,14 @@ public class EmailTemplate implements Serializable {
     @Column(name = "data_tables", columnDefinition = "TEXT")
     private String dataTables;
 
+    /** Preview parameters JSON for data table queries (preview only) */
+    @Column(name = "preview_params", columnDefinition = "TEXT")
+    private String previewParams;
+
+    /** Runtime parameters JSON for job execution */
+    @Column(name = "runtime_params", columnDefinition = "TEXT")
+    private String runtimeParams;
+
     // Getters and Setters
     public Long getTemplateId() {
         return templateId;
@@ -182,5 +190,21 @@ public class EmailTemplate implements Serializable {
 
     public void setDataTables(String dataTables) {
         this.dataTables = dataTables;
+    }
+
+    public String getPreviewParams() {
+        return previewParams;
+    }
+
+    public void setPreviewParams(String previewParams) {
+        this.previewParams = previewParams;
+    }
+
+    public String getRuntimeParams() {
+        return runtimeParams;
+    }
+
+    public void setRuntimeParams(String runtimeParams) {
+        this.runtimeParams = runtimeParams;
     }
 }
