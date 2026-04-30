@@ -267,10 +267,8 @@ public class OperationLogAspect {
                     && !(auth.getPrincipal() instanceof String)
                     && !"anonymousUser".equals(auth.getPrincipal())) {
                 
-                return switch (auth.getPrincipal()) {
-                    case UserDetails ud -> ud.getUsername();
-                    case Object obj -> obj.toString();
-                };
+                Object principal = auth.getPrincipal();
+                return (principal instanceof UserDetails ud) ? ud.getUsername() : principal.toString();
             }
         } catch (Exception e) {
             log.debug("=== Failed to extract current user ===");

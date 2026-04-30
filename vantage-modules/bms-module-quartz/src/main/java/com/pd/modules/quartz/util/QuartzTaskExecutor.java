@@ -358,58 +358,54 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             return "No data available\n";
         }
 
-        Object firstRow = data.getFirst();
-        switch (firstRow) {
-            case java.util.Map<?, ?> firstMap -> {
+        Object firstRow = data.get(0);
+        if (firstRow instanceof java.util.Map<?, ?> firstMap) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> map = (java.util.Map<String, Object>) firstMap;
+            List<String> headers = new ArrayList<>(map.keySet());
+            
+            // Write header
+            csv.append(String.join(",", headers)).append("\n");
+            
+            // Write data rows
+            for (Object row : data) {
                 @SuppressWarnings("unchecked")
-                java.util.Map<String, Object> map = (java.util.Map<String, Object>) firstMap;
-                List<String> headers = new ArrayList<>(map.keySet());
-                
-                // Write header
-                csv.append(String.join(",", headers)).append("\n");
-                
-                // Write data rows
-                for (Object row : data) {
-                    @SuppressWarnings("unchecked")
-                    java.util.Map<String, Object> rowMap = (java.util.Map<String, Object>) row;
-                    List<String> values = new ArrayList<>();
-                    for (String header : headers) {
-                        Object val = rowMap.get(header);
-                        String strVal = val != null ? val.toString() : "";
-                        // Escape commas in values
-                        if (strVal.contains(",") || strVal.contains("\"") || strVal.contains("\n")) {
-                            strVal = "\"" + strVal.replace("\"", "\"\"") + "\"";
-                        }
-                        values.add(strVal);
+                java.util.Map<String, Object> rowMap = (java.util.Map<String, Object>) row;
+                List<String> values = new ArrayList<>();
+                for (String header : headers) {
+                    Object val = rowMap.get(header);
+                    String strVal = val != null ? val.toString() : "";
+                    // Escape commas in values
+                    if (strVal.contains(",") || strVal.contains("\"") || strVal.contains("\n")) {
+                        strVal = "\"" + strVal.replace("\"", "\"\"") + "\"";
                     }
-                    csv.append(String.join(",", values)).append("\n");
+                    values.add(strVal);
                 }
+                csv.append(String.join(",", values)).append("\n");
             }
-            case Object[] firstArray -> {
-                for (int i = 0; i < firstArray.length; i++) {
-                    csv.append("Column").append(i + 1);
-                    if (i < firstArray.length - 1) csv.append(",");
+        } else if (firstRow instanceof Object[] firstArray) {
+            for (int i = 0; i < firstArray.length; i++) {
+                csv.append("Column").append(i + 1);
+                if (i < firstArray.length - 1) csv.append(",");
+            }
+            csv.append("\n");
+            
+            for (Object row : data) {
+                Object[] rowArray = (Object[]) row;
+                for (int i = 0; i < rowArray.length; i++) {
+                    String val = rowArray[i] != null ? rowArray[i].toString() : "";
+                    if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
+                        val = "\"" + val.replace("\"", "\"\"") + "\"";
+                    }
+                    csv.append(val);
+                    if (i < rowArray.length - 1) csv.append(",");
                 }
                 csv.append("\n");
-                
-                for (Object row : data) {
-                    Object[] rowArray = (Object[]) row;
-                    for (int i = 0; i < rowArray.length; i++) {
-                        String val = rowArray[i] != null ? rowArray[i].toString() : "";
-                        if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
-                            val = "\"" + val.replace("\"", "\"\"") + "\"";
-                        }
-                        csv.append(val);
-                        if (i < rowArray.length - 1) csv.append(",");
-                    }
-                    csv.append("\n");
-                }
             }
-            default -> {
-                csv.append("Data\n");
-                for (Object row : data) {
-                    csv.append(row.toString()).append("\n");
-                }
+        } else {
+            csv.append("Data\n");
+            for (Object row : data) {
+                csv.append(row.toString()).append("\n");
             }
         }
         
@@ -571,15 +567,22 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     private Class<?>[] getArgumentTypes(Object[] args) {
         Class<?>[] types = new Class<?>[args.length];
         for (int i = 0; i < args.length; i++) {
-            types[i] = switch (args[i]) {
-                case null -> Object.class; // For null args, use Object.class but prefer String[] for array positions
-                case Long l -> Long.class;
-                case Integer n -> Integer.class;
-                case Double d -> Double.class;
-                case Boolean b -> Boolean.class;
-                case String[] s -> String[].class;
-                case Object obj -> obj.getClass();
-            };
+            Object arg = args[i];
+            if (arg == null) {
+                types[i] = Object.class;
+            } else if (arg instanceof Long) {
+                types[i] = Long.class;
+            } else if (arg instanceof Integer) {
+                types[i] = Integer.class;
+            } else if (arg instanceof Double) {
+                types[i] = Double.class;
+            } else if (arg instanceof Boolean) {
+                types[i] = Boolean.class;
+            } else if (arg instanceof String[]) {
+                types[i] = String[].class;
+            } else {
+                types[i] = arg.getClass();
+            }
         }
         return types;
     }

@@ -1,5 +1,5 @@
 # Build stage
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:17-jdk AS build
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY vantage-admin vantage-admin
 RUN ./mvnw clean package -DskipTests -q
 
 # Runtime stage
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 

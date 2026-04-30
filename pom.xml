@@ -17,17 +17,18 @@
 
 	<modules>
 		<module>vantage-common</module>
-		<module>vantage-framework</module>
 		<module>vantage-modules</module>
 		<module>vantage-admin</module>
 	</modules>
 
 	<properties>
-		<java.version>25</java.version>
-		<maven.compiler.source>25</maven.compiler.source>
-		<maven.compiler.target>25</maven.compiler.target>
+		<java.version>17</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<lombok.version>1.18.40</lombok.version>
 		<langchain4j.version>0.35.0</langchain4j.version>
+		<spring-cloud.version>4.0.0</spring-cloud.version>
+		<spring-modulith.version>2.0.5</spring-modulith.version>
 	</properties>
 
 	<dependencyManagement>
@@ -101,12 +102,6 @@
 				<artifactId>mysql-connector-j</artifactId>
 				<version>9.2.0</version>
 				<scope>runtime</scope>
-			</dependency>
-			<!-- MyBatis -->
-			<dependency>
-				<groupId>org.mybatis.spring.boot</groupId>
-				<artifactId>mybatis-spring-boot-starter</artifactId>
-				<version>3.0.4</version>
 			</dependency>
 			<!-- Lombok -->
 			<dependency>

@@ -1,0 +1,20 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import App from './App.jsx'
+import Login from './pages/Login.jsx'
+import VantageJobList from './pages/VantageJobList.jsx'
+import MonitoringDashboard from './pages/MonitoringDashboard.jsx'
+import './index.css'
+import './themes/sap-gui.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/*" element={<App />} />
+      <Route path="/vantage/job" element={<VantageJobList />} />
+      <Route path="/monitoring" element={<MonitoringDashboard />} />
+    </Routes>
+  </BrowserRouter>,
+)
