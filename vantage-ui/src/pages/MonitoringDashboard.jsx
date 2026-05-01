@@ -328,7 +328,6 @@ const TrafficTab = ({ exchanges, rawExchanges }) => {
         if (u.startsWith('/api/system/menu')) return { source: 'UI', target: 'Gateway', module: 'System: Menus', icon: '📋' };
         if (u.startsWith('/api/system/dict')) return { source: 'UI', target: 'Gateway', module: 'System: Dictionary', icon: '📖' };
         if (u.startsWith('/api/system/config')) return { source: 'UI', target: 'Gateway', module: 'System: Config', icon: '⚙️' };
-        if (u.startsWith('/api/system/post')) return { source: 'UI', target: 'Gateway', module: 'System: Posts', icon: '💼' };
         if (u.startsWith('/api/system/notice')) return { source: 'UI', target: 'Gateway', module: 'System: Notices', icon: '📢' };
         if (u.startsWith('/api/system/operlog') || u.startsWith('/api/system/logininfor')) return { source: 'UI', target: 'Gateway', module: 'System: Logs', icon: '📜' };
         if (u.startsWith('/api/system/cache')) return { source: 'UI', target: 'Gateway', module: 'System: Cache', icon: '💾' };

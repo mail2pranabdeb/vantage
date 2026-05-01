@@ -33,11 +33,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,logfile,loggers,httpexchanges,env,threaddump,heapdump,caches,scheduledtasks,configprops,beans
+        include: health,info,metrics,prometheus,logfile,loggers,httpexchanges,env,threaddump,heapdump,caches,scheduledtasks,configprops,beans,modulith
   endpoint:
     health:
       show-details: always
     httpexchanges:
+      enabled: true
+    modulith:
       enabled: true
   tracing:
     sampling:

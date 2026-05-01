@@ -16,8 +16,6 @@
 	<description>Vantage Admin Platform</description>
 
 	<modules>
-		<module>vantage-common</module>
-		<module>vantage-modules</module>
 		<module>vantage-admin</module>
 	</modules>
 

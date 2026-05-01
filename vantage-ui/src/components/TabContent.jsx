@@ -4,7 +4,6 @@ import RoleList from '../pages/RoleList';
 import MenuList from '../pages/MenuList';
 import ConfigList from '../pages/ConfigList';
 import DictList from '../pages/DictList';
-import PostList from '../pages/PostList';
 import LogininforList from '../pages/LogininforList';
 import OperlogList from '../pages/OperlogList';
 import NoticeList from '../pages/NoticeList';
@@ -36,7 +35,6 @@ const pageComponents = {
     '/system/datasource': DatasourceList,
     '/system/dict': DictList,
     '/system/dict/data': DictDataView,
-    '/system/post': PostList,
     '/system/logininfor': LogininforList,
     '/system/operlog': OperlogList,
     '/system/dashboards': DashboardBuilder,
