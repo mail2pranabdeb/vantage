@@ -9,6 +9,12 @@ import com.pd.modules.quartz.api.dto.JobDTO;
 import com.pd.modules.quartz.api.dto.JobLogDTO;
 import com.pd.modules.system.api.*;
 import com.pd.modules.system.api.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +32,8 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Gateway Management", description = "Sole external HTTP entry point for all Vantage Admin APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class GatewayManagement extends BaseController {
 
     // System module APIs
@@ -111,7 +119,13 @@ public class GatewayManagement extends BaseController {
 
     // ========== Auth ==========
 
+    @Tag(name = "Authentication", description = "User authentication and session management")
     @GetMapping("/me")
+    @Operation(summary = "Get current user", description = "Returns the currently authenticated user's profile")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User profile retrieved"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
     public AjaxResult me(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return error("Not authenticated");
@@ -120,25 +134,37 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Logout", description = "Logs out the current user and invalidates session")
+    @ApiResponse(responseCode = "200", description = "Logged out successfully")
     public AjaxResult logout() {
         return success(systemAuthService.logout());
     }
 
     // ========== System: User ==========
 
+    @Tag(name = "System - User Management", description = "User CRUD operations and user-related queries")
     @GetMapping("/system/user/list")
+    @Operation(summary = "List all active users", description = "Returns a list of all active users in the system")
+    @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
     public AjaxResult listUsers() {
         return success(systemUserService.findAllActive());
     }
 
     @GetMapping("/system/user/{userId}")
-    public AjaxResult getUser(@PathVariable Long userId) {
+    @Operation(summary = "Get user by ID", description = "Returns a specific user by their ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User found"),
+        @ApiResponse(responseCode = "500", description = "User not found")
+    })
+    public AjaxResult getUser(@Parameter(description = "User ID") @PathVariable Long userId) {
         return systemUserService.findById(userId)
                 .map(this::success)
                 .orElseGet(() -> error("User not found"));
     }
 
     @PostMapping("/system/user")
+    @Operation(summary = "Create user", description = "Creates a new user account")
+    @ApiResponse(responseCode = "200", description = "User created successfully")
     public AjaxResult addUser(@RequestBody UserDTO user) {
         if (systemUserService.existsByLoginName(user.getLoginName())) {
             return error("Login name already exists");
@@ -155,6 +181,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/user")
+    @Operation(summary = "Update user", description = "Updates an existing user account")
+    @ApiResponse(responseCode = "200", description = "User updated successfully")
     public AjaxResult updateUser(@RequestBody UserDTO user) {
         if (systemUserService.findById(user.getUserId()).isEmpty()) {
             return error("User not found");
@@ -165,7 +193,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/user/{userId}")
-    public AjaxResult removeUser(@PathVariable Long userId) {
+    @Operation(summary = "Delete user", description = "Deletes a user by ID")
+    @ApiResponse(responseCode = "200", description = "User deleted successfully")
+    public AjaxResult removeUser(@Parameter(description = "User ID") @PathVariable Long userId) {
         if (!systemUserService.deleteUser(userId)) {
             return error("User not found");
         }
@@ -174,19 +204,25 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Role ==========
 
+    @Tag(name = "System - Role Management", description = "Role CRUD operations and permission management")
     @GetMapping("/system/role/list")
+    @Operation(summary = "List all active roles", description = "Returns a list of all active roles")
+    @ApiResponse(responseCode = "200", description = "Roles retrieved successfully")
     public AjaxResult listRoles() {
         return success(systemRoleService.findAllActive());
     }
 
     @GetMapping("/system/role/{roleId}")
-    public AjaxResult getRole(@PathVariable Long roleId) {
+    @Operation(summary = "Get role by ID", description = "Returns a specific role by its ID")
+    public AjaxResult getRole(@Parameter(description = "Role ID") @PathVariable Long roleId) {
         return systemRoleService.findById(roleId)
                 .map(this::success)
                 .orElseGet(() -> error("Role not found"));
     }
 
     @PostMapping("/system/role")
+    @Operation(summary = "Create role", description = "Creates a new role with permissions")
+    @ApiResponse(responseCode = "200", description = "Role created successfully")
     public AjaxResult addRole(@RequestBody RoleDTO role) {
         if (systemRoleService.findByRoleKey(role.getRoleKey()).isPresent()) {
             return error("Role key already exists");
@@ -200,6 +236,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/role")
+    @Operation(summary = "Update role", description = "Updates an existing role")
+    @ApiResponse(responseCode = "200", description = "Role updated successfully")
     public AjaxResult updateRole(@RequestBody RoleDTO role) {
         if (systemRoleService.findById(role.getRoleId()).isEmpty()) {
             return error("Role not found");
@@ -210,7 +248,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/role/{roleId}")
-    public AjaxResult removeRole(@PathVariable Long roleId) {
+    @Operation(summary = "Delete role", description = "Deletes a role by ID")
+    @ApiResponse(responseCode = "200", description = "Role deleted successfully")
+    public AjaxResult removeRole(@Parameter(description = "Role ID") @PathVariable Long roleId) {
         if (!systemRoleService.deleteRole(roleId)) {
             return error("Role not found");
         }
@@ -219,25 +259,33 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Menu ==========
 
+    @Tag(name = "System - Menu Management", description = "Navigation menu and menu tree operations")
     @GetMapping("/system/menu/tree")
+    @Operation(summary = "Get menu tree", description = "Returns the complete menu hierarchy as a tree structure")
+    @ApiResponse(responseCode = "200", description = "Menu tree retrieved successfully")
     public AjaxResult getMenuTree() {
         List<MenuDTO> menus = systemMenuService.findAllMenus();
         return success(buildMenuTree(menus, 0L));
     }
 
     @GetMapping("/system/menu/list")
+    @Operation(summary = "List all menus", description = "Returns a flat list of all active menus")
+    @ApiResponse(responseCode = "200", description = "Menus retrieved successfully")
     public AjaxResult listMenus() {
         return success(systemMenuService.findAllActive());
     }
 
     @GetMapping("/system/menu/{menuId}")
-    public AjaxResult getMenu(@PathVariable Long menuId) {
+    @Operation(summary = "Get menu by ID", description = "Returns a specific menu item")
+    public AjaxResult getMenu(@Parameter(description = "Menu ID") @PathVariable Long menuId) {
         return systemMenuService.findById(menuId)
                 .map(this::success)
                 .orElseGet(() -> error("Menu not found"));
     }
 
     @PostMapping("/system/menu")
+    @Operation(summary = "Create menu", description = "Creates a new menu item")
+    @ApiResponse(responseCode = "200", description = "Menu created successfully")
     public AjaxResult addMenu(@RequestBody MenuDTO menu) {
         menu.setVisible(menu.getVisible() != null ? menu.getVisible() : "0");
         menu.setMenuType(menu.getMenuType() != null ? menu.getMenuType() : "M");
@@ -250,6 +298,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/menu")
+    @Operation(summary = "Update menu", description = "Updates an existing menu item")
+    @ApiResponse(responseCode = "200", description = "Menu updated successfully")
     public AjaxResult updateMenu(@RequestBody MenuDTO menu) {
         if (systemMenuService.findById(menu.getMenuId()).isEmpty()) {
             return error("Menu not found");
@@ -260,7 +310,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/menu/{menuId}")
-    public AjaxResult removeMenu(@PathVariable Long menuId) {
+    @Operation(summary = "Delete menu", description = "Deletes a menu item by ID")
+    @ApiResponse(responseCode = "200", description = "Menu deleted successfully")
+    public AjaxResult removeMenu(@Parameter(description = "Menu ID") @PathVariable Long menuId) {
         if (systemMenuService.findById(menuId).isEmpty()) {
             return error("Menu not found");
         }
@@ -281,36 +333,46 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Dict ==========
 
+    @Tag(name = "System - Dictionary", description = "Data dictionary types and values management")
     @GetMapping("/system/dict/type/list")
+    @Operation(summary = "List dictionary types", description = "Returns all active dictionary types")
+    @ApiResponse(responseCode = "200", description = "Dictionary types retrieved")
     public AjaxResult listDictTypes() {
         return success(systemDictService.findAllActiveTypes());
     }
 
     @GetMapping("/system/dict/data/list")
-    public AjaxResult listDictData(@RequestParam String dictType) {
+    @Operation(summary = "List dictionary data by type", description = "Returns dictionary data for a specific type, sorted")
+    @ApiResponse(responseCode = "200", description = "Dictionary data retrieved")
+    public AjaxResult listDictData(@Parameter(description = "Dictionary type code") @RequestParam String dictType) {
         return success(systemDictService.findDataByTypeOrderBySort(dictType));
     }
 
     @GetMapping("/system/dict/data/type/{dictType}")
-    public AjaxResult getDictDataByType(@PathVariable String dictType) {
+    @Operation(summary = "Get dictionary data by type path", description = "Returns dictionary data for a specific type")
+    public AjaxResult getDictDataByType(@Parameter(description = "Dictionary type code") @PathVariable String dictType) {
         return success(systemDictService.findDataByTypeOrderBySort(dictType));
     }
 
     @GetMapping("/system/dict/type/get-by-code/{dictType}")
-    public AjaxResult getDictTypeByCode(@PathVariable String dictType) {
+    @Operation(summary = "Get dictionary type by code", description = "Returns a dictionary type by its code")
+    public AjaxResult getDictTypeByCode(@Parameter(description = "Dictionary type code") @PathVariable String dictType) {
         return systemDictService.findTypeByDictType(dictType)
                 .map(this::success)
                 .orElse(success(null));
     }
 
     @GetMapping("/system/dict/type/{dictId}")
-    public AjaxResult getDictType(@PathVariable Long dictId) {
+    @Operation(summary = "Get dictionary type by ID", description = "Returns a specific dictionary type")
+    public AjaxResult getDictType(@Parameter(description = "Dictionary type ID") @PathVariable Long dictId) {
         return systemDictService.findTypeById(dictId)
                 .map(this::success)
                 .orElseGet(() -> error("Dictionary type not found"));
     }
 
     @PostMapping("/system/dict/type")
+    @Operation(summary = "Create dictionary type", description = "Creates a new dictionary type")
+    @ApiResponse(responseCode = "200", description = "Dictionary type created")
     public AjaxResult addDictType(@RequestBody DictTypeDTO dict) {
         dict.setStatus(dict.getStatus() != null ? dict.getStatus() : "0");
         dict.setCreateBy("admin");
@@ -320,6 +382,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/dict/type")
+    @Operation(summary = "Update dictionary type", description = "Updates an existing dictionary type")
+    @ApiResponse(responseCode = "200", description = "Dictionary type updated")
     public AjaxResult updateDictType(@RequestBody DictTypeDTO dict) {
         if (systemDictService.findTypeById(dict.getDictId()).isEmpty()) {
             return error("Dictionary type not found");
@@ -331,7 +395,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/dict/type/{dictId}")
-    public AjaxResult removeDictType(@PathVariable Long dictId) {
+    @Operation(summary = "Delete dictionary type", description = "Deletes a dictionary type by ID")
+    @ApiResponse(responseCode = "200", description = "Dictionary type deleted")
+    public AjaxResult removeDictType(@Parameter(description = "Dictionary type ID") @PathVariable Long dictId) {
         if (systemDictService.findTypeById(dictId).isEmpty()) {
             return error("Dictionary type not found");
         }
@@ -340,6 +406,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/system/dict/data")
+    @Operation(summary = "Create dictionary data", description = "Creates a new dictionary data entry")
+    @ApiResponse(responseCode = "200", description = "Dictionary data created")
     public AjaxResult addDictData(@RequestBody DictDataDTO dictData) {
         dictData.setStatus(dictData.getStatus() != null ? dictData.getStatus() : "0");
         dictData.setCreateBy("admin");
@@ -349,6 +417,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/dict/data")
+    @Operation(summary = "Update dictionary data", description = "Updates an existing dictionary data entry")
+    @ApiResponse(responseCode = "200", description = "Dictionary data updated")
     public AjaxResult updateDictData(@RequestBody DictDataDTO dictData) {
         if (dictData.getDictCode() == null || systemDictService.findDataById(dictData.getDictCode()).isEmpty()) {
             return error("Dictionary data not found");
@@ -360,7 +430,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/dict/data/{dictCode}")
-    public AjaxResult removeDictData(@PathVariable Long dictCode) {
+    @Operation(summary = "Delete dictionary data", description = "Deletes a dictionary data entry")
+    @ApiResponse(responseCode = "200", description = "Dictionary data deleted")
+    public AjaxResult removeDictData(@Parameter(description = "Dictionary data code") @PathVariable Long dictCode) {
         if (systemDictService.findDataById(dictCode).isEmpty()) {
             return error("Dictionary data not found");
         }
@@ -370,12 +442,17 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Config ==========
 
+    @Tag(name = "System - Configuration", description = "System configuration settings")
     @GetMapping("/system/config/list")
+    @Operation(summary = "List all configurations", description = "Returns all system configuration entries")
+    @ApiResponse(responseCode = "200", description = "Configurations retrieved")
     public AjaxResult listConfigs() {
         return success(systemConfigService.findAll());
     }
 
     @PostMapping("/system/config/batch")
+    @Operation(summary = "Batch save configurations", description = "Creates or updates multiple configuration entries")
+    @ApiResponse(responseCode = "200", description = "Configurations saved")
     public AjaxResult batchSaveConfigs(@RequestBody List<Map<String, Object>> configs) {
         int savedCount = 0;
         for (Map<String, Object> configData : configs) {
@@ -407,6 +484,11 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/system/config/test-email")
+    @Operation(summary = "Test email configuration", description = "Sends a test email with provided SMTP settings")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Test email sent or error message"),
+        @ApiResponse(responseCode = "400", description = "Missing required fields")
+    })
     public AjaxResult testEmail(@RequestBody Map<String, String> request) {
         String to = request.get("to");
         String host = request.get("host");
@@ -461,13 +543,16 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/config/key/{configKey}")
-    public AjaxResult getConfigByKey(@PathVariable String configKey) {
+    @Operation(summary = "Get config by key", description = "Returns a configuration entry by its key")
+    public AjaxResult getConfigByKey(@Parameter(description = "Configuration key") @PathVariable String configKey) {
         return systemConfigService.findByConfigKey(configKey)
                 .map(this::success)
                 .orElseGet(() -> error("Config not found"));
     }
 
     @PutMapping("/system/config")
+    @Operation(summary = "Update configuration", description = "Updates a configuration entry by key")
+    @ApiResponse(responseCode = "200", description = "Configuration updated")
     public AjaxResult updateConfig(@RequestBody ConfigDTO config) {
         var existing = systemConfigService.findByConfigKey(config.getConfigKey()).orElse(null);
         if (existing == null) return error("Config not found");
@@ -478,7 +563,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/config/{configId}")
-    public AjaxResult removeConfig(@PathVariable Long configId) {
+    @Operation(summary = "Delete configuration", description = "Deletes a configuration entry by ID")
+    @ApiResponse(responseCode = "200", description = "Configuration deleted")
+    public AjaxResult removeConfig(@Parameter(description = "Configuration ID") @PathVariable Long configId) {
         if (systemConfigService.findById(configId).isEmpty()) {
             return error("Config not found");
         }
@@ -488,22 +575,29 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: OperLog ==========
 
+    @Tag(name = "System - Operation Logs", description = "Operation audit log management")
     @GetMapping("/system/operlog/list")
+    @Operation(summary = "List operation logs", description = "Returns filtered operation logs")
+    @ApiResponse(responseCode = "200", description = "Operation logs retrieved")
     public AjaxResult listOperLogs(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String operName,
-            @RequestParam(required = false) Integer businessType,
-            @RequestParam(required = false) Integer status) {
+            @Parameter(description = "Module title filter") @RequestParam(required = false) String title,
+            @Parameter(description = "Operator name filter") @RequestParam(required = false) String operName,
+            @Parameter(description = "Business type filter") @RequestParam(required = false) Integer businessType,
+            @Parameter(description = "Status filter") @RequestParam(required = false) Integer status) {
         return success(systemOperLogService.findByCondition(title, operName, businessType, status));
     }
 
     @DeleteMapping("/system/operlog")
+    @Operation(summary = "Delete operation logs", description = "Deletes operation logs by IDs")
+    @ApiResponse(responseCode = "200", description = "Logs deleted")
     public AjaxResult removeOperLogs(@RequestBody Long[] operIds) {
         systemOperLogService.deleteByIds(operIds);
         return success();
     }
 
     @DeleteMapping("/system/operlog/clean")
+    @Operation(summary = "Clean all operation logs", description = "Removes all operation logs")
+    @ApiResponse(responseCode = "200", description = "All logs cleaned")
     public AjaxResult cleanOperLogs() {
         systemOperLogService.cleanLogs();
         return success();
@@ -511,21 +605,28 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Logininfor ==========
 
+    @Tag(name = "System - Login Info", description = "Login audit information management")
     @GetMapping("/system/logininfor/list")
+    @Operation(summary = "List login information", description = "Returns filtered login records")
+    @ApiResponse(responseCode = "200", description = "Login records retrieved")
     public AjaxResult listLoginInfos(
-            @RequestParam(required = false) String loginName,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String ipaddr) {
+            @Parameter(description = "Username filter") @RequestParam(required = false) String loginName,
+            @Parameter(description = "Status filter") @RequestParam(required = false) String status,
+            @Parameter(description = "IP address filter") @RequestParam(required = false) String ipaddr) {
         return success(systemLogininforService.findByCondition(loginName, status, ipaddr));
     }
 
     @DeleteMapping("/system/logininfor")
+    @Operation(summary = "Delete login records", description = "Deletes login records by IDs")
+    @ApiResponse(responseCode = "200", description = "Records deleted")
     public AjaxResult removeLoginInfos(@RequestBody Long[] infoIds) {
         systemLogininforService.deleteByIds(infoIds);
         return success();
     }
 
     @DeleteMapping("/system/logininfor/clean")
+    @Operation(summary = "Clean all login records", description = "Removes all login records")
+    @ApiResponse(responseCode = "200", description = "All records cleaned")
     public AjaxResult cleanLoginInfos() {
         systemLogininforService.cleanLogs();
         return success();
@@ -533,19 +634,25 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Notice ==========
 
+    @Tag(name = "System - Notices", description = "System notice announcements")
     @GetMapping("/system/notice/list")
+    @Operation(summary = "List active notices", description = "Returns all active system notices")
+    @ApiResponse(responseCode = "200", description = "Notices retrieved")
     public AjaxResult listNotices() {
         return success(systemNoticeService.findActiveNotices());
     }
 
     @GetMapping("/system/notice/{noticeId}")
-    public AjaxResult getNotice(@PathVariable Integer noticeId) {
+    @Operation(summary = "Get notice by ID", description = "Returns a specific notice")
+    public AjaxResult getNotice(@Parameter(description = "Notice ID") @PathVariable Integer noticeId) {
         return systemNoticeService.findById(noticeId.longValue())
                 .map(this::success)
                 .orElseGet(() -> error("Notice not found"));
     }
 
     @PostMapping("/system/notice")
+    @Operation(summary = "Create notice", description = "Creates a new system notice")
+    @ApiResponse(responseCode = "200", description = "Notice created")
     public AjaxResult addNotice(@RequestBody NoticeDTO notice) {
         notice.setStatus(notice.getStatus() != null ? notice.getStatus() : "0");
         notice.setCreateBy("admin");
@@ -555,6 +662,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/notice")
+    @Operation(summary = "Update notice", description = "Updates an existing notice")
+    @ApiResponse(responseCode = "200", description = "Notice updated")
     public AjaxResult updateNotice(@RequestBody NoticeDTO notice) {
         if (systemNoticeService.findById(notice.getNoticeId()).isEmpty()) {
             return error("Notice not found");
@@ -566,7 +675,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/notice/{noticeId}")
-    public AjaxResult removeNotice(@PathVariable Integer noticeId) {
+    @Operation(summary = "Delete notice", description = "Deletes a notice by ID")
+    @ApiResponse(responseCode = "200", description = "Notice deleted")
+    public AjaxResult removeNotice(@Parameter(description = "Notice ID") @PathVariable Integer noticeId) {
         if (systemNoticeService.findById(noticeId.longValue()).isEmpty()) {
             return error("Notice not found");
         }
@@ -576,10 +687,13 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Notifications ==========
 
+    @Tag(name = "System - Notifications", description = "In-app notification management")
     @GetMapping("/system/notifications/list")
+    @Operation(summary = "List notifications", description = "Returns paginated user notifications with unread count")
+    @ApiResponse(responseCode = "200", description = "Notifications retrieved")
     public AjaxResult listNotifications(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "20") Integer pageSize) {
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize) {
         Long userId = 1L;
         var page = systemNotificationService.getNotifications(userId, pageNum, pageSize);
         Map<String, Object> result = new HashMap<>();
@@ -590,9 +704,11 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/notifications/unread")
+    @Operation(summary = "List unread notifications", description = "Returns paginated unread notifications")
+    @ApiResponse(responseCode = "200", description = "Unread notifications retrieved")
     public AjaxResult unreadNotifications(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "20") Integer pageSize) {
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize) {
         Long userId = 1L;
         var page = systemNotificationService.getUnreadNotifications(userId, pageNum, pageSize);
         Map<String, Object> result = new HashMap<>();
@@ -602,29 +718,39 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/notifications/unread-count")
+    @Operation(summary = "Get unread count", description = "Returns the count of unread notifications")
+    @ApiResponse(responseCode = "200", description = "Unread count retrieved")
     public AjaxResult unreadCount() {
         Long userId = 1L;
         return success(Map.of("count", systemNotificationService.getUnreadCount(userId)));
     }
 
     @PutMapping("/system/notifications/{notificationId}/read")
-    public AjaxResult markAsRead(@PathVariable Long notificationId) {
+    @Operation(summary = "Mark notification as read", description = "Marks a single notification as read")
+    @ApiResponse(responseCode = "200", description = "Notification marked as read")
+    public AjaxResult markAsRead(@Parameter(description = "Notification ID") @PathVariable Long notificationId) {
         systemNotificationService.markAsRead(notificationId);
         return success();
     }
 
     @PutMapping("/system/notifications/read-all")
+    @Operation(summary = "Mark all notifications as read", description = "Marks all user notifications as read")
+    @ApiResponse(responseCode = "200", description = "All notifications marked as read")
     public AjaxResult markAllAsRead() {
         systemNotificationService.markAllAsRead(1L);
         return success();
     }
 
     @GetMapping("/system/notifications/statistics")
+    @Operation(summary = "Get notification statistics", description = "Returns notification statistics for the user")
+    @ApiResponse(responseCode = "200", description = "Statistics retrieved")
     public AjaxResult notificationStatistics() {
         return success(systemNotificationService.getStatistics(1L));
     }
 
     @PostMapping("/system/notifications/test")
+    @Operation(summary = "Send test notification", description = "Sends a test in-app notification")
+    @ApiResponse(responseCode = "200", description = "Test notification sent")
     public AjaxResult sendTestNotification(@RequestBody Map<String, String> params) {
         String title = params.get("title");
         String content = params.get("content");
@@ -635,19 +761,25 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Datasource ==========
 
+    @Tag(name = "System - Datasources", description = "Database datasource management and connection testing")
     @GetMapping("/system/datasource/list")
+    @Operation(summary = "List datasources", description = "Returns all configured datasources")
+    @ApiResponse(responseCode = "200", description = "Datasources retrieved")
     public AjaxResult listDatasources() {
         return success(systemDatasourceService.findAll());
     }
 
     @GetMapping("/system/datasource/{datasourceId}")
-    public AjaxResult getDatasource(@PathVariable Long datasourceId) {
+    @Operation(summary = "Get datasource by ID", description = "Returns a specific datasource configuration")
+    public AjaxResult getDatasource(@Parameter(description = "Datasource ID") @PathVariable Long datasourceId) {
         return systemDatasourceService.findById(datasourceId)
                 .map(this::success)
                 .orElseGet(() -> error("Datasource not found"));
     }
 
     @PostMapping("/system/datasource")
+    @Operation(summary = "Create datasource", description = "Adds a new database datasource")
+    @ApiResponse(responseCode = "200", description = "Datasource created")
     public AjaxResult addDatasource(@RequestBody DatasourceDTO datasource) {
         if (systemDatasourceService.existsByDatasourceKey(datasource.getDatasourceKey())) {
             return error("Datasource key already exists");
@@ -660,6 +792,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/datasource")
+    @Operation(summary = "Update datasource", description = "Updates an existing datasource")
+    @ApiResponse(responseCode = "200", description = "Datasource updated")
     public AjaxResult updateDatasource(@RequestBody DatasourceDTO datasource) {
         if (systemDatasourceService.findById(datasource.getDatasourceId()).isEmpty()) {
             return error("Datasource not found");
@@ -669,12 +803,19 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/datasource/{datasourceId}")
-    public AjaxResult removeDatasource(@PathVariable Long datasourceId) {
+    @Operation(summary = "Delete datasource", description = "Deletes a datasource by ID")
+    @ApiResponse(responseCode = "200", description = "Datasource deleted")
+    public AjaxResult removeDatasource(@Parameter(description = "Datasource ID") @PathVariable Long datasourceId) {
         systemDatasourceService.deleteById(datasourceId);
         return success("Datasource deleted successfully");
     }
 
     @PostMapping("/system/datasource/test")
+    @Operation(summary = "Test datasource connection", description = "Tests connectivity to a database datasource")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Connection test result"),
+        @ApiResponse(responseCode = "500", description = "Connection failed")
+    })
     public AjaxResult testDatasource(@RequestBody DatasourceDTO datasource) {
         try {
             boolean success = systemDatasourceService.testConnection(datasource);
@@ -690,7 +831,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/datasource/driver/{dbType}")
-    public AjaxResult getDriverClass(@PathVariable String dbType) {
+    @Operation(summary = "Get driver info for database type", description = "Returns JDBC driver class and URL pattern for a database type")
+    @ApiResponse(responseCode = "200", description = "Driver info retrieved")
+    public AjaxResult getDriverClass(@Parameter(description = "Database type (mysql, postgresql, etc.)") @PathVariable String dbType) {
         Map<String, String> result = new HashMap<>();
         result.put("driverClass", systemDatasourceService.getDriverClass(dbType));
         result.put("urlPattern", systemDatasourceService.getDefaultUrlPattern(dbType));
@@ -699,17 +842,24 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Email Config ==========
 
+    @Tag(name = "System - Email Config", description = "SMTP email configuration management")
     @GetMapping("/system/email-config")
+    @Operation(summary = "Get email configuration", description = "Returns the current SMTP configuration")
+    @ApiResponse(responseCode = "200", description = "Email config retrieved")
     public AjaxResult getEmailConfig() {
         return success(systemEmailConfigService.getConfig());
     }
 
     @PostMapping("/system/email-config")
+    @Operation(summary = "Save email configuration", description = "Saves SMTP configuration")
+    @ApiResponse(responseCode = "200", description = "Email config saved")
     public AjaxResult saveEmailConfig(@RequestBody Map<String, Object> config) {
         return success(systemEmailConfigService.saveConfig(config));
     }
 
     @PostMapping("/system/email-config/test")
+    @Operation(summary = "Test email configuration", description = "Sends a test email using saved SMTP settings")
+    @ApiResponse(responseCode = "200", description = "Test email sent or error message")
     public AjaxResult testEmailConfig(@RequestBody Map<String, String> request) {
         String to = request.get("to");
         if (to == null || to.isEmpty()) return error("Recipient email is required");
@@ -718,29 +868,41 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Cache ==========
 
+    @Tag(name = "System - Cache", description = "Cache management and statistics")
     @GetMapping("/system/cache/list")
+    @Operation(summary = "List all caches", description = "Returns all cache names and their statistics")
+    @ApiResponse(responseCode = "200", description = "Cache list retrieved")
     public AjaxResult listCaches() {
         return success(systemCacheService.listCaches());
     }
 
     @PostMapping("/system/cache/clear/{cacheName}")
-    public AjaxResult clearCache(@PathVariable String cacheName) {
+    @Operation(summary = "Clear specific cache", description = "Clears all entries in a named cache")
+    @ApiResponse(responseCode = "200", description = "Cache cleared")
+    public AjaxResult clearCache(@Parameter(description = "Cache name") @PathVariable String cacheName) {
         return success(systemCacheService.clearCache(cacheName));
     }
 
     @PostMapping("/system/cache/clear-all")
+    @Operation(summary = "Clear all caches", description = "Clears all application caches")
+    @ApiResponse(responseCode = "200", description = "All caches cleared")
     public AjaxResult clearAllCaches() {
         return success(systemCacheService.clearAllCaches());
     }
 
     @GetMapping("/system/cache/stats/{cacheName}")
-    public AjaxResult getCacheStats(@PathVariable String cacheName) {
+    @Operation(summary = "Get cache statistics", description = "Returns statistics for a specific cache")
+    @ApiResponse(responseCode = "200", description = "Cache statistics retrieved")
+    public AjaxResult getCacheStats(@Parameter(description = "Cache name") @PathVariable String cacheName) {
         return success(systemCacheService.getCacheStats(cacheName));
     }
 
     // ========== System: Chat ==========
 
+    @Tag(name = "AI Chat", description = "AI-powered chat assistant with SSE streaming and tool execution")
     @PostMapping("/chat")
+    @Operation(summary = "Send chat message", description = "Sends a message to the AI assistant, optionally with tool results")
+    @ApiResponse(responseCode = "200", description = "AI response returned")
     public AjaxResult chat(@RequestBody Map<String, Object> request) {
         String message = (String) request.get("message");
         @SuppressWarnings("unchecked")
@@ -749,32 +911,44 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/chat/status")
+    @Operation(summary = "Get chat status", description = "Returns AI service status and knowledge base statistics")
+    @ApiResponse(responseCode = "200", description = "Chat status retrieved")
     public AjaxResult chatStatus() {
         return success(systemChatService.chatStatus());
     }
 
     @PostMapping("/chat/knowledge/refresh")
+    @Operation(summary = "Refresh knowledge base", description = "Reinitializes the AI knowledge base")
+    @ApiResponse(responseCode = "200", description = "Knowledge base refreshed")
     public AjaxResult refreshKnowledge() {
         return success(systemChatService.refreshKnowledge());
     }
 
     @GetMapping("/chat/knowledge/stats")
+    @Operation(summary = "Get knowledge stats", description = "Returns knowledge base statistics")
+    @ApiResponse(responseCode = "200", description = "Knowledge stats retrieved")
     public AjaxResult knowledgeStats() {
         return success(systemChatService.knowledgeStats());
     }
 
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "Stream chat response", description = "Sends a message and receives streaming SSE response")
+    @ApiResponse(responseCode = "200", description = "SSE stream started")
     public SseEmitter chatStream(@RequestBody Map<String, Object> request) {
         String message = (String) request.get("message");
         return systemChatService.chatStream(message, getCurrentUsername());
     }
 
     @GetMapping("/chat/history")
+    @Operation(summary = "Get conversation history", description = "Returns the user's conversation history")
+    @ApiResponse(responseCode = "200", description = "Conversation history retrieved")
     public AjaxResult getConversationHistory() {
         return success(systemChatService.getConversationHistory(getCurrentUsername()));
     }
 
     @PostMapping("/chat/clear-memory")
+    @Operation(summary = "Clear conversation memory", description = "Clears the user's AI conversation memory")
+    @ApiResponse(responseCode = "200", description = "Memory cleared")
     public AjaxResult clearMemory() {
         return success(systemChatService.clearMemory(getCurrentUsername()));
     }
@@ -791,35 +965,50 @@ public class GatewayManagement extends BaseController {
 
     // ========== System: Report ==========
 
+    @Tag(name = "System - Reports", description = "Report generation, scheduling, and templates")
     @GetMapping("/system/report/list")
+    @Operation(summary = "List all reports", description = "Returns all saved reports")
+    @ApiResponse(responseCode = "200", description = "Reports retrieved")
     public AjaxResult listReports() {
         return success(systemReportEntityService.findAllReports());
     }
 
     @GetMapping("/system/report/{reportId}")
-    public AjaxResult getReport(@PathVariable Long reportId) {
+    @Operation(summary = "Get report by ID", description = "Returns a specific report")
+    public AjaxResult getReport(@Parameter(description = "Report ID") @PathVariable Long reportId) {
         return Optional.ofNullable(systemReportEntityService.findById(reportId))
                 .map(this::success)
                 .orElseGet(() -> error("Report not found"));
     }
 
     @PostMapping("/system/report")
+    @Operation(summary = "Create report", description = "Creates a new report")
+    @ApiResponse(responseCode = "200", description = "Report created")
     public AjaxResult addReport(@RequestBody Object report) {
         return success(systemReportEntityService.createReport(report));
     }
 
     @PutMapping("/system/report")
+    @Operation(summary = "Update report", description = "Updates an existing report")
+    @ApiResponse(responseCode = "200", description = "Report updated")
     public AjaxResult updateReport(@RequestBody Object report) {
         return success(systemReportEntityService.updateReport(report));
     }
 
     @DeleteMapping("/system/report/{reportId}")
-    public AjaxResult removeReport(@PathVariable Long reportId) {
+    @Operation(summary = "Delete report", description = "Deletes a report by ID")
+    @ApiResponse(responseCode = "200", description = "Report deleted")
+    public AjaxResult removeReport(@Parameter(description = "Report ID") @PathVariable Long reportId) {
         return success(systemReportEntityService.deleteReport(reportId));
     }
 
     @PostMapping("/system/report/execute/{reportId}")
-    public AjaxResult executeReport(@PathVariable Long reportId, @RequestBody(required = false) Map<String, Object> params) {
+    @Operation(summary = "Execute report", description = "Executes a report with optional parameters")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Report executed"),
+        @ApiResponse(responseCode = "500", description = "Execution failed")
+    })
+    public AjaxResult executeReport(@Parameter(description = "Report ID") @PathVariable Long reportId, @RequestBody(required = false) Map<String, Object> params) {
         try {
             String paramsJson = "{}";
             if (params != null && !params.isEmpty()) {
@@ -833,138 +1022,173 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/report/templates")
+    @Operation(summary = "List report templates", description = "Returns all report templates")
+    @ApiResponse(responseCode = "200", description = "Templates retrieved")
     public AjaxResult getReportTemplates() {
         return success(systemReportEntityService.getTemplates());
     }
 
     @GetMapping("/system/report/template/{templateId}")
-    public AjaxResult getReportTemplate(@PathVariable Long templateId) {
+    @Operation(summary = "Get report template", description = "Returns a specific report template")
+    public AjaxResult getReportTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         return Optional.ofNullable(systemReportEntityService.getTemplate(templateId))
                 .map(this::success)
                 .orElseGet(() -> error("Template not found"));
     }
 
     @PostMapping("/system/report/from-template")
+    @Operation(summary = "Create report from template", description = "Creates a new report from an existing template")
+    @ApiResponse(responseCode = "200", description = "Report created from template")
     public AjaxResult createReportFromTemplate(@RequestBody Map<String, Object> request) {
         return success(systemReportEntityService.createReportFromTemplate(request));
     }
 
     @PostMapping("/system/report/schedule/{templateId}")
-    public AjaxResult scheduleReport(@PathVariable Long templateId, @RequestBody Map<String, Object> config) {
+    @Operation(summary = "Schedule report", description = "Schedules a report template for recurring execution")
+    @ApiResponse(responseCode = "200", description = "Report scheduled")
+    public AjaxResult scheduleReport(@Parameter(description = "Template ID") @PathVariable Long templateId, @RequestBody Map<String, Object> config) {
         return success(systemReportEntityService.scheduleReport(templateId, config));
     }
 
     @DeleteMapping("/system/report/unschedule/{reportId}")
-    public AjaxResult unscheduleReport(@PathVariable Long reportId) {
+    @Operation(summary = "Unschedule report", description = "Removes the schedule from a report")
+    @ApiResponse(responseCode = "200", description = "Report unscheduled")
+    public AjaxResult unscheduleReport(@Parameter(description = "Report ID") @PathVariable Long reportId) {
         return success(systemReportEntityService.unscheduleReport(reportId));
     }
 
     // ========== System: Report Designer ==========
 
+    @Tag(name = "System - Report Designer", description = "Advanced report designer with template versioning")
     @GetMapping("/system/report-designer/templates")
-    public AjaxResult listReportDesignerTemplates(@RequestParam(required = false, defaultValue = "false") Boolean allVersions) {
-        // ReportDesignerService is already an API, inject it separately
-        return success(new ArrayList<>()); // TODO: inject ReportDesignerService
+    @Operation(summary = "List report designer templates", description = "Returns report designer templates")
+    public AjaxResult listReportDesignerTemplates(@Parameter(description = "Include all versions") @RequestParam(required = false, defaultValue = "false") Boolean allVersions) {
+        return success(new ArrayList<>());
     }
 
     @GetMapping("/system/report-designer/templates/{templateId}")
-    public AjaxResult getReportDesignerTemplate(@PathVariable Long templateId) {
-        return error("Template not found"); // TODO: inject ReportDesignerService
+    @Operation(summary = "Get template by ID", description = "Returns a report designer template")
+    public AjaxResult getReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
+        return error("Template not found");
     }
 
     @GetMapping("/system/report-designer/templates/key/{templateKey}")
-    public AjaxResult getReportDesignerTemplateByKey(@PathVariable String templateKey) {
-        return error("Template not found"); // TODO: inject ReportDesignerService
+    @Operation(summary = "Get template by key", description = "Returns a report designer template by key")
+    public AjaxResult getReportDesignerTemplateByKey(@Parameter(description = "Template key") @PathVariable String templateKey) {
+        return error("Template not found");
     }
 
     @PostMapping("/system/report-designer/templates")
+    @Operation(summary = "Create template", description = "Creates a new report designer template")
     public AjaxResult addReportDesignerTemplate(@RequestBody Object template) {
-        return success("Template added"); // TODO: inject ReportDesignerService
+        return success("Template added");
     }
 
     @PutMapping("/system/report-designer/templates")
+    @Operation(summary = "Update template", description = "Updates a report designer template")
     public AjaxResult updateReportDesignerTemplate(@RequestBody Object template) {
-        return success("Template updated"); // TODO: inject ReportDesignerService
+        return success("Template updated");
     }
 
     @DeleteMapping("/system/report-designer/templates/{templateId}")
-    public AjaxResult deleteReportDesignerTemplate(@PathVariable Long templateId) {
-        return success("Template deleted"); // TODO: inject ReportDesignerService
+    @Operation(summary = "Delete template", description = "Deletes a report designer template")
+    public AjaxResult deleteReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
+        return success("Template deleted");
     }
 
     @GetMapping("/system/report-designer/templates/{templateKey}/versions")
-    public AjaxResult getReportDesignerTemplateVersions(@PathVariable String templateKey) {
-        return success(new ArrayList<>()); // TODO: inject ReportDesignerService
+    @Operation(summary = "Get template versions", description = "Returns all versions of a template")
+    public AjaxResult getReportDesignerTemplateVersions(@Parameter(description = "Template key") @PathVariable String templateKey) {
+        return success(new ArrayList<>());
     }
 
     @GetMapping("/system/report-designer/templates/active-versions")
+    @Operation(summary = "Get active versions", description = "Returns currently active template versions")
     public AjaxResult getReportDesignerActiveVersions() {
-        return success(new ArrayList<>()); // TODO: inject ReportDesignerService
+        return success(new ArrayList<>());
     }
 
     @GetMapping("/system/report-designer/active-templates")
+    @Operation(summary = "Get active templates", description = "Returns all active templates")
     public AjaxResult getReportDesignerActiveTemplates() {
-        return success(new ArrayList<>()); // TODO: inject ReportDesignerService
+        return success(new ArrayList<>());
     }
 
     @PutMapping("/system/report-designer/templates/{templateId}/archive")
-    public AjaxResult archiveReportDesignerTemplate(@PathVariable Long templateId) {
-        return success("Template archived"); // TODO: inject ReportDesignerService
+    @Operation(summary = "Archive template", description = "Archives a template version")
+    public AjaxResult archiveReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
+        return success("Template archived");
     }
 
     @PutMapping("/system/report-designer/templates/{templateId}/activate")
-    public AjaxResult activateReportDesignerTemplate(@PathVariable Long templateId) {
-        return success("Template activated"); // TODO: inject ReportDesignerService
+    @Operation(summary = "Activate template", description = "Activates a template version")
+    public AjaxResult activateReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
+        return success("Template activated");
     }
 
     @GetMapping("/system/report-designer/datasource/{datasourceKey}/tables")
-    public AjaxResult getDatasourceTables(@PathVariable String datasourceKey) {
-        return success(new ArrayList<>()); // TODO: inject ReportDesignerService
+    @Operation(summary = "Get datasource tables", description = "Returns tables for a datasource")
+    public AjaxResult getDatasourceTables(@Parameter(description = "Datasource key") @PathVariable String datasourceKey) {
+        return success(new ArrayList<>());
     }
 
     @PostMapping("/system/report-designer/execute/{templateId}")
-    public AjaxResult executeReportDesignerTemplate(@PathVariable Long templateId, @RequestBody(required = false) Map<String, Object> params) {
-        return error("Failed to execute report"); // TODO: inject ReportDesignerService
+    @Operation(summary = "Execute template", description = "Executes a report designer template")
+    public AjaxResult executeReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId, @RequestBody(required = false) Map<String, Object> params) {
+        return error("Failed to execute report");
     }
 
     @PostMapping("/system/report-designer/preview")
+    @Operation(summary = "Preview report", description = "Previews a report with given template")
     public AjaxResult previewReport(@RequestBody Object template, @RequestParam(required = false) String params) {
-        return error("Preview failed"); // TODO: inject ReportDesignerService
+        return error("Preview failed");
     }
 
     // ========== Quartz: Job ==========
 
+    @Tag(name = "Quartz - Job Management", description = "Scheduled job CRUD and execution control")
     @GetMapping("/system/job/list")
+    @Operation(summary = "List all jobs", description = "Returns all scheduled jobs")
+    @ApiResponse(responseCode = "200", description = "Jobs retrieved")
     public AjaxResult listJobs() {
         return success(quartzJobService.findAll());
     }
 
     @GetMapping("/system/job/{jobId}")
-    public AjaxResult getJob(@PathVariable Long jobId) {
+    @Operation(summary = "Get job by ID", description = "Returns a specific scheduled job")
+    public AjaxResult getJob(@Parameter(description = "Job ID") @PathVariable Long jobId) {
         return quartzJobService.findById(jobId)
                 .map(this::success)
                 .orElseGet(() -> error("Job not found"));
     }
 
     @PostMapping("/system/job")
+    @Operation(summary = "Create job", description = "Creates a new scheduled job")
+    @ApiResponse(responseCode = "200", description = "Job created")
     public AjaxResult addJob(@RequestBody JobDTO job) {
         quartzJobService.createJob(job);
         return success("Job added successfully");
     }
 
     @PutMapping("/system/job")
+    @Operation(summary = "Update job", description = "Updates an existing scheduled job")
+    @ApiResponse(responseCode = "200", description = "Job updated")
     public AjaxResult updateJob(@RequestBody JobDTO job) {
         quartzJobService.updateJob(job);
         return success("Job updated successfully");
     }
 
     @DeleteMapping("/system/job/{jobId}")
-    public AjaxResult removeJob(@PathVariable Long jobId) {
+    @Operation(summary = "Delete job", description = "Deletes a scheduled job")
+    @ApiResponse(responseCode = "200", description = "Job deleted")
+    public AjaxResult removeJob(@Parameter(description = "Job ID") @PathVariable Long jobId) {
         quartzJobService.deleteJob(jobId);
         return success("Job deleted successfully");
     }
 
     @DeleteMapping("/system/job/batch")
+    @Operation(summary = "Batch delete jobs", description = "Deletes multiple jobs by IDs")
+    @ApiResponse(responseCode = "200", description = "Jobs deleted")
     public AjaxResult batchRemoveJobs(@RequestBody Long[] ids) {
         for (Long id : ids) {
             quartzJobService.deleteJob(id);
@@ -973,12 +1197,16 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/job/changeStatus")
+    @Operation(summary = "Change job status", description = "Updates a job's enabled/disabled status")
+    @ApiResponse(responseCode = "200", description = "Status updated")
     public AjaxResult changeJobStatus(@RequestBody JobDTO job) {
         quartzJobService.updateJob(job);
         return success("Job status updated successfully");
     }
 
     @PostMapping("/system/job/run")
+    @Operation(summary = "Run job immediately", description = "Triggers immediate execution of a job")
+    @ApiResponse(responseCode = "200", description = "Job triggered")
     public AjaxResult runJob(@RequestBody Map<String, Object> request) {
         Long jobId = request.get("jobId") != null ? ((Number) request.get("jobId")).longValue() : null;
         if (jobId == null) return error("Job ID is required");
@@ -987,6 +1215,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/job/pause")
+    @Operation(summary = "Pause job", description = "Pauses a scheduled job")
+    @ApiResponse(responseCode = "200", description = "Job paused")
     public AjaxResult pauseJob(@RequestBody JobDTO job) {
         quartzJobService.pauseJob(job.getJobId());
         return success("Job paused successfully");

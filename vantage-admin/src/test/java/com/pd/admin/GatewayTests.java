@@ -35,15 +35,27 @@ class GatewayTests {
     }
 
     @Test
-    @DisplayName("Only one RestController exists (GatewayManagement)")
+    @DisplayName("Only one application RestController exists (GatewayManagement)")
     void onlyOneRestController() {
         String[] controllers = context.getBeanNamesForAnnotation(org.springframework.web.bind.annotation.RestController.class);
-        assertThat(controllers).hasSize(1);
-        assertThat(controllers[0]).isEqualTo("gatewayManagement");
+
+        // Filter out SpringDoc/Swagger internal controllers and BasicErrorController
+        List<String> appControllers = Arrays.stream(controllers)
+            .filter(name -> !name.contains("swagger"))
+            .filter(name -> !name.contains("Swagger"))
+            .filter(name -> !name.contains("springdoc"))
+            .filter(name -> !name.contains("SpringDoc"))
+            .filter(name -> !name.contains("OpenApi"))
+            .filter(name -> !name.contains("openApi"))
+            .filter(name -> !name.equals("basicErrorController"))
+            .toList();
+
+        assertThat(appControllers).hasSize(1);
+        assertThat(appControllers.get(0)).isEqualTo("gatewayManagement");
     }
 
     @Test
-    @DisplayName("All registered routes are under /api prefix")
+    @DisplayName("All application routes are under /api prefix")
     void allRoutesUnderApiPrefix() {
         var mappings = requestMappingHandlerMapping.getHandlerMethods();
         List<String> paths = mappings.keySet().stream()
@@ -59,9 +71,12 @@ class GatewayTests {
             })
             .filter(p -> !p.equals("/error"))
             .filter(p -> !p.startsWith("/actuator"))
+            .filter(p -> !p.startsWith("/swagger-ui"))
+            .filter(p -> !p.startsWith("/v3/api-docs"))
+            .filter(p -> !p.startsWith("/webjars"))
             .toList();
 
-        // All non-actuator routes should be under /api
+        // All non-actuator, non-swagger routes should be under /api
         assertThat(paths).isNotEmpty();
         assertThat(paths).allMatch(p -> p.startsWith("/api"));
     }
@@ -77,6 +92,11 @@ class GatewayTests {
             .filter(name -> !name.contains("PostProcessor"))
             .filter(name -> !name.contains("viewControllerHandlerMapping"))
             .filter(name -> !name.contains("simpleControllerHandlerAdapter"))
+            .filter(name -> !name.contains("swagger"))
+            .filter(name -> !name.contains("Swagger"))
+            .filter(name -> !name.contains("springdoc"))
+            .filter(name -> !name.contains("SpringDoc"))
+            .filter(name -> !name.contains("OpenApi"))
             .toArray(String[]::new);
 
         assertThat(webBeans).isEmpty();
