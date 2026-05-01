@@ -961,15 +961,21 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/chat/conversations/{conversationId}")
-    @Operation(summary = "Get conversation history", description = "Returns messages for a specific conversation")
-    @ApiResponse(responseCode = "200", description = "Conversation history retrieved")
+    @Operation(summary = "Get conversation by ID", description = "Returns messages for a specific conversation")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Conversation history retrieved"),
+        @ApiResponse(responseCode = "404", description = "Conversation not found")
+    })
     public AjaxResult getConversationById(@Parameter(description = "Conversation ID") @PathVariable Long conversationId) {
         return success(systemChatService.getConversationHistoryById(conversationId));
     }
 
     @DeleteMapping("/chat/conversations/{conversationId}")
     @Operation(summary = "Delete conversation", description = "Deletes a specific conversation and its messages")
-    @ApiResponse(responseCode = "200", description = "Conversation deleted")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Conversation deleted"),
+        @ApiResponse(responseCode = "404", description = "Conversation not found")
+    })
     public AjaxResult deleteConversation(@Parameter(description = "Conversation ID") @PathVariable Long conversationId) {
         return success(systemChatService.deleteConversation(conversationId, getCurrentUsername()));
     }
@@ -1251,12 +1257,16 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/job/resume")
+    @Operation(summary = "Resume job", description = "Resumes a paused scheduled job")
+    @ApiResponse(responseCode = "200", description = "Job resumed")
     public AjaxResult resumeJob(@RequestBody JobDTO job) {
         quartzJobService.resumeJob(job.getJobId());
         return success("Job resumed successfully");
     }
 
     @PutMapping("/system/job/batch/pause")
+    @Operation(summary = "Batch pause jobs", description = "Pauses multiple scheduled jobs by IDs")
+    @ApiResponse(responseCode = "200", description = "Jobs paused")
     public AjaxResult batchPauseJobs(@RequestBody Long[] ids) {
         for (Long id : ids) {
             quartzJobService.pauseJob(id);
@@ -1265,6 +1275,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PutMapping("/system/job/batch/resume")
+    @Operation(summary = "Batch resume jobs", description = "Resumes multiple paused scheduled jobs by IDs")
+    @ApiResponse(responseCode = "200", description = "Jobs resumed")
     public AjaxResult batchResumeJobs(@RequestBody Long[] ids) {
         for (Long id : ids) {
             quartzJobService.resumeJob(id);
@@ -1273,6 +1285,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/system/job/batch/run")
+    @Operation(summary = "Batch run jobs", description = "Executes multiple jobs immediately by IDs")
+    @ApiResponse(responseCode = "200", description = "Jobs executed")
     public AjaxResult batchRunJobs(@RequestBody Long[] ids) {
         int successCount = 0;
         for (Long id : ids) {
@@ -1285,6 +1299,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/job/export")
+    @Operation(summary = "Export jobs", description = "Exports selected or all jobs as JSON")
+    @ApiResponse(responseCode = "200", description = "Jobs exported")
     public AjaxResult exportJobs(@RequestParam(required = false) Long[] ids) {
         List<JobDTO> jobs;
         if (ids != null && ids.length > 0) {
@@ -1299,6 +1315,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/system/job/import")
+    @Operation(summary = "Import jobs", description = "Imports jobs from JSON data")
+    @ApiResponse(responseCode = "200", description = "Jobs imported")
     public AjaxResult importJobs(@RequestBody List<JobDTO> jobs) {
         int successCount = 0;
         for (JobDTO job : jobs) {
@@ -1312,6 +1330,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/job/groups")
+    @Operation(summary = "Get job groups", description = "Returns list of distinct job group names")
+    @ApiResponse(responseCode = "200", description = "Job groups retrieved")
     public AjaxResult getJobGroups() {
         List<String> groups = quartzJobService.findAll().stream()
                 .map(JobDTO::getJobGroup)
@@ -1322,11 +1342,14 @@ public class GatewayManagement extends BaseController {
 
     // ========== Quartz: Job Log ==========
 
+    @Tag(name = "Quartz - Job Logs", description = "Job execution log management")
     @GetMapping("/system/job-log/list")
+    @Operation(summary = "List job logs", description = "Returns filtered job execution logs")
+    @ApiResponse(responseCode = "200", description = "Job logs retrieved")
     public AjaxResult listJobLogs(
-            @RequestParam(required = false) String jobName,
-            @RequestParam(required = false) String jobGroup,
-            @RequestParam(required = false) String status) {
+            @Parameter(description = "Job name filter") @RequestParam(required = false) String jobName,
+            @Parameter(description = "Job group filter") @RequestParam(required = false) String jobGroup,
+            @Parameter(description = "Status filter") @RequestParam(required = false) String status) {
         List<JobLogDTO> logs;
         if (jobName != null) {
             logs = quartzJobLogService.findByJobName(jobName);
@@ -1339,20 +1362,26 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/system/job-log/job/{jobId}")
-    public AjaxResult getJobLogByJobId(@PathVariable Long jobId) {
+    @Operation(summary = "Get job logs by job ID", description = "Returns execution logs for a specific job")
+    @ApiResponse(responseCode = "200", description = "Job logs retrieved")
+    public AjaxResult getJobLogByJobId(@Parameter(description = "Job ID") @PathVariable Long jobId) {
         var jobOpt = quartzJobLogService.findById(jobId);
         return jobOpt.map(j -> success(List.of(j))).orElseGet(() -> error("Job log not found"));
     }
 
     @GetMapping("/system/job-log/{logId}")
-    public AjaxResult getJobLogById(@PathVariable Long logId) {
+    @Operation(summary = "Get job log by ID", description = "Returns a specific execution log entry")
+    @ApiResponse(responseCode = "200", description = "Job log retrieved")
+    public AjaxResult getJobLogById(@Parameter(description = "Log ID") @PathVariable Long logId) {
         return quartzJobLogService.findById(logId)
                 .map(this::success)
                 .orElseGet(() -> error("Job log not found"));
     }
 
     @GetMapping("/system/job-log/failed/recent")
-    public AjaxResult getRecentFailedLogs(@RequestParam(defaultValue = "10") int limit) {
+    @Operation(summary = "Get recent failed logs", description = "Returns recently failed job execution logs")
+    @ApiResponse(responseCode = "200", description = "Failed logs retrieved")
+    public AjaxResult getRecentFailedLogs(@Parameter(description = "Limit count") @RequestParam(defaultValue = "10") int limit) {
         var logs = quartzJobLogService.findAll().stream()
                 .filter(l -> "1".equals(l.getStatus()))
                 .limit(limit)
@@ -1361,18 +1390,24 @@ public class GatewayManagement extends BaseController {
     }
 
     @DeleteMapping("/system/job-log/{logId}")
-    public AjaxResult removeJobLog(@PathVariable Long logId) {
+    @Operation(summary = "Delete job log", description = "Deletes a specific execution log entry")
+    @ApiResponse(responseCode = "200", description = "Log deleted")
+    public AjaxResult removeJobLog(@Parameter(description = "Log ID") @PathVariable Long logId) {
         quartzJobLogService.deleteByIds(new Long[]{logId});
         return success("Job log deleted successfully");
     }
 
     @DeleteMapping("/system/job-log/batch")
-    public AjaxResult batchRemoveJobLogs(@RequestBody Long[] ids) {
+    @Operation(summary = "Batch delete job logs", description = "Deletes multiple execution log entries by IDs")
+    @ApiResponse(responseCode = "200", description = "Logs deleted")
+    public AjaxResult batchRemoveJobLogs(@Parameter(description = "Log IDs") @RequestBody Long[] ids) {
         quartzJobLogService.deleteByIds(ids);
         return success("Deleted " + ids.length + " job log(s)");
     }
 
     @DeleteMapping("/system/job-log/clean")
+    @Operation(summary = "Clean all job logs", description = "Removes all job execution logs")
+    @ApiResponse(responseCode = "200", description = "All logs cleared")
     public AjaxResult cleanJobLogs() {
         quartzJobLogService.cleanLogs();
         return success("All job logs cleared");
@@ -1380,19 +1415,26 @@ public class GatewayManagement extends BaseController {
 
     // ========== Quartz: Job Template ==========
 
+    @Tag(name = "Quartz - Job Templates", description = "Job template management")
     @GetMapping("/system/job-template/list")
+    @Operation(summary = "List job templates", description = "Returns all available job templates")
+    @ApiResponse(responseCode = "200", description = "Templates retrieved")
     public AjaxResult listJobTemplates() {
         return success(quartzJobTemplateService.getTemplates());
     }
 
     @GetMapping("/system/job-template/{name}")
-    public AjaxResult getJobTemplate(@PathVariable String name) {
+    @Operation(summary = "Get job template by name", description = "Returns a specific job template")
+    @ApiResponse(responseCode = "200", description = "Template retrieved")
+    public AjaxResult getJobTemplate(@Parameter(description = "Template name") @PathVariable String name) {
         var template = quartzJobTemplateService.getTemplateByName(name);
         return template != null ? success(template) : error("Template not found");
     }
 
     @PostMapping("/system/job-template/create/{templateName}")
-    public AjaxResult createJobFromTemplate(@PathVariable String templateName, @RequestParam(required = false) String jobName) {
+    @Operation(summary = "Create job from template", description = "Creates a new scheduled job from a template")
+    @ApiResponse(responseCode = "200", description = "Job created from template")
+    public AjaxResult createJobFromTemplate(@Parameter(description = "Template name") @PathVariable String templateName, @Parameter(description = "Job name (optional)") @RequestParam(required = false) String jobName) {
         JobDTO job = quartzJobTemplateService.createJobFromTemplate(templateName, jobName);
         quartzJobService.createJob(job);
         return success("Job created from template: " + templateName);
@@ -1400,56 +1442,75 @@ public class GatewayManagement extends BaseController {
 
     // ========== Quartz: Email Template ==========
 
+    @Tag(name = "Quartz - Email Templates", description = "Email notification template management")
     @GetMapping("/system/email-template/list")
+    @Operation(summary = "List email templates", description = "Returns all email notification templates")
+    @ApiResponse(responseCode = "200", description = "Templates retrieved")
     public AjaxResult listEmailTemplates() {
         return success(quartzEmailJobTemplateService.getAllTemplates());
     }
 
     @GetMapping("/system/email-template/active")
+    @Operation(summary = "Get active email templates", description = "Returns only active email templates")
+    @ApiResponse(responseCode = "200", description = "Active templates retrieved")
     public AjaxResult getActiveEmailTemplates() {
         return success(quartzEmailJobTemplateService.getActiveTemplates());
     }
 
     @GetMapping("/system/email-template/{templateId}")
-    public AjaxResult getEmailTemplate(@PathVariable Long templateId) {
+    @Operation(summary = "Get email template by ID", description = "Returns a specific email template")
+    @ApiResponse(responseCode = "200", description = "Template retrieved")
+    public AjaxResult getEmailTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         return quartzEmailJobTemplateService.getTemplateById(templateId)
                 .map(this::success)
                 .orElseGet(() -> error("Template not found"));
     }
 
     @GetMapping("/system/email-template/type/{templateType}")
-    public AjaxResult getEmailTemplateByType(@PathVariable String templateType) {
+    @Operation(summary = "Get email template by type", description = "Returns email template by its type identifier")
+    @ApiResponse(responseCode = "200", description = "Template retrieved")
+    public AjaxResult getEmailTemplateByType(@Parameter(description = "Template type") @PathVariable String templateType) {
         return quartzEmailJobTemplateService.getTemplateByType(templateType)
                 .map(this::success)
                 .orElseGet(() -> error("Template not found for type: " + templateType));
     }
 
     @PostMapping("/system/email-template")
+    @Operation(summary = "Create email template", description = "Creates a new email notification template")
+    @ApiResponse(responseCode = "200", description = "Template created")
     public AjaxResult addEmailTemplate(@RequestBody EmailTemplateDTO template) {
         quartzEmailJobTemplateService.saveTemplate(template);
         return success("Template created successfully");
     }
 
     @PutMapping("/system/email-template")
+    @Operation(summary = "Update email template", description = "Updates an existing email template")
+    @ApiResponse(responseCode = "200", description = "Template updated")
     public AjaxResult updateEmailTemplate(@RequestBody EmailTemplateDTO template) {
         quartzEmailJobTemplateService.saveTemplate(template);
         return success("Template updated successfully");
     }
 
     @DeleteMapping("/system/email-template/{templateId}")
-    public AjaxResult removeEmailTemplate(@PathVariable Long templateId) {
+    @Operation(summary = "Delete email template", description = "Deletes an email template by ID")
+    @ApiResponse(responseCode = "200", description = "Template deleted")
+    public AjaxResult removeEmailTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         quartzEmailJobTemplateService.deleteTemplate(templateId);
         return success("Template deleted successfully");
     }
 
     @PutMapping("/system/email-template/{templateId}/set-default")
-    public AjaxResult setEmailTemplateAsDefault(@PathVariable Long templateId, @RequestParam String templateType) {
+    @Operation(summary = "Set default email template", description = "Sets an email template as default for a type")
+    @ApiResponse(responseCode = "200", description = "Default template set")
+    public AjaxResult setEmailTemplateAsDefault(@Parameter(description = "Template ID") @PathVariable Long templateId, @Parameter(description = "Template type") @RequestParam String templateType) {
         quartzEmailJobTemplateService.setTemplateAsDefault(templateId, templateType);
         return success("Template set as default");
     }
 
     @PutMapping("/system/email-template/{templateId}/toggle-active")
-    public AjaxResult toggleEmailTemplateActive(@PathVariable Long templateId) {
+    @Operation(summary = "Toggle email template active status", description = "Activates or deactivates an email template")
+    @ApiResponse(responseCode = "200", description = "Template status updated")
+    public AjaxResult toggleEmailTemplateActive(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         EmailTemplateDTO template = quartzEmailJobTemplateService.getTemplateById(templateId)
                 .orElseThrow(() -> new RuntimeException("Template not found"));
         template.setIsActive(!template.getIsActive());
@@ -1458,6 +1519,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/system/email-template/preview")
+    @Operation(summary = "Preview email template", description = "Renders and previews an email template with data")
+    @ApiResponse(responseCode = "200", description = "Template preview generated")
     public AjaxResult previewEmailTemplate(@RequestBody Map<String, Object> request) {
         try {
             String subject = (String) request.getOrDefault("emailSubject", "");
@@ -1487,18 +1550,25 @@ public class GatewayManagement extends BaseController {
 
     // ========== Quartz: Job Group ==========
 
+    @Tag(name = "Quartz - Job Groups", description = "Job group management and batch execution")
     @GetMapping("/system/job-group/list")
+    @Operation(summary = "Get job groups summary", description = "Returns summary of all job groups with counts")
+    @ApiResponse(responseCode = "200", description = "Job groups retrieved")
     public AjaxResult getJobGroupsSummary() {
         return success(quartzJobGroupService.getJobGroupSummary());
     }
 
     @GetMapping("/system/job-group/{jobGroup}/jobs")
-    public AjaxResult getJobsInGroup(@PathVariable String jobGroup) {
+    @Operation(summary = "Get jobs in group", description = "Returns all jobs in a specific group")
+    @ApiResponse(responseCode = "200", description = "Jobs retrieved")
+    public AjaxResult getJobsInGroup(@Parameter(description = "Job group name") @PathVariable String jobGroup) {
         return success(quartzJobGroupService.getJobsInGroup(jobGroup));
     }
 
     @PostMapping("/system/job-group/{jobGroup}/execute")
-    public AjaxResult executeJobGroup(@PathVariable String jobGroup) {
+    @Operation(summary = "Execute job group", description = "Runs all jobs in a group sequentially")
+    @ApiResponse(responseCode = "200", description = "Group executed")
+    public AjaxResult executeJobGroup(@Parameter(description = "Job group name") @PathVariable String jobGroup) {
         List<Map<String, Object>> results = quartzJobGroupService.executeGroup(jobGroup);
         long successCount = results.stream().filter(r -> "SUCCESS".equals(r.get("status"))).count();
         long failedCount = results.stream().filter(r -> "FAILED".equals(r.get("status"))).count();
@@ -1514,24 +1584,37 @@ public class GatewayManagement extends BaseController {
 
     // ========== Quartz: Job Dashboard ==========
 
+    @Tag(name = "Quartz - Job Dashboard", description = "Job metrics, trends, and health monitoring")
     @GetMapping("/system/job-dashboard/metrics")
+    @Operation(summary = "Get job metrics", description = "Returns dashboard metrics for all jobs")
+    @ApiResponse(responseCode = "200", description = "Metrics retrieved")
     public AjaxResult getJobMetrics() {
         return success(quartzJobMetricsService.getDashboardMetrics());
     }
 
     @GetMapping("/system/job-dashboard/trend")
-    public AjaxResult getJobTrend(@RequestParam(defaultValue = "30") int days) {
+    @Operation(summary = "Get job execution trend", description = "Returns execution trend data for charting")
+    @ApiResponse(responseCode = "200", description = "Trend data retrieved")
+    public AjaxResult getJobTrend(@Parameter(description = "Number of days") @RequestParam(defaultValue = "30") int days) {
         return success(quartzJobMetricsService.getExecutionTrend(days));
     }
 
     @GetMapping("/system/job-dashboard/health")
+    @Operation(summary = "Get job health status", description = "Returns health check status for all jobs")
+    @ApiResponse(responseCode = "200", description = "Health status retrieved")
     public AjaxResult getJobHealth() {
         return success(quartzJobMetricsService.getJobHealth());
     }
 
     // ========== Quartz: Script Job ==========
 
+    @Tag(name = "Quartz - Script Job", description = "Ad-hoc script execution")
     @PostMapping("/system/scriptJob/run")
+    @Operation(summary = "Run script", description = "Executes an ad-hoc script (shell, python, etc.)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Script executed"),
+        @ApiResponse(responseCode = "400", description = "Script content required")
+    })
     public AjaxResult runScript(@RequestBody Map<String, String> params) {
         try {
             String scriptType = params.get("scriptType");
@@ -1547,14 +1630,23 @@ public class GatewayManagement extends BaseController {
 
     // ========== Quartz: Job Webhook ==========
 
+    @Tag(name = "Quartz - Job Webhook", description = "External webhook triggers for job execution")
     @PostMapping("/public/job/webhook/{jobId}")
-    public AjaxResult triggerJobWebhook(@PathVariable Long jobId, @RequestParam String token) {
+    @Operation(summary = "Trigger job via webhook", description = "Executes a job using webhook URL and token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Job triggered"),
+        @ApiResponse(responseCode = "403", description = "Invalid webhook token")
+    })
+    public AjaxResult triggerJobWebhook(@Parameter(description = "Job ID") @PathVariable Long jobId, @Parameter(description = "Webhook token") @RequestParam String token) {
         return success(quartzJobWebhookService.triggerJobByWebhook(jobId, token));
     }
 
     // ========== Generator ==========
 
+    @Tag(name = "Code Generator", description = "Database table code generation for CRUD operations")
     @GetMapping("/tool/gen/db/tables")
+    @Operation(summary = "List database tables", description = "Returns all database tables available for code generation")
+    @ApiResponse(responseCode = "200", description = "Tables retrieved")
     public AjaxResult listTables() {
         try {
             return success(generatorService.findAllTables());
@@ -1564,7 +1656,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/tool/gen/preview")
-    public void preview(@RequestParam Long tableId, HttpServletResponse response) throws IOException {
+    @Operation(summary = "Preview generated code", description = "Returns preview of generated code for a table")
+    @ApiResponse(responseCode = "200", description = "Code preview returned")
+    public void preview(@Parameter(description = "Table ID") @RequestParam Long tableId, HttpServletResponse response) throws IOException {
         Map<String, String> code = generatorService.previewCode(tableId);
         response.setContentType("text/plain;charset=UTF-8");
         if (code != null && !code.isEmpty()) {
@@ -1573,6 +1667,8 @@ public class GatewayManagement extends BaseController {
     }
 
     @PostMapping("/tool/gen/batch")
+    @Operation(summary = "Batch generate code", description = "Imports tables and generates CRUD code for multiple tables")
+    @ApiResponse(responseCode = "200", description = "Code generated")
     public AjaxResult batchGen(@RequestBody Map<String, Object> params) {
         try {
             @SuppressWarnings("unchecked")
@@ -1585,7 +1681,9 @@ public class GatewayManagement extends BaseController {
     }
 
     @GetMapping("/tool/gen/download")
-    public void download(@RequestParam Long tableId, HttpServletResponse response) throws IOException {
+    @Operation(summary = "Download generated code", description = "Downloads generated code as ZIP file")
+    @ApiResponse(responseCode = "200", description = "ZIP file downloaded")
+    public void download(@Parameter(description = "Table ID") @RequestParam Long tableId, HttpServletResponse response) throws IOException {
         try {
             byte[] zipBytes = generatorService.downloadCode(tableId);
             response.setContentType("application/zip");
