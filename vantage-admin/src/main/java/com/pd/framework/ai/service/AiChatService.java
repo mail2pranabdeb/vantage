@@ -1,12 +1,15 @@
 package com.pd.framework.ai.service;
 
 import com.pd.framework.ai.config.AiProperties;
+import com.pd.framework.ai.domain.AiChatMessage;
+import com.pd.framework.ai.domain.ChatConversation;
+import com.pd.framework.ai.infrastructure.repository.ChatConversationRepository;
+import com.pd.framework.ai.infrastructure.repository.ChatMessageRepository;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.data.segment.TextSegment;
@@ -23,6 +26,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
@@ -43,7 +47,10 @@ public class AiChatService {
     private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final ContentRetriever contentRetriever;
+    private final ChatConversationRepository conversationRepository;
+    private final ChatMessageRepository messageRepository;
     private final Map<String, ChatMemory> userMemories = new ConcurrentHashMap<>();
+    private final Map<String, Long> userActiveConversations = new ConcurrentHashMap<>();
     private final ChatMemory defaultMemory;
     private ChatLanguageModel chatModel;
     private StreamingChatLanguageModel streamingChatModel;
@@ -53,12 +60,16 @@ public class AiChatService {
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
             ContentRetriever contentRetriever,
-            ChatMemory defaultMemory
+            ChatMemory defaultMemory,
+            ChatConversationRepository conversationRepository,
+            ChatMessageRepository messageRepository
     ) {
         this.aiProperties = aiProperties;
         this.embeddingModel = embeddingModel;
         this.embeddingStore = embeddingStore;
         this.contentRetriever = contentRetriever;
+        this.conversationRepository = conversationRepository;
+        this.messageRepository = messageRepository;
         this.defaultMemory = defaultMemory;
 
         if (aiProperties.isEnabled()) {
@@ -109,7 +120,7 @@ public class AiChatService {
 
         ChatMemory memory = getUserMemory(username);
         try {
-            List<ChatMessage> messages = new ArrayList<>();
+            List<dev.langchain4j.data.message.ChatMessage> messages = new ArrayList<>();
             messages.add(new SystemMessage(aiProperties.getSystemPrompt()));
             messages.addAll(memory.messages());
             String contextualMessage = buildContextualMessage(userMessage, username);
@@ -120,6 +131,8 @@ public class AiChatService {
 
             memory.add(new UserMessage(userMessage));
             memory.add(new AiMessage(response));
+
+            persistMessage(username, userMessage, response);
 
             return response;
         } catch (Exception e) {
@@ -143,7 +156,7 @@ public class AiChatService {
 
         ChatMemory memory = getUserMemory(username);
         try {
-            List<ChatMessage> messages = new ArrayList<>();
+            List<dev.langchain4j.data.message.ChatMessage> messages = new ArrayList<>();
             messages.add(new SystemMessage(aiProperties.getSystemPrompt()));
             messages.addAll(memory.messages());
             String contextualMessage = buildContextualMessage(userMessage, username);
@@ -166,6 +179,7 @@ public class AiChatService {
                             String responseText = fullResponse.toString();
                             memory.add(new UserMessage(userMessage));
                             memory.add(new AiMessage(responseText));
+                            persistMessage(username, userMessage, responseText);
                             sink.complete();
                         }
 
@@ -252,6 +266,7 @@ public class AiChatService {
         if (username != null && !username.isEmpty()) {
             ChatMemory memory = userMemories.remove(username);
             if (memory != null) memory.clear();
+            userActiveConversations.remove(username);
         } else {
             defaultMemory.clear();
         }
@@ -261,27 +276,93 @@ public class AiChatService {
      * Get all usernames who have conversation history
      */
     public List<String> getUserConversations() {
-        return new ArrayList<>(userMemories.keySet());
+        List<ChatConversation> conversations = conversationRepository.findByUsernameAndStatusOrderByUpdateTimeDesc("anonymous", "1");
+        return conversations.stream().map(ChatConversation::getUsername).distinct().toList();
     }
 
     /**
-     * Get conversation history for a specific user
+     * Get conversation list for a user
      */
-    public List<Map<String, Object>> getUserConversationHistory(String username) {
-        ChatMemory memory = getUserMemory(username);
-        List<Map<String, Object>> history = new ArrayList<>();
-        for (ChatMessage msg : memory.messages()) {
+    public List<Map<String, Object>> getConversationsList(String username) {
+        List<ChatConversation> conversations = conversationRepository.findByUsernameAndStatusOrderByUpdateTimeDesc(username, "1");
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ChatConversation conv : conversations) {
             Map<String, Object> entry = new ConcurrentHashMap<>();
-            if (msg instanceof UserMessage um) {
-                entry.put("role", "user");
-                entry.put("content", um.singleText());
-            } else if (msg instanceof AiMessage am) {
-                entry.put("role", "assistant");
-                entry.put("content", am.text());
+            entry.put("id", conv.getId());
+            entry.put("title", conv.getTitle());
+            entry.put("messageCount", conv.getMessageCount());
+            entry.put("createTime", conv.getCreateTime());
+            entry.put("updateTime", conv.getUpdateTime());
+            entry.put("lastMessageTime", conv.getLastMessageTime());
+            result.add(entry);
+        }
+        return result;
+    }
+
+    /**
+     * Get conversation history for a specific conversation
+     */
+    public List<Map<String, Object>> getConversationHistory(Long conversationId) {
+        List<AiChatMessage> messages = messageRepository.findByConversationIdOrderByCreateTimeAsc(conversationId);
+        List<Map<String, Object>> history = new ArrayList<>();
+        for (AiChatMessage msg : messages) {
+            Map<String, Object> entry = new ConcurrentHashMap<>();
+            entry.put("id", msg.getId());
+            entry.put("role", msg.getRole());
+            entry.put("content", msg.getContent());
+            entry.put("createTime", msg.getCreateTime());
+            if (msg.getToolCalls() != null) {
+                entry.put("toolCalls", msg.getToolCalls());
+            }
+            if (msg.getToolResults() != null) {
+                entry.put("toolResults", msg.getToolResults());
             }
             history.add(entry);
         }
         return history;
+    }
+
+    /**
+     * Get conversation history for a specific user (latest conversation)
+     */
+    public List<Map<String, Object>> getUserConversationHistory(String username) {
+        ChatConversation conv = conversationRepository.findFirstByUsernameAndStatusOrderByCreateTimeDesc(username, "1").orElse(null);
+        if (conv == null) {
+            ChatMemory memory = getUserMemory(username);
+            List<Map<String, Object>> history = new ArrayList<>();
+            for (dev.langchain4j.data.message.ChatMessage msg : memory.messages()) {
+                Map<String, Object> entry = new ConcurrentHashMap<>();
+                if (msg instanceof UserMessage um) {
+                    entry.put("role", "user");
+                    entry.put("content", um.singleText());
+                } else if (msg instanceof AiMessage am) {
+                    entry.put("role", "assistant");
+                    entry.put("content", am.text());
+                }
+                history.add(entry);
+            }
+            return history;
+        }
+        return getConversationHistory(conv.getId());
+    }
+
+    /**
+     * Delete a conversation and its messages
+     */
+    @Transactional
+    public void deleteConversation(Long conversationId) {
+        messageRepository.deleteByConversationId(conversationId);
+        conversationRepository.deleteById(conversationId);
+    }
+
+    /**
+     * Delete all conversations for a user
+     */
+    @Transactional
+    public void deleteAllConversations(String username) {
+        messageRepository.deleteByUsername(username);
+        conversationRepository.deleteByUsername(username);
+        clearMemory(username);
     }
 
     /**
@@ -290,7 +371,61 @@ public class AiChatService {
     public void clearAllMemories() {
         userMemories.values().forEach(ChatMemory::clear);
         userMemories.clear();
+        userActiveConversations.clear();
         defaultMemory.clear();
+    }
+
+    /**
+     * Get or create active conversation for user
+     */
+    private Long getOrCreateConversation(String username) {
+        Long existingId = userActiveConversations.get(username);
+        if (existingId != null) {
+            return existingId;
+        }
+
+        ChatConversation conv = conversationRepository
+                .findFirstByUsernameAndStatusOrderByCreateTimeDesc(username, "1")
+                .orElse(null);
+
+        if (conv == null) {
+            conv = new ChatConversation(username, "New Conversation");
+            conv = conversationRepository.save(conv);
+        }
+
+        userActiveConversations.put(username, conv.getId());
+        return conv.getId();
+    }
+
+    /**
+     * Persist user message and AI response to database
+     */
+    @Transactional
+    private void persistMessage(String username, String userMessage, String aiResponse) {
+        try {
+            Long conversationId = getOrCreateConversation(username);
+
+            AiChatMessage userMsg = new AiChatMessage(conversationId, username, "user", userMessage);
+            messageRepository.save(userMsg);
+
+            AiChatMessage aiMsg = new AiChatMessage(conversationId, username, "assistant", aiResponse);
+            messageRepository.save(aiMsg);
+
+            // Update conversation metadata
+            ChatConversation conv = conversationRepository.findById(conversationId).orElse(null);
+            if (conv != null) {
+                conv.setMessageCount((int) messageRepository.countByConversationId(conversationId));
+                conv.setLastMessageTime(java.time.LocalDateTime.now());
+                if ("New Conversation".equals(conv.getTitle()) && userMessage.length() > 30) {
+                    conv.setTitle(userMessage.substring(0, 30) + "...");
+                } else if ("New Conversation".equals(conv.getTitle())) {
+                    conv.setTitle(userMessage);
+                }
+                conversationRepository.save(conv);
+            }
+        } catch (Exception e) {
+            log.error("Failed to persist chat message", e);
+        }
     }
 
     /**

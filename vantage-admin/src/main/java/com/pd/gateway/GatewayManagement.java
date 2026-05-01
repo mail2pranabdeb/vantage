@@ -953,6 +953,34 @@ public class GatewayManagement extends BaseController {
         return success(systemChatService.clearMemory(getCurrentUsername()));
     }
 
+    @GetMapping("/chat/conversations")
+    @Operation(summary = "List conversations", description = "Returns the user's conversation list")
+    @ApiResponse(responseCode = "200", description = "Conversations retrieved")
+    public AjaxResult listConversations() {
+        return success(systemChatService.getConversationsList(getCurrentUsername()));
+    }
+
+    @GetMapping("/chat/conversations/{conversationId}")
+    @Operation(summary = "Get conversation history", description = "Returns messages for a specific conversation")
+    @ApiResponse(responseCode = "200", description = "Conversation history retrieved")
+    public AjaxResult getConversationById(@Parameter(description = "Conversation ID") @PathVariable Long conversationId) {
+        return success(systemChatService.getConversationHistoryById(conversationId));
+    }
+
+    @DeleteMapping("/chat/conversations/{conversationId}")
+    @Operation(summary = "Delete conversation", description = "Deletes a specific conversation and its messages")
+    @ApiResponse(responseCode = "200", description = "Conversation deleted")
+    public AjaxResult deleteConversation(@Parameter(description = "Conversation ID") @PathVariable Long conversationId) {
+        return success(systemChatService.deleteConversation(conversationId, getCurrentUsername()));
+    }
+
+    @DeleteMapping("/chat/conversations")
+    @Operation(summary = "Delete all conversations", description = "Deletes all conversations for the current user")
+    @ApiResponse(responseCode = "200", description = "All conversations deleted")
+    public AjaxResult deleteAllConversations() {
+        return success(systemChatService.deleteAllConversations(getCurrentUsername()));
+    }
+
     private String getCurrentUsername() {
         try {
             Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();

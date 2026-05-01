@@ -21,5 +21,13 @@ public interface SystemChatService {
 
     List<Map<String, Object>> getConversationHistory(String username);
 
+    List<Map<String, Object>> getConversationsList(String username);
+
+    List<Map<String, Object>> getConversationHistoryById(Long conversationId);
+
     String clearMemory(String username);
+
+    String deleteConversation(Long conversationId, String username);
+
+    String deleteAllConversations(String username);
 }

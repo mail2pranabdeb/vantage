@@ -2,6 +2,7 @@ package com.pd.modules.system.service.impl;
 
 import com.pd.framework.ai.service.AiChatService;
 import com.pd.framework.ai.service.KnowledgeBaseService;
+import com.pd.framework.ai.service.ToolExecutionService;
 import com.pd.modules.system.api.SystemChatService;
 import com.pd.modules.system.security.LoginUser;
 import org.slf4j.Logger;
@@ -14,8 +15,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class SystemChatServiceImpl implements SystemChatService {
@@ -24,12 +23,15 @@ public class SystemChatServiceImpl implements SystemChatService {
 
     private final AiChatService aiChatService;
     private final KnowledgeBaseService knowledgeBaseService;
+    private final ToolExecutionService toolExecutionService;
 
     public SystemChatServiceImpl(
             @org.springframework.beans.factory.annotation.Autowired(required = false) AiChatService aiChatService,
-            @org.springframework.beans.factory.annotation.Autowired(required = false) KnowledgeBaseService knowledgeBaseService) {
+            @org.springframework.beans.factory.annotation.Autowired(required = false) KnowledgeBaseService knowledgeBaseService,
+            ToolExecutionService toolExecutionService) {
         this.aiChatService = aiChatService;
         this.knowledgeBaseService = knowledgeBaseService;
+        this.toolExecutionService = toolExecutionService;
     }
 
     @Override
@@ -37,14 +39,24 @@ public class SystemChatServiceImpl implements SystemChatService {
         if (toolResults != null && !toolResults.isEmpty()) {
             return buildToolResponse(toolResults);
         }
+
         if (aiChatService != null && aiChatService.isEnabled()) {
             try {
                 String aiResponse = aiChatService.chat(message, username);
                 List<Map<String, Object>> toolCalls = extractToolCalls(aiResponse, message);
+
                 Map<String, Object> result = new HashMap<>();
                 if (!toolCalls.isEmpty()) {
+                    List<Map<String, Object>> executedResults = executeToolCalls(toolCalls);
                     result.put("toolCalls", toolCalls);
+                    result.put("toolResults", executedResults);
                     result.put("response", null);
+
+                    // Recursively call with tool results to get AI summary
+                    String summary = aiChatService.chat(
+                            "Based on these tool execution results, provide a summary: " + formatToolResults(executedResults),
+                            username);
+                    result.put("summary", summary);
                 } else {
                     result.put("response", aiResponse);
                     result.put("toolCalls", null);
@@ -138,6 +150,22 @@ public class SystemChatServiceImpl implements SystemChatService {
     }
 
     @Override
+    public List<Map<String, Object>> getConversationsList(String username) {
+        if (aiChatService != null) {
+            return aiChatService.getConversationsList(username);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Map<String, Object>> getConversationHistoryById(Long conversationId) {
+        if (aiChatService != null) {
+            return aiChatService.getConversationHistory(conversationId);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
     public String clearMemory(String username) {
         if (aiChatService != null) {
             aiChatService.clearMemory(username);
@@ -146,8 +174,58 @@ public class SystemChatServiceImpl implements SystemChatService {
         throw new RuntimeException("AI service not available");
     }
 
+    @Override
+    public String deleteConversation(Long conversationId, String username) {
+        if (aiChatService != null) {
+            aiChatService.deleteConversation(conversationId);
+            return "Conversation deleted";
+        }
+        throw new RuntimeException("AI service not available");
+    }
+
+    @Override
+    public String deleteAllConversations(String username) {
+        if (aiChatService != null) {
+            aiChatService.deleteAllConversations(username);
+            return "All conversations deleted";
+        }
+        throw new RuntimeException("AI service not available");
+    }
+
     private boolean matchesAny(String msg, String... patterns) {
         return Arrays.stream(patterns).anyMatch(msg::contains);
+    }
+
+    private List<Map<String, Object>> executeToolCalls(List<Map<String, Object>> toolCalls) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (Map<String, Object> toolCall : toolCalls) {
+            String toolName = (String) toolCall.get("name");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> arguments = (Map<String, Object>) toolCall.getOrDefault("arguments", Collections.emptyMap());
+            results.add(toolExecutionService.executeTool(toolName, arguments));
+        }
+        return results;
+    }
+
+    private String formatToolResults(List<Map<String, Object>> toolResults) {
+        StringBuilder sb = new StringBuilder();
+        for (Map<String, Object> result : toolResults) {
+            String name = (String) result.get("name");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) result.get("result");
+            sb.append("Tool: ").append(name).append("\n");
+            if (data != null) {
+                sb.append("Success: ").append(data.get("success")).append("\n");
+                if (data.containsKey("message")) {
+                    sb.append("Message: ").append(data.get("message")).append("\n");
+                }
+                if (data.containsKey("count")) {
+                    sb.append("Count: ").append(data.get("count")).append("\n");
+                }
+            }
+            sb.append("---\n");
+        }
+        return sb.toString();
     }
 
     private Map<String, Object> processMessageFallback(String message, List<Map<String, Object>> toolResults) {
@@ -207,17 +285,91 @@ public class SystemChatServiceImpl implements SystemChatService {
     private List<Map<String, Object>> extractToolCalls(String aiResponse, String originalMessage) {
         List<Map<String, Object>> toolCalls = new ArrayList<>();
         String lower = originalMessage.toLowerCase();
+
         if (matchesAny(lower, "create user", "add user", "new user")) {
-            toolCalls.add(Map.of("name", "createUser", "arguments", Collections.emptyMap()));
-        } else if (matchesAny(lower, "list user", "show user", "all user")) {
+            Map<String, Object> args = new HashMap<>();
+            String name = extractName(originalMessage);
+            if (name != null) {
+                String[] parts = name.split("\\s+", 2);
+                args.put("loginName", parts[0].toLowerCase().replace(" ", "."));
+                args.put("userName", name);
+            }
+            toolCalls.add(Map.of("name", "createUser", "arguments", args));
+        } else if (matchesAny(lower, "list user", "show user", "all user", "get user")) {
             toolCalls.add(Map.of("name", "listUsers", "arguments", Collections.emptyMap()));
-        } else if (matchesAny(lower, "list role", "show role", "all role")) {
+        } else if (matchesAny(lower, "delete user", "remove user")) {
+            Map<String, Object> args = new HashMap<>();
+            Long userId = extractUserId(originalMessage);
+            if (userId != null) args.put("userId", userId);
+            toolCalls.add(Map.of("name", "deleteUser", "arguments", args));
+        } else if (matchesAny(lower, "list role", "show role", "all role", "get role")) {
             toolCalls.add(Map.of("name", "listRoles", "arguments", Collections.emptyMap()));
-        } else if (matchesAny(lower, "list job", "show job", "run job", "execute job")) {
-            toolCalls.add(Map.of("name", "executeJob", "arguments", Collections.emptyMap()));
+        } else if (matchesAny(lower, "create role", "add role", "new role")) {
+            Map<String, Object> args = new HashMap<>();
+            String name = extractName(originalMessage);
+            if (name != null) {
+                args.put("roleName", name);
+                args.put("roleKey", name.toLowerCase().replace(" ", "_"));
+            }
+            toolCalls.add(Map.of("name", "createRole", "arguments", args));
+        } else if (matchesAny(lower, "run job", "execute job", "trigger job")) {
+            Map<String, Object> args = new HashMap<>();
+            Long jobId = extractJobId(originalMessage);
+            if (jobId != null) args.put("jobId", jobId);
+            String jobName = extractName(originalMessage);
+            if (jobName != null) args.put("jobName", jobName);
+            toolCalls.add(Map.of("name", "executeJob", "arguments", args));
+        } else if (matchesAny(lower, "list job", "show job", "all job", "get job")) {
+            toolCalls.add(Map.of("name", "listJobs", "arguments", Collections.emptyMap()));
         } else if (matchesAny(lower, "show report", "get report", "pull report")) {
             toolCalls.add(Map.of("name", "generateReport", "arguments", Collections.emptyMap()));
+        } else if (matchesAny(lower, "operation log", "oper log", "audit log")) {
+            toolCalls.add(Map.of("name", "getOperationLogs", "arguments", Collections.emptyMap()));
+        } else if (matchesAny(lower, "config", "configuration", "setting")) {
+            Map<String, Object> args = new HashMap<>();
+            if (lower.contains("key")) {
+                args.put("configKey", extractConfigKey(originalMessage));
+            }
+            toolCalls.add(Map.of("name", "getConfig", "arguments", args));
         }
+
         return toolCalls;
+    }
+
+    private String extractName(String message) {
+        String[] patterns = {"name ", "named ", "call "};
+        for (String pattern : patterns) {
+            int idx = message.toLowerCase().indexOf(pattern);
+            if (idx != -1) {
+                String after = message.substring(idx + pattern.length()).trim();
+                int end = after.indexOf(" ");
+                if (end == -1) end = after.length();
+                if (end > 0) return after.substring(0, Math.min(end + 20, after.length())).replaceAll("[\"']", "").trim();
+            }
+        }
+        return null;
+    }
+
+    private Long extractUserId(String message) {
+        try {
+            String[] words = message.split("\\s+");
+            for (String word : words) {
+                String cleaned = word.replaceAll("[^0-9]", "");
+                if (!cleaned.isEmpty()) return Long.parseLong(cleaned);
+            }
+        } catch (NumberFormatException ignored) {}
+        return null;
+    }
+
+    private Long extractJobId(String message) {
+        return extractUserId(message);
+    }
+
+    private String extractConfigKey(String message) {
+        int idx = message.toLowerCase().indexOf("key");
+        if (idx != -1) {
+            return message.substring(idx + 3).trim().replaceAll("[\"']", "");
+        }
+        return null;
     }
 }
