@@ -42,6 +42,6 @@ public class OpenApiConfig {
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
                         .bearerFormat("JWT")
-                        .description("Enter JWT Bearer token from /api/login response")));
+                        .description("Enter JWT Bearer token. Obtain via: curl -X POST http://localhost:8080/api/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin123\"}'"));
     }
 }
