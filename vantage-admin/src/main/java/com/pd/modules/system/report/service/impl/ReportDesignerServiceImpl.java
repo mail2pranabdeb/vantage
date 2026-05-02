@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
+@Service("reportDesignerService")
 public class ReportDesignerServiceImpl implements ReportDesignerService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportDesignerServiceImpl.class);
