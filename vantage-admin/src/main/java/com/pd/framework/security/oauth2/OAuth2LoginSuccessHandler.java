@@ -7,6 +7,8 @@ import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -23,12 +25,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     private final JwtTokenUtil jwtTokenUtil;
     private final SysUserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public OAuth2LoginSuccessHandler(JwtTokenUtil jwtTokenUtil, SysUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Lazy
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public OAuth2LoginSuccessHandler(JwtTokenUtil jwtTokenUtil, SysUserRepository userRepository) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override

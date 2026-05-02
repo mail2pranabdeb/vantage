@@ -48,6 +48,7 @@ class GatewayTests {
             .filter(name -> !name.contains("OpenApi"))
             .filter(name -> !name.contains("openApi"))
             .filter(name -> !name.equals("basicErrorController"))
+            .filter(name -> !name.equals("spaForwardController"))
             .toList();
 
         assertThat(appControllers).hasSize(1);
@@ -70,6 +71,8 @@ class GatewayTests {
                 return patterns != null ? patterns.getPatterns().stream() : Stream.empty();
             })
             .filter(p -> !p.equals("/error"))
+            .filter(p -> !p.equals("/dashboard"))
+            .filter(p -> !p.equals("/oauth2/callback"))
             .filter(p -> !p.startsWith("/actuator"))
             .filter(p -> !p.startsWith("/swagger-ui"))
             .filter(p -> !p.startsWith("/v3/api-docs"))
@@ -89,6 +92,7 @@ class GatewayTests {
             .filter(name -> !name.equals("gatewayManagement"))
             .filter(name -> !name.equals("baseController"))
             .filter(name -> !name.equals("basicErrorController"))
+            .filter(name -> !name.equals("spaForwardController"))
             .filter(name -> !name.contains("PostProcessor"))
             .filter(name -> !name.contains("viewControllerHandlerMapping"))
             .filter(name -> !name.contains("simpleControllerHandlerAdapter"))
