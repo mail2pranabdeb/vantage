@@ -2,6 +2,9 @@ package com.pd.framework.security;
 
 import com.pd.common.event.auth.LoginFailureEvent;
 import com.pd.common.event.auth.LoginSuccessEvent;
+import com.pd.framework.security.jwt.JwtAuthenticationFilter;
+import com.pd.framework.security.oauth2.CustomOAuth2UserService;
+import com.pd.framework.security.oauth2.OAuth2LoginSuccessHandler;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,15 +15,17 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Security configuration for the application.
+ * Security configuration with JWT authentication and OAuth2 login support.
  */
 @Configuration
 @EnableWebSecurity
@@ -29,11 +34,20 @@ public class SecurityConfig {
 
 	private final UserDetailsService userDetailsService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final CustomOAuth2UserService customOAuth2UserService;
+	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
 	public SecurityConfig(UserDetailsService userDetailsService,
-	                      ApplicationEventPublisher eventPublisher) {
+	                      ApplicationEventPublisher eventPublisher,
+	                      JwtAuthenticationFilter jwtAuthenticationFilter,
+	                      CustomOAuth2UserService customOAuth2UserService,
+	                      OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
 		this.userDetailsService = userDetailsService;
 		this.eventPublisher = eventPublisher;
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+		this.customOAuth2UserService = customOAuth2UserService;
+		this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
 	}
 
 	@Bean
@@ -56,62 +70,43 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authz -> authz
-						.requestMatchers("/api/login", "/api/logout").permitAll()
-						.requestMatchers("/api/public/**").permitAll()
+						.requestMatchers(
+								"/api/login",
+								"/api/login/refresh",
+								"/api/logout",
+								"/api/oauth2/**",
+								"/swagger-ui/**",
+								"/v3/api-docs/**",
+								"/webjars/**",
+								"/h2-console/**",
+								"/actuator/**",
+								"/api/public/**"
+						).permitAll()
 						.requestMatchers("/api/**").authenticated()
 						.requestMatchers("/system/**").authenticated()
 						.requestMatchers("/tool/**").authenticated()
 						.anyRequest().permitAll())
-				.formLogin(form -> form
-						.loginPage("/login")
-						.loginProcessingUrl("/api/login")
-						.successHandler((req, res, auth) -> {
-							try {
-								if (auth.getPrincipal() instanceof UserDetails userDetails) {
-									eventPublisher.publishEvent(new LoginSuccessEvent(
-											userDetails.getUsername(),
-											getClientIp(req),
-											"Unknown",
-											getBrowser(req),
-											getOS(req)
-									));
-								}
-							} catch (Exception e) {
-								// Log but don't fail login
-							}
-							res.setContentType("application/json");
-							res.setStatus(200);
-							res.getWriter().write("{\"code\":200,\"msg\":\"Login successful\"}");
-						})
+				.oauth2Login(oauth2 -> oauth2
+						.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+						.successHandler(oAuth2LoginSuccessHandler)
 						.failureHandler((req, res, exc) -> {
-							try {
-								String username = req.getParameter("username");
-								eventPublisher.publishEvent(new LoginFailureEvent(
-										username != null ? username : "unknown",
-										getClientIp(req),
-										"Unknown",
-										getBrowser(req),
-										getOS(req),
-										exc.getMessage()
-								));
-							} catch (Exception e) {
-								// Log but don't fail
-							}
 							res.setContentType("application/json");
 							res.setStatus(401);
-							res.getWriter().write("{\"code\":401,\"msg\":\"Invalid credentials\"}");
-						})
-						.permitAll())
+							res.getWriter().write("{\"code\":401,\"msg\":\"OAuth2 login failed: " + exc.getMessage() + "\"}");
+						}))
+				.formLogin(AbstractHttpConfigurer::disable)
 				.logout(logout -> logout
 						.logoutUrl("/api/logout")
 						.logoutSuccessHandler((req, res, auth) -> {
+							res.setContentType("application/json");
 							res.setStatus(200);
 							res.getWriter().write("{\"code\":200,\"msg\":\"Logged out\"}");
-						})
-						.permitAll())
+						}))
 				.authenticationProvider(authenticationProvider())
-				.csrf(csrf -> csrf.disable())
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
 		return http.build();

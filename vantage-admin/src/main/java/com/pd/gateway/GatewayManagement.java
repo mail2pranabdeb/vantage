@@ -2,6 +2,9 @@ package com.pd.gateway;
 
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
+import com.pd.framework.security.jwt.JwtTokenUtil;
+import com.pd.framework.security.jwt.LoginRequest;
+import com.pd.framework.security.jwt.LoginResponse;
 import com.pd.modules.generator.api.GeneratorService;
 import com.pd.modules.quartz.api.*;
 import com.pd.modules.quartz.api.dto.EmailTemplateDTO;
@@ -9,6 +12,7 @@ import com.pd.modules.quartz.api.dto.JobDTO;
 import com.pd.modules.quartz.api.dto.JobLogDTO;
 import com.pd.modules.system.api.*;
 import com.pd.modules.system.api.dto.*;
+import com.pd.modules.system.security.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +21,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +72,10 @@ public class GatewayManagement extends BaseController {
     // Generator module API
     private final GeneratorService generatorService;
 
+    // Authentication
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenUtil jwtTokenUtil;
+
     public GatewayManagement(
             SystemAuthService systemAuthService,
             SystemUserService systemUserService,
@@ -90,7 +100,9 @@ public class GatewayManagement extends BaseController {
             QuartzJobMetricsService quartzJobMetricsService,
             QuartzScriptJobService quartzScriptJobService,
             QuartzJobWebhookService quartzJobWebhookService,
-            GeneratorService generatorService) {
+            GeneratorService generatorService,
+            AuthenticationManager authenticationManager,
+            JwtTokenUtil jwtTokenUtil) {
         this.systemAuthService = systemAuthService;
         this.systemUserService = systemUserService;
         this.systemRoleService = systemRoleService;
@@ -115,11 +127,60 @@ public class GatewayManagement extends BaseController {
         this.quartzScriptJobService = quartzScriptJobService;
         this.quartzJobWebhookService = quartzJobWebhookService;
         this.generatorService = generatorService;
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     // ========== Auth ==========
 
-    @Tag(name = "Authentication", description = "User authentication and session management")
+    @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
+    @PostMapping("/login")
+    @Operation(summary = "Login with credentials", description = "Authenticates user and returns JWT access + refresh tokens")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login successful, tokens returned"),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
+    public AjaxResult login(@RequestBody LoginRequest request) {
+        try {
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+
+            LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+            String token = jwtTokenUtil.generateToken(loginUser);
+            String refreshToken = jwtTokenUtil.generateRefreshToken(loginUser);
+
+            return success(new LoginResponse(
+                    token, refreshToken, "Bearer",
+                    86400000, loginUser.getUsername()));
+        } catch (Exception e) {
+            return AjaxResult.error(401, "Invalid credentials");
+        }
+    }
+
+    @PostMapping("/login/refresh")
+    @Operation(summary = "Refresh JWT token", description = "Issues a new access token using a valid refresh token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Token refreshed"),
+        @ApiResponse(responseCode = "401", description = "Invalid refresh token")
+    })
+    public AjaxResult refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return error("Refresh token is required");
+        }
+        try {
+            String username = jwtTokenUtil.extractUsername(refreshToken);
+            UserDetails userDetails = new org.springframework.security.core.userdetails.User(username, "", new java.util.ArrayList<>());
+            if (jwtTokenUtil.isTokenValid(refreshToken, userDetails)) {
+                String newToken = jwtTokenUtil.generateToken(userDetails);
+                return success(new LoginResponse(newToken, refreshToken, "Bearer", 86400000, username));
+            }
+            return AjaxResult.error(401, "Invalid refresh token");
+        } catch (Exception e) {
+            return AjaxResult.error(401, "Invalid refresh token");
+        }
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Returns the currently authenticated user's profile")
     @ApiResponses(value = {

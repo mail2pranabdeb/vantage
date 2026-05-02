@@ -19,14 +19,17 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI vantageOpenAPI() {
-        String securitySchemeName = "bearerAuth";
+        String bearerScheme = "bearerAuth";
 
         return new OpenAPI()
             .info(new Info()
                 .title("Vantage Admin Gateway API")
                 .description("REST API documentation for Vantage Admin Platform. " +
                     "All endpoints are routed through the GatewayManagement controller " +
-                    "following the Spring Modulith gateway pattern.")
+                    "following the Spring Modulith gateway pattern.\n\n" +
+                    "**Authentication**: JWT Bearer tokens. " +
+                    "Use POST /api/login to obtain a token, then click Authorize (top right) and paste the token value.\n\n" +
+                    "**OAuth2**: Google login is also supported via GET /oauth2/authorization/google.")
                 .version("1.0.0")
                 .contact(new Contact()
                     .name("Vantage Admin Team")
@@ -34,14 +37,14 @@ public class OpenApiConfig {
                 .license(new License()
                     .name("MIT License")
                     .url("https://opensource.org/licenses/MIT")))
-            .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+            .addSecurityItem(new SecurityRequirement().addList(bearerScheme))
             .components(new Components()
-                .addSecuritySchemes(securitySchemeName,
+                .addSecuritySchemes(bearerScheme,
                     new SecurityScheme()
-                        .name(securitySchemeName)
+                        .name(bearerScheme)
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
                         .bearerFormat("JWT")
-                        .description("Enter JWT Bearer token. Obtain via: curl -X POST http://localhost:8080/api/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin123\"}'"));
+                        .description("Enter the JWT access token returned from POST /api/login")));
     }
 }

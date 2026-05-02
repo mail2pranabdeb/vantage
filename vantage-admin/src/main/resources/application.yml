@@ -99,3 +99,21 @@ ai:
     Always be concise and professional.
     
     If you're unsure about something, admit it and suggest consulting the documentation.
+
+# JWT Authentication
+app:
+  jwt:
+    secret: ${JWT_SECRET:dGhpcy1pcy1hLXNlY3VyZS1qd3Qtc2VjcmV0LWtleS1mb3ItdmFudGFnZS1hZG1pbi1hcHAtdGhhdC1pcy1sb25nLWVub3VnaA==}
+    expiration-ms: 86400000  # 24 hours
+    refresh-expiration-ms: 604800000  # 7 days
+
+# OAuth2 Client (Google, GitHub, etc.)
+# Replace with your actual Google OAuth2 credentials
+# Get credentials from: https://console.cloud.google.com/apis/credentials
+spring.security.oauth2.client:
+  registration:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+      client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+      scope: email,profile
+      redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
