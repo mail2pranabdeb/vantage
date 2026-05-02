@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import FloatingChat from './components/FloatingChat';
@@ -124,7 +124,7 @@ function App() {
   }
 
   if (!user) {
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   return (
