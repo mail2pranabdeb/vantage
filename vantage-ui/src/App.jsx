@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import FloatingChat from './components/FloatingChat';
@@ -8,50 +8,31 @@ import { ToastProvider } from './components/Toast';
 import TabBar from './components/TabBar';
 import TabContent from './components/TabContent';
 import { menuCache } from './services/menuCache';
+import { useAuth } from './context/AuthContext';
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [authState, setAuthState] = useState('loading');
   const [tabs, setTabs] = useState([]);
   const [activeTabId, setActiveTabId] = useState(null);
 
   useEffect(() => {
-    fetch('/api/me')
-      .then(res => {
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          setAuthState('unauthenticated');
-          return;
-        }
-        if (res.ok) {
-          setAuthState('authenticated');
-        } else {
-          setAuthState('unauthenticated');
-        }
-      })
-      .catch(() => setAuthState('unauthenticated'));
-  }, []);
-
-  // Listen to navigation events and open tabs
-  useEffect(() => {
-    if (authState === 'authenticated') {
-      // If no tabs yet, open dashboard as default (non-closable)
+    if (user) {
       if (tabs.length === 0) {
         const dashboardConfig = {
           id: 'dashboard',
           title: 'Dashboard',
           url: '/dashboard',
           icon: '📊',
-          closable: false  // Dashboard cannot be closed
+          closable: false
         };
         addTab(dashboardConfig);
         setActiveTabId('dashboard');
         return;
       }
 
-      // Check if current path should open a new tab
       if (location.pathname !== '/' && location.pathname !== '/dashboard') {
         menuCache.getPageConfig(location.pathname).then(pageConfig => {
           if (pageConfig && !tabs.find(t => t.id === pageConfig.id)) {
@@ -60,14 +41,12 @@ function App() {
         });
       }
     }
-  }, [location, authState]);
+  }, [location, user]);
 
-  // Listen for navigation events from child components (e.g., ReportManagement opening ReportDesigner)
   useEffect(() => {
     const handleChildNavigate = (event) => {
       const { pageConfig } = event.detail || {};
-      if (pageConfig && authState === 'authenticated') {
-        // Check tabs from current state
+      if (pageConfig && user) {
         setTabs(currentTabs => {
           const existingTab = currentTabs.find(t => t.id === pageConfig.id);
           if (existingTab) {
@@ -83,7 +62,7 @@ function App() {
     };
     window.addEventListener('navigate-to-page', handleChildNavigate);
     return () => window.removeEventListener('navigate-to-page', handleChildNavigate);
-  }, [authState]);
+  }, [user]);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -111,7 +90,6 @@ function App() {
   };
 
   const closeTab = (tabId) => {
-    // Prevent closing dashboard (default tab)
     if (tabId === 'dashboard') {
       return;
     }
@@ -137,7 +115,7 @@ function App() {
     }
   };
 
-  if (authState === 'loading') {
+  if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
         <div className="pulse-dot" style={{ color: 'var(--primary-color)' }}></div>
@@ -145,8 +123,8 @@ function App() {
     );
   }
 
-  if (authState === 'unauthenticated') {
-    return <Navigate to="/login" replace />;
+  if (!user) {
+    return null;
   }
 
   return (

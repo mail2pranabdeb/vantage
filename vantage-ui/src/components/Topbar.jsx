@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { LogOut as LogOutIcon, Palette as PaletteIcon, Check } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
+import { useAuth } from '../context/AuthContext';
 
 const themes = [
     { id: 'sap', label: 'SAP GUI', dot: '#0a6ed1' },
@@ -12,6 +13,7 @@ const themes = [
 ];
 
 const Topbar = () => {
+    const { logout, user } = useAuth();
     const [themeOpen, setThemeOpen] = useState(false);
     const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('bms-theme') || 'sap');
     const pickerRef = useRef(null);
@@ -21,7 +23,6 @@ const Topbar = () => {
         localStorage.setItem('bms-theme', currentTheme);
     }, [currentTheme]);
 
-    // Load saved theme on mount
     useEffect(() => {
         const saved = localStorage.getItem('bms-theme');
         if (saved) {
@@ -30,7 +31,6 @@ const Topbar = () => {
         }
     }, []);
 
-    // Close picker on outside click
     useEffect(() => {
         const handler = (e) => {
             if (pickerRef.current && !pickerRef.current.contains(e.target)) setThemeOpen(false);
@@ -39,21 +39,15 @@ const Topbar = () => {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const handleLogout = async () => {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/login';
-    };
-
     const iconBtn = { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '4px', transition: 'color 0.15s' };
 
     return (
         <header className="topbar" style={{ margin: '8px 12px 0', borderRadius: '6px', borderBottom: 'none', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
             <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)' }}>
-                Welcome to <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Vantage Admin</span>
+                Welcome <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{user?.username || 'User'}</span>
             </h3>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                {/* Theme Picker */}
                 <div className="theme-picker" ref={pickerRef}>
                     <button onClick={() => setThemeOpen(!themeOpen)} style={iconBtn} title="Change theme">
                         <PaletteIcon size={14} />
@@ -76,7 +70,7 @@ const Topbar = () => {
 
                 <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 4px' }} />
 
-                <button onClick={handleLogout} style={{ ...iconBtn, color: '#ef4444', gap: '4px', fontSize: '11px' }} title="Logout">
+                <button onClick={logout} style={{ ...iconBtn, color: '#ef4444', gap: '4px', fontSize: '11px' }} title="Logout">
                     <LogOutIcon size={13} /> <span>Logout</span>
                 </button>
             </div>

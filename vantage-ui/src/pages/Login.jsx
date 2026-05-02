@@ -1,44 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, User, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-// TEMPORARY TESTING - Auto-fill credentials
 const TEST_USERNAME = 'admin';
 const TEST_PASSWORD = '123456';
 
 const Login = () => {
     const [username, setUsername] = useState(TEST_USERNAME);
     const [password, setPassword] = useState(TEST_PASSWORD);
-    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const { login, user } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setError('');
 
-        try {
-            const formData = new URLSearchParams();
-            formData.append('username', username || 'admin');
-            formData.append('password', password);
-
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                navigate('/dashboard');
-            } else {
-                alert('Invalid credentials');
-            }
-        } catch (error) {
-            console.error('Login error', error);
-            alert('An error occurred during login');
-        } finally {
-            setLoading(false);
+        const result = await login(username || 'admin', password);
+        if (result.success) {
+            navigate('/dashboard');
+        } else {
+            setError(result.message);
         }
     };
 
@@ -54,7 +43,6 @@ const Login = () => {
             overflow: 'hidden',
             fontFamily: "'Inter', sans-serif"
         }}>
-            {/* Animated Mesh Background */}
             <div className="mesh-blob" style={{ top: '-10%', left: '-10%', width: '40vw', height: '40vw', background: 'rgba(59, 130, 246, 0.4)' }}></div>
             <div className="mesh-blob" style={{ bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'rgba(139, 92, 246, 0.3)', animationDelay: '-5s' }}></div>
             <div className="mesh-blob" style={{ top: '20%', right: '10%', width: '30vw', height: '30vw', background: 'rgba(236, 72, 153, 0.2)', animationDelay: '-10s' }}></div>
@@ -148,9 +136,14 @@ const Login = () => {
                         />
                     </div>
 
+                    {error && (
+                        <div style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                            {error}
+                        </div>
+                    )}
+
                     <button 
                         type="submit" 
-                        disabled={loading}
                         className="btn"
                         style={{ 
                             width: '100%', 
@@ -179,11 +172,7 @@ const Login = () => {
                             e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.3)';
                         }}
                     >
-                        {loading ? 'AUTHENTICATING...' : (
-                            <>
-                                SIGN IN <ArrowRight size={18} />
-                            </>
-                        )}
+                        SIGN IN <ArrowRight size={18} />
                     </button>
                 </form>
 
