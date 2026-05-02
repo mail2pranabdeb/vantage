@@ -107,6 +107,7 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     private void executeReportJob(SysJob sysJob) throws Exception {
         log.info("Executing Report Job ID: {}, Report ID: {}", sysJob.getJobId(), sysJob.getReportId());
         
+        long startTime = System.currentTimeMillis();
         try {
             Object reportService = applicationContext.getBean("reportDesignerService");
             java.lang.reflect.Method findByIdMethod = reportService.getClass().getMethod("findById", Long.class);
@@ -134,8 +135,9 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
                 java.lang.reflect.Method executeTemplateMethod = reportService.getClass().getMethod("executeTemplate", Long.class, String.class);
                 List<?> data = (List<?>) executeTemplateMethod.invoke(reportService, templateId, reportParams);
 
+                long duration = System.currentTimeMillis() - startTime;
                 // Send email
-                sendReportEmail(sysJob, templateName, outputFormat, data);
+                sendReportEmail(sysJob, templateName, outputFormat, data, duration);
             } else {
                 throw new Exception("Report template not found: " + sysJob.getReportId());
             }
@@ -148,7 +150,7 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     /**
      * Send report via email
      */
-    private void sendReportEmail(SysJob sysJob, String templateName, String outputFormat, List<?> data) throws Exception {
+    private void sendReportEmail(SysJob sysJob, String templateName, String outputFormat, List<?> data, long duration) throws Exception {
         String recipients = sysJob.getNotificationEmails();
         String emailGroup = sysJob.getReportEmailGroup();
         
@@ -229,54 +231,16 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             String templateBody = (String) getBodyMethod.invoke(template);
             String dataTablesJson = (String) getDataTablesMethod.invoke(template);
 
-            // Process template variables
-            String subject = processReportTemplate(templateSubject, templateName, outputFormat, data, sysJob);
-            String body = processReportTemplate(templateBody, templateName, outputFormat, data, sysJob);
+            // Process template variables with actual report data
+            String subject = processReportTemplate(templateSubject, templateName, outputFormat, data, sysJob, duration);
+            String body = processReportTemplate(templateBody, templateName, outputFormat, data, sysJob, duration);
 
-            // Job's emailTemplateParams overrides template's runtimeParams
-            String paramsToUse = sysJob.getEmailTemplateParams();
-            if (paramsToUse == null || paramsToUse.isEmpty()) {
-                try {
-                    java.lang.reflect.Method getRuntimeParamsMethod = template.getClass().getMethod("getRuntimeParams");
-                    paramsToUse = (String) getRuntimeParamsMethod.invoke(template);
-                } catch (Exception e) {
-                    log.debug("Could not get runtimeParams from template: {}", e.getMessage());
-                }
-            }
-            log.info("Using params for data table queries: {}", paramsToUse);
-            
-            if (dataTablesJson != null && !dataTablesJson.isEmpty()) {
-                try {
-                    Object tplService = applicationContext.getBean("emailTemplateService");
-                    java.lang.reflect.Method executeMultiQueryMethod = tplService.getClass().getMethod("executeMultipleQueriesAndRenderTables", String.class, String.class);
-                    String dataTableHtml = (String) executeMultiQueryMethod.invoke(tplService, dataTablesJson, paramsToUse);
-                    body = body.replace("${dataTable}", dataTableHtml);
-                } catch (Exception e) {
-                    log.error("Failed to execute template data table queries", e);
-                    body = body.replace("${dataTable}", "<p style='color:red;'>Error: Failed to execute data queries - " + e.getMessage() + "</p>");
-                }
+            // Render ${dataTable} from the actual report data
+            if (!data.isEmpty()) {
+                String dataTableHtml = renderDataTableHtml(data);
+                body = body.replace("${dataTable}", dataTableHtml);
             } else {
-                // Fallback: backward compatibility with single table fields
-                java.lang.reflect.Method getDatasourceKeyMethod = template.getClass().getMethod("getDatasourceKey");
-                java.lang.reflect.Method getQuerySqlMethod = template.getClass().getMethod("getQuerySql");
-                java.lang.reflect.Method getIncludeDataTableMethod = template.getClass().getMethod("getIncludeDataTable");
-                String datasourceKey = (String) getDatasourceKeyMethod.invoke(template);
-                String querySql = (String) getQuerySqlMethod.invoke(template);
-                Boolean includeDataTable = (Boolean) getIncludeDataTableMethod.invoke(template);
-
-                if (Boolean.TRUE.equals(includeDataTable) && datasourceKey != null && !datasourceKey.isEmpty() && querySql != null && !querySql.isEmpty()) {
-                    try {
-                        Object tplService = applicationContext.getBean("emailTemplateService");
-                        java.lang.reflect.Method executeQueryMethod = tplService.getClass().getMethod("executeQueryAndRenderTable", String.class, String.class);
-                        String dataTableHtml = (String) executeQueryMethod.invoke(tplService, datasourceKey, querySql);
-                        body = body.replace("${dataTable}", dataTableHtml);
-                    } catch (Exception e) {
-                        log.error("Failed to execute template SQL query", e);
-                        body = body.replace("${dataTable}", "<p style='color:red;'>Error: Failed to execute data query - " + e.getMessage() + "</p>");
-                    }
-                } else {
-                    body = body.replace("${dataTable}", "");
-                }
+                body = body.replace("${dataTable}", "<p style='color:#999;'>No data returned</p>");
             }
 
             // Send email - use dynamic mail sender from database config
@@ -317,7 +281,7 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
     /**
      * Process template variables
      */
-    private String processReportTemplate(String template, String templateName, String outputFormat, List<?> data, SysJob sysJob) {
+    private String processReportTemplate(String template, String templateName, String outputFormat, List<?> data, SysJob sysJob, long duration) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String appName = "Vantage";
 
@@ -326,10 +290,17 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             .replace("${jobId}", String.valueOf(sysJob.getJobId()))
             .replace("${jobName}", sysJob.getJobName())
             .replace("${jobGroup}", sysJob.getJobGroup())
+            .replace("${invokeTarget}", sysJob.getInvokeTarget() != null ? sysJob.getInvokeTarget() : "N/A")
+            .replace("${cronExpression}", sysJob.getCronExpression() != null ? sysJob.getCronExpression() : "N/A")
             .replace("${reportName}", templateName)
             .replace("${reportFormat}", outputFormat)
             .replace("${totalRows}", String.valueOf(data.size()))
             .replace("${executionTime}", LocalDateTime.now().format(formatter))
+            .replace("${duration}", String.valueOf(duration))
+            .replace("${retryCount}", String.valueOf(sysJob.getMaxRetryCount() != null ? sysJob.getMaxRetryCount() : 0))
+            .replace("${status}", "Success")
+            .replace("${message}", "Execution completed successfully")
+            .replace("${exceptionInfo}", "N/A")
             .replace("${timestamp}", LocalDateTime.now().format(formatter));
 
         // Add report parameters from job to template variables
@@ -352,6 +323,48 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
         }
 
         return result;
+    }
+
+    /**
+     * Render report data as HTML table
+     */
+    private String renderDataTableHtml(List<?> data) {
+        if (data.isEmpty()) {
+            return "<p style='color:#999;'>No data returned</p>";
+        }
+
+        StringBuilder html = new StringBuilder();
+        html.append("<table style='border-collapse:collapse;width:100%;font-size:12px;'>");
+
+        Object firstRow = data.get(0);
+        if (firstRow instanceof java.util.Map<?, ?> firstMap) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> map = (java.util.Map<String, Object>) firstMap;
+            List<String> headers = new ArrayList<>(map.keySet());
+
+            html.append("<thead><tr style='background:#f5f5f5;'>");
+            for (String header : headers) {
+                html.append("<th style='border:1px solid #ddd;padding:6px;text-align:left;'>")
+                    .append(header).append("</th>");
+            }
+            html.append("</tr></thead><tbody>");
+
+            for (Object row : data) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> rowMap = (java.util.Map<String, Object>) row;
+                html.append("<tr>");
+                for (String header : headers) {
+                    Object value = rowMap.get(header);
+                    html.append("<td style='border:1px solid #ddd;padding:6px;'>")
+                        .append(value != null ? value : "")
+                        .append("</td>");
+                }
+                html.append("</tr>");
+            }
+            html.append("</tbody></table>");
+        }
+
+        return html.toString();
     }
 
     /**
