@@ -4,6 +4,7 @@ import com.pd.common.event.auth.LoginFailureEvent;
 import com.pd.common.event.auth.LoginSuccessEvent;
 import com.pd.framework.security.jwt.JwtAuthenticationFilter;
 import com.pd.framework.security.oauth2.CustomOAuth2UserService;
+import com.pd.framework.security.oauth2.FrontendAwareAuthRequestResolver;
 import com.pd.framework.security.oauth2.OAuth2LoginSuccessHandler;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,17 +39,20 @@ public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+	private final ClientRegistrationRepository clientRegistrationRepository;
 
 	public SecurityConfig(UserDetailsService userDetailsService,
 	                      ApplicationEventPublisher eventPublisher,
 	                      JwtAuthenticationFilter jwtAuthenticationFilter,
 	                      CustomOAuth2UserService customOAuth2UserService,
-	                      OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+	                      OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+	                      ClientRegistrationRepository clientRegistrationRepository) {
 		this.userDetailsService = userDetailsService;
 		this.eventPublisher = eventPublisher;
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.customOAuth2UserService = customOAuth2UserService;
 		this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+		this.clientRegistrationRepository = clientRegistrationRepository;
 	}
 
 	@Bean
@@ -90,6 +95,7 @@ public class SecurityConfig {
 						.requestMatchers("/tool/**").authenticated()
 						.anyRequest().permitAll())
 				.oauth2Login(oauth2 -> oauth2
+						.authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(new FrontendAwareAuthRequestResolver(clientRegistrationRepository)))
 						.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
 						.successHandler(oAuth2LoginSuccessHandler)
 						.failureHandler((req, res, exc) -> {

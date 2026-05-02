@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { setTokens } from '../services/api';
 
 const TEST_USERNAME = 'admin';
 const TEST_PASSWORD = '123456';
@@ -15,20 +14,6 @@ const Login = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const hash = window.location.hash;
-        if (hash.startsWith('#token=')) {
-            const params = new URLSearchParams(hash.substring(1));
-            const token = params.get('token');
-            const refresh = params.get('refresh');
-            const usernameParam = params.get('user');
-            if (token && refresh) {
-                setTokens(token, refresh);
-                window.location.hash = '';
-                window.location.href = '/dashboard';
-                return;
-            }
-        }
-
         const params = new URLSearchParams(window.location.search);
         if (params.get('oauth2_error')) {
             setError('Google sign in failed. Please try again.');
@@ -52,7 +37,9 @@ const Login = () => {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = '/oauth2/authorization/google';
+        const isDev = window.location.port === '5173';
+        const baseUrl = isDev ? 'http://localhost:8080' : window.location.origin;
+        window.location.href = `${baseUrl}/oauth2/authorization/google`;
     };
 
     return (

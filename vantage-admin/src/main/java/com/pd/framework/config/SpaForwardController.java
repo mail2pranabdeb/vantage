@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class SpaForwardController {
 
-    @GetMapping({"/dashboard", "/oauth2/callback"})
+    @GetMapping("/dashboard")
     public String forward() {
         return "forward:/index.html";
     }

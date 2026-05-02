@@ -1,27 +1,50 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { setTokens } from '../services/api';
 
-const OAuth2Callback = () => {
-    const navigate = useNavigate();
+function extractCode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('code');
+}
 
+const exchangeCode = extractCode();
+if (exchangeCode) {
+    console.log('[OAuth2Callback] Found exchange code, fetching tokens...');
+    // Synchronous fetch won't work, so we'll handle it in useEffect
+    // But we can at least log that we found a code
+    console.log('[OAuth2Callback] Code length:', exchangeCode.length);
+} else {
+    console.log('[OAuth2Callback] No exchange code found');
+}
+
+const OAuth2Callback = () => {
     useEffect(() => {
-        const hash = window.location.hash;
-        if (hash.startsWith('#token=')) {
-            const params = new URLSearchParams(hash.substring(1));
-            const token = params.get('token');
-            const refresh = params.get('refresh');
-            if (token && refresh) {
-                setTokens(token, refresh);
-                window.location.hash = '';
-                navigate('/dashboard', { replace: true });
-            } else {
-                navigate('/login', { replace: true });
-            }
+        const code = new URLSearchParams(window.location.search).get('code');
+        if (code) {
+            fetch(`/api/oauth2/exchange?code=${code}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code === 200 && data.token && data.refreshToken) {
+                        console.log('[OAuth2Callback] Token exchange successful');
+                        setTokens(data.token, data.refreshToken);
+                        window.location.href = '/dashboard';
+                    } else {
+                        console.error('[OAuth2Callback] Token exchange failed:', data);
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(err => {
+                    console.error('[OAuth2Callback] Token exchange error:', err);
+                    window.location.href = '/login';
+                });
         } else {
-            navigate('/login', { replace: true });
+            const token = sessionStorage.getItem('jwt_token');
+            if (token) {
+                window.location.href = '/dashboard';
+            } else {
+                window.location.href = '/login';
+            }
         }
-    }, [navigate]);
+    }, []);
 
     return (
         <div style={{

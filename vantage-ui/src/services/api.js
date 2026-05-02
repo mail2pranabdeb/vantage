@@ -66,6 +66,8 @@ function setupAuthInterceptor() {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
+        console.log('[fetch] →', url, token ? 'auth:yes' : 'auth:no');
+
         let res = await originalFetch(url, { ...options, headers });
 
         if (res.status === 401 && !options._retry) {

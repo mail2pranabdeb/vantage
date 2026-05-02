@@ -31,7 +31,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("=== loadUserByUsername called for: {} ===", username);
         try {
+            // Try loginName first, fallback to email (for OAuth2 users)
             SysUser user = userRepository.findByLoginName(username)
+                    .or(() -> userRepository.findByEmail(username))
                     .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
 
             Set<String> permissions = menuRepository.findAllPermsList().stream()

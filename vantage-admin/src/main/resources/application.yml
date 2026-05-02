@@ -106,6 +106,7 @@ app:
     secret: ${JWT_SECRET:dGhpcy1pcy1hLXNlY3VyZS1qd3Qtc2VjcmV0LWtleS1mb3ItdmFudGFnZS1hZG1pbi1hcHAtdGhhdC1pcy1sb25nLWVub3VnaA==}
     expiration-ms: 86400000  # 24 hours
     refresh-expiration-ms: 604800000  # 7 days
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
 
 # OAuth2 Client (Google, GitHub, etc.)
 # Replace with your actual Google OAuth2 credentials
@@ -113,10 +114,10 @@ app:
 spring.security.oauth2.client:
   registration:
     google:
-      client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
-      client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+      client-id: "${GOOGLE_CLIENT_ID:your-client-id-here}"
+      client-secret: "${GOOGLE_CLIENT_SECRET:your-client-secret-here}"
       scope: email,profile
-      redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+      redirect-uri: "http://localhost:8080/login/oauth2/code/google"
 
 # SpringDoc OpenAPI Configuration
 springdoc:

@@ -9,19 +9,27 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         const token = getAccessToken();
+        console.log('[AuthContext] getAccessToken returned:', token ? token.substring(0, 30) + '...' : 'NULL/EMPTY');
+        console.log('[AuthContext] sessionStorage keys:', Object.keys(sessionStorage));
         if (token) {
             fetch('/api/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-                .then(res => res.json())
-                .then(data => {
+                .then(async res => {
+                    console.log('[AuthContext] /api/me response status:', res.status);
+                    const data = await res.json();
+                    console.log('[AuthContext] /api/me response data:', JSON.stringify(data).substring(0, 200));
                     if (data.code === 200) {
                         setUser(data.data);
                     } else {
+                        console.warn('[AuthContext] /api/me failed, clearing tokens');
                         clearTokens();
                     }
                 })
-                .catch(() => clearTokens())
+                .catch(err => {
+                    console.error('[AuthContext] /api/me fetch error:', err);
+                    clearTokens();
+                })
                 .finally(() => setLoading(false));
         } else {
             setLoading(false);

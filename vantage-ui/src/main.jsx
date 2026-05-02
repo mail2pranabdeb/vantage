@@ -11,6 +11,20 @@ import { setupAuthInterceptor } from './services/api.js'
 import './index.css'
 import './themes/sap-gui.css'
 
+console.log('[main] URL:', window.location.href);
+console.log('[main] Search:', window.location.search);
+console.log('[main] Pathname:', window.location.pathname);
+
+// Unregister any stale service workers from previous PWA setup
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => {
+      console.log('[main] Unregistering service worker:', reg.scope);
+      reg.unregister();
+    });
+  });
+}
+
 setupAuthInterceptor()
 
 function ProtectedRoute({ children }) {
@@ -29,7 +43,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+        <Route path="/auth/google/callback" element={<OAuth2Callback />} />
         <Route path="/*" element={<App />} />
         <Route path="/vantage/job" element={<ProtectedRoute><VantageJobList /></ProtectedRoute>} />
         <Route path="/monitoring" element={<ProtectedRoute><MonitoringDashboard /></ProtectedRoute>} />
