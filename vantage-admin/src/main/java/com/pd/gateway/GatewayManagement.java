@@ -38,7 +38,6 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/api")
-@Tag(name = "Gateway Management", description = "Sole external HTTP entry point for all Vantage Admin APIs")
 @SecurityRequirement(name = "bearerAuth")
 public class GatewayManagement extends BaseController {
 
@@ -134,6 +133,7 @@ public class GatewayManagement extends BaseController {
     // ========== Auth ==========
 
     @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
+    @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
     @PostMapping("/login")
     @Operation(summary = "Login with credentials", description = "Authenticates user and returns JWT access + refresh tokens")
     @ApiResponses(value = {
@@ -157,6 +157,8 @@ public class GatewayManagement extends BaseController {
         }
     }
 
+    @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
+    @Tag(name = "Authentication")
     @PostMapping("/login/refresh")
     @Operation(summary = "Refresh JWT token", description = "Issues a new access token using a valid refresh token")
     @ApiResponses(value = {
@@ -181,6 +183,8 @@ public class GatewayManagement extends BaseController {
         }
     }
 
+    @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
+    @Tag(name = "Authentication")
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Returns the currently authenticated user's profile")
     @ApiResponses(value = {
@@ -193,7 +197,7 @@ public class GatewayManagement extends BaseController {
         }
         return success(systemAuthService.getCurrentUser());
     }
-
+    @Tag(name = "Authentication")
     @PostMapping("/logout")
     @Operation(summary = "Logout", description = "Logs out the current user and invalidates session")
     @ApiResponse(responseCode = "200", description = "Logged out successfully")
@@ -210,7 +214,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listUsers() {
         return success(systemUserService.findAllActive());
     }
-
+    @Tag(name = "System - User Management")
     @GetMapping("/system/user/{userId}")
     @Operation(summary = "Get user by ID", description = "Returns a specific user by their ID")
     @ApiResponses(value = {
@@ -222,7 +226,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("User not found"));
     }
-
+    @Tag(name = "System - User Management")
     @PostMapping("/system/user")
     @Operation(summary = "Create user", description = "Creates a new user account")
     @ApiResponse(responseCode = "200", description = "User created successfully")
@@ -240,7 +244,7 @@ public class GatewayManagement extends BaseController {
         systemUserService.createUser(user);
         return success("User added successfully");
     }
-
+    @Tag(name = "System - User Management")
     @PutMapping("/system/user")
     @Operation(summary = "Update user", description = "Updates an existing user account")
     @ApiResponse(responseCode = "200", description = "User updated successfully")
@@ -252,7 +256,7 @@ public class GatewayManagement extends BaseController {
         systemUserService.updateUser(user);
         return success("User updated successfully", systemUserService.findById(user.getUserId()).orElse(null));
     }
-
+    @Tag(name = "System - User Management")
     @DeleteMapping("/system/user/{userId}")
     @Operation(summary = "Delete user", description = "Deletes a user by ID")
     @ApiResponse(responseCode = "200", description = "User deleted successfully")
@@ -272,7 +276,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listRoles() {
         return success(systemRoleService.findAllActive());
     }
-
+    @Tag(name = "System - Role Management")
     @GetMapping("/system/role/{roleId}")
     @Operation(summary = "Get role by ID", description = "Returns a specific role by its ID")
     public AjaxResult getRole(@Parameter(description = "Role ID") @PathVariable Long roleId) {
@@ -280,7 +284,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Role not found"));
     }
-
+    @Tag(name = "System - Role Management")
     @PostMapping("/system/role")
     @Operation(summary = "Create role", description = "Creates a new role with permissions")
     @ApiResponse(responseCode = "200", description = "Role created successfully")
@@ -295,7 +299,7 @@ public class GatewayManagement extends BaseController {
         systemRoleService.createRole(role);
         return success("Role added successfully");
     }
-
+    @Tag(name = "System - Role Management")
     @PutMapping("/system/role")
     @Operation(summary = "Update role", description = "Updates an existing role")
     @ApiResponse(responseCode = "200", description = "Role updated successfully")
@@ -307,7 +311,7 @@ public class GatewayManagement extends BaseController {
         systemRoleService.updateRole(role);
         return success("Role updated successfully");
     }
-
+    @Tag(name = "System - Role Management")
     @DeleteMapping("/system/role/{roleId}")
     @Operation(summary = "Delete role", description = "Deletes a role by ID")
     @ApiResponse(responseCode = "200", description = "Role deleted successfully")
@@ -328,14 +332,14 @@ public class GatewayManagement extends BaseController {
         List<MenuDTO> menus = systemMenuService.findAllMenus();
         return success(buildMenuTree(menus, 0L));
     }
-
+    @Tag(name = "System - Menu Management")
     @GetMapping("/system/menu/list")
     @Operation(summary = "List all menus", description = "Returns a flat list of all active menus")
     @ApiResponse(responseCode = "200", description = "Menus retrieved successfully")
     public AjaxResult listMenus() {
         return success(systemMenuService.findAllActive());
     }
-
+    @Tag(name = "System - Menu Management")
     @GetMapping("/system/menu/{menuId}")
     @Operation(summary = "Get menu by ID", description = "Returns a specific menu item")
     public AjaxResult getMenu(@Parameter(description = "Menu ID") @PathVariable Long menuId) {
@@ -343,7 +347,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Menu not found"));
     }
-
+    @Tag(name = "System - Menu Management")
     @PostMapping("/system/menu")
     @Operation(summary = "Create menu", description = "Creates a new menu item")
     @ApiResponse(responseCode = "200", description = "Menu created successfully")
@@ -357,7 +361,7 @@ public class GatewayManagement extends BaseController {
         systemMenuService.createMenu(menu);
         return success("Menu added successfully");
     }
-
+    @Tag(name = "System - Menu Management")
     @PutMapping("/system/menu")
     @Operation(summary = "Update menu", description = "Updates an existing menu item")
     @ApiResponse(responseCode = "200", description = "Menu updated successfully")
@@ -369,7 +373,7 @@ public class GatewayManagement extends BaseController {
         systemMenuService.updateMenu(menu);
         return success("Menu updated successfully");
     }
-
+    @Tag(name = "System - Menu Management")
     @DeleteMapping("/system/menu/{menuId}")
     @Operation(summary = "Delete menu", description = "Deletes a menu item by ID")
     @ApiResponse(responseCode = "200", description = "Menu deleted successfully")
@@ -401,20 +405,20 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listDictTypes() {
         return success(systemDictService.findAllActiveTypes());
     }
-
+    @Tag(name = "System - Dictionary")
     @GetMapping("/system/dict/data/list")
     @Operation(summary = "List dictionary data by type", description = "Returns dictionary data for a specific type, sorted")
     @ApiResponse(responseCode = "200", description = "Dictionary data retrieved")
     public AjaxResult listDictData(@Parameter(description = "Dictionary type code") @RequestParam String dictType) {
         return success(systemDictService.findDataByTypeOrderBySort(dictType));
     }
-
+    @Tag(name = "System - Dictionary")
     @GetMapping("/system/dict/data/type/{dictType}")
     @Operation(summary = "Get dictionary data by type path", description = "Returns dictionary data for a specific type")
     public AjaxResult getDictDataByType(@Parameter(description = "Dictionary type code") @PathVariable String dictType) {
         return success(systemDictService.findDataByTypeOrderBySort(dictType));
     }
-
+    @Tag(name = "System - Dictionary")
     @GetMapping("/system/dict/type/get-by-code/{dictType}")
     @Operation(summary = "Get dictionary type by code", description = "Returns a dictionary type by its code")
     public AjaxResult getDictTypeByCode(@Parameter(description = "Dictionary type code") @PathVariable String dictType) {
@@ -422,7 +426,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElse(success(null));
     }
-
+    @Tag(name = "System - Dictionary")
     @GetMapping("/system/dict/type/{dictId}")
     @Operation(summary = "Get dictionary type by ID", description = "Returns a specific dictionary type")
     public AjaxResult getDictType(@Parameter(description = "Dictionary type ID") @PathVariable Long dictId) {
@@ -430,7 +434,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Dictionary type not found"));
     }
-
+    @Tag(name = "System - Dictionary")
     @PostMapping("/system/dict/type")
     @Operation(summary = "Create dictionary type", description = "Creates a new dictionary type")
     @ApiResponse(responseCode = "200", description = "Dictionary type created")
@@ -441,7 +445,7 @@ public class GatewayManagement extends BaseController {
         systemDictService.createType(dict);
         return success("Dictionary type added successfully");
     }
-
+    @Tag(name = "System - Dictionary")
     @PutMapping("/system/dict/type")
     @Operation(summary = "Update dictionary type", description = "Updates an existing dictionary type")
     @ApiResponse(responseCode = "200", description = "Dictionary type updated")
@@ -454,7 +458,7 @@ public class GatewayManagement extends BaseController {
         systemDictService.updateType(dict);
         return success("Dictionary type updated successfully");
     }
-
+    @Tag(name = "System - Dictionary")
     @DeleteMapping("/system/dict/type/{dictId}")
     @Operation(summary = "Delete dictionary type", description = "Deletes a dictionary type by ID")
     @ApiResponse(responseCode = "200", description = "Dictionary type deleted")
@@ -465,7 +469,7 @@ public class GatewayManagement extends BaseController {
         systemDictService.deleteTypeById(dictId);
         return success("Dictionary type deleted successfully");
     }
-
+    @Tag(name = "System - Dictionary")
     @PostMapping("/system/dict/data")
     @Operation(summary = "Create dictionary data", description = "Creates a new dictionary data entry")
     @ApiResponse(responseCode = "200", description = "Dictionary data created")
@@ -476,7 +480,7 @@ public class GatewayManagement extends BaseController {
         systemDictService.createData(dictData);
         return success("Dictionary data added successfully");
     }
-
+    @Tag(name = "System - Dictionary")
     @PutMapping("/system/dict/data")
     @Operation(summary = "Update dictionary data", description = "Updates an existing dictionary data entry")
     @ApiResponse(responseCode = "200", description = "Dictionary data updated")
@@ -489,7 +493,7 @@ public class GatewayManagement extends BaseController {
         systemDictService.updateData(dictData);
         return success("Dictionary data updated successfully");
     }
-
+    @Tag(name = "System - Dictionary")
     @DeleteMapping("/system/dict/data/{dictCode}")
     @Operation(summary = "Delete dictionary data", description = "Deletes a dictionary data entry")
     @ApiResponse(responseCode = "200", description = "Dictionary data deleted")
@@ -510,7 +514,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listConfigs() {
         return success(systemConfigService.findAll());
     }
-
+    @Tag(name = "System - Configuration")
     @PostMapping("/system/config/batch")
     @Operation(summary = "Batch save configurations", description = "Creates or updates multiple configuration entries")
     @ApiResponse(responseCode = "200", description = "Configurations saved")
@@ -543,7 +547,7 @@ public class GatewayManagement extends BaseController {
         }
         return success("Saved " + savedCount + " configuration(s)");
     }
-
+    @Tag(name = "System - Configuration")
     @PostMapping("/system/config/test-email")
     @Operation(summary = "Test email configuration", description = "Sends a test email with provided SMTP settings")
     @ApiResponses(value = {
@@ -602,7 +606,7 @@ public class GatewayManagement extends BaseController {
             return error("Failed to send test email: " + errorMsg);
         }
     }
-
+    @Tag(name = "System - Configuration")
     @GetMapping("/system/config/key/{configKey}")
     @Operation(summary = "Get config by key", description = "Returns a configuration entry by its key")
     public AjaxResult getConfigByKey(@Parameter(description = "Configuration key") @PathVariable String configKey) {
@@ -610,7 +614,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Config not found"));
     }
-
+    @Tag(name = "System - Configuration")
     @PutMapping("/system/config")
     @Operation(summary = "Update configuration", description = "Updates a configuration entry by key")
     @ApiResponse(responseCode = "200", description = "Configuration updated")
@@ -622,7 +626,7 @@ public class GatewayManagement extends BaseController {
         systemConfigService.updateConfig(existing);
         return success("Configuration updated");
     }
-
+    @Tag(name = "System - Configuration")
     @DeleteMapping("/system/config/{configId}")
     @Operation(summary = "Delete configuration", description = "Deletes a configuration entry by ID")
     @ApiResponse(responseCode = "200", description = "Configuration deleted")
@@ -647,7 +651,7 @@ public class GatewayManagement extends BaseController {
             @Parameter(description = "Status filter") @RequestParam(required = false) Integer status) {
         return success(systemOperLogService.findByCondition(title, operName, businessType, status));
     }
-
+    @Tag(name = "System - Operation Logs")
     @DeleteMapping("/system/operlog")
     @Operation(summary = "Delete operation logs", description = "Deletes operation logs by IDs")
     @ApiResponse(responseCode = "200", description = "Logs deleted")
@@ -655,7 +659,7 @@ public class GatewayManagement extends BaseController {
         systemOperLogService.deleteByIds(operIds);
         return success();
     }
-
+    @Tag(name = "System - Operation Logs")
     @DeleteMapping("/system/operlog/clean")
     @Operation(summary = "Clean all operation logs", description = "Removes all operation logs")
     @ApiResponse(responseCode = "200", description = "All logs cleaned")
@@ -676,7 +680,7 @@ public class GatewayManagement extends BaseController {
             @Parameter(description = "IP address filter") @RequestParam(required = false) String ipaddr) {
         return success(systemLogininforService.findByCondition(loginName, status, ipaddr));
     }
-
+    @Tag(name = "System - Login Info")
     @DeleteMapping("/system/logininfor")
     @Operation(summary = "Delete login records", description = "Deletes login records by IDs")
     @ApiResponse(responseCode = "200", description = "Records deleted")
@@ -684,7 +688,7 @@ public class GatewayManagement extends BaseController {
         systemLogininforService.deleteByIds(infoIds);
         return success();
     }
-
+    @Tag(name = "System - Login Info")
     @DeleteMapping("/system/logininfor/clean")
     @Operation(summary = "Clean all login records", description = "Removes all login records")
     @ApiResponse(responseCode = "200", description = "All records cleaned")
@@ -702,7 +706,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listNotices() {
         return success(systemNoticeService.findActiveNotices());
     }
-
+    @Tag(name = "System - Notices")
     @GetMapping("/system/notice/{noticeId}")
     @Operation(summary = "Get notice by ID", description = "Returns a specific notice")
     public AjaxResult getNotice(@Parameter(description = "Notice ID") @PathVariable Integer noticeId) {
@@ -710,7 +714,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Notice not found"));
     }
-
+    @Tag(name = "System - Notices")
     @PostMapping("/system/notice")
     @Operation(summary = "Create notice", description = "Creates a new system notice")
     @ApiResponse(responseCode = "200", description = "Notice created")
@@ -721,7 +725,7 @@ public class GatewayManagement extends BaseController {
         systemNoticeService.createNotice(notice);
         return success("Notice added successfully");
     }
-
+    @Tag(name = "System - Notices")
     @PutMapping("/system/notice")
     @Operation(summary = "Update notice", description = "Updates an existing notice")
     @ApiResponse(responseCode = "200", description = "Notice updated")
@@ -734,7 +738,7 @@ public class GatewayManagement extends BaseController {
         systemNoticeService.updateNotice(notice);
         return success("Notice updated successfully");
     }
-
+    @Tag(name = "System - Notices")
     @DeleteMapping("/system/notice/{noticeId}")
     @Operation(summary = "Delete notice", description = "Deletes a notice by ID")
     @ApiResponse(responseCode = "200", description = "Notice deleted")
@@ -763,7 +767,7 @@ public class GatewayManagement extends BaseController {
         result.put("unreadCount", systemNotificationService.getUnreadCount(userId));
         return success(result);
     }
-
+    @Tag(name = "System - Notifications")
     @GetMapping("/system/notifications/unread")
     @Operation(summary = "List unread notifications", description = "Returns paginated unread notifications")
     @ApiResponse(responseCode = "200", description = "Unread notifications retrieved")
@@ -777,7 +781,7 @@ public class GatewayManagement extends BaseController {
         result.put("total", page.getTotalElements());
         return success(result);
     }
-
+    @Tag(name = "System - Notifications")
     @GetMapping("/system/notifications/unread-count")
     @Operation(summary = "Get unread count", description = "Returns the count of unread notifications")
     @ApiResponse(responseCode = "200", description = "Unread count retrieved")
@@ -785,7 +789,7 @@ public class GatewayManagement extends BaseController {
         Long userId = 1L;
         return success(Map.of("count", systemNotificationService.getUnreadCount(userId)));
     }
-
+    @Tag(name = "System - Notifications")
     @PutMapping("/system/notifications/{notificationId}/read")
     @Operation(summary = "Mark notification as read", description = "Marks a single notification as read")
     @ApiResponse(responseCode = "200", description = "Notification marked as read")
@@ -793,7 +797,7 @@ public class GatewayManagement extends BaseController {
         systemNotificationService.markAsRead(notificationId);
         return success();
     }
-
+    @Tag(name = "System - Notifications")
     @PutMapping("/system/notifications/read-all")
     @Operation(summary = "Mark all notifications as read", description = "Marks all user notifications as read")
     @ApiResponse(responseCode = "200", description = "All notifications marked as read")
@@ -801,14 +805,14 @@ public class GatewayManagement extends BaseController {
         systemNotificationService.markAllAsRead(1L);
         return success();
     }
-
+    @Tag(name = "System - Notifications")
     @GetMapping("/system/notifications/statistics")
     @Operation(summary = "Get notification statistics", description = "Returns notification statistics for the user")
     @ApiResponse(responseCode = "200", description = "Statistics retrieved")
     public AjaxResult notificationStatistics() {
         return success(systemNotificationService.getStatistics(1L));
     }
-
+    @Tag(name = "System - Notifications")
     @PostMapping("/system/notifications/test")
     @Operation(summary = "Send test notification", description = "Sends a test in-app notification")
     @ApiResponse(responseCode = "200", description = "Test notification sent")
@@ -829,7 +833,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listDatasources() {
         return success(systemDatasourceService.findAll());
     }
-
+    @Tag(name = "System - Datasources")
     @GetMapping("/system/datasource/{datasourceId}")
     @Operation(summary = "Get datasource by ID", description = "Returns a specific datasource configuration")
     public AjaxResult getDatasource(@Parameter(description = "Datasource ID") @PathVariable Long datasourceId) {
@@ -837,7 +841,7 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Datasource not found"));
     }
-
+    @Tag(name = "System - Datasources")
     @PostMapping("/system/datasource")
     @Operation(summary = "Create datasource", description = "Adds a new database datasource")
     @ApiResponse(responseCode = "200", description = "Datasource created")
@@ -851,7 +855,7 @@ public class GatewayManagement extends BaseController {
         systemDatasourceService.save(datasource);
         return success("Datasource added successfully");
     }
-
+    @Tag(name = "System - Datasources")
     @PutMapping("/system/datasource")
     @Operation(summary = "Update datasource", description = "Updates an existing datasource")
     @ApiResponse(responseCode = "200", description = "Datasource updated")
@@ -862,7 +866,7 @@ public class GatewayManagement extends BaseController {
         systemDatasourceService.save(datasource);
         return success("Datasource updated successfully");
     }
-
+    @Tag(name = "System - Datasources")
     @DeleteMapping("/system/datasource/{datasourceId}")
     @Operation(summary = "Delete datasource", description = "Deletes a datasource by ID")
     @ApiResponse(responseCode = "200", description = "Datasource deleted")
@@ -870,7 +874,7 @@ public class GatewayManagement extends BaseController {
         systemDatasourceService.deleteById(datasourceId);
         return success("Datasource deleted successfully");
     }
-
+    @Tag(name = "System - Datasources")
     @PostMapping("/system/datasource/test")
     @Operation(summary = "Test datasource connection", description = "Tests connectivity to a database datasource")
     @ApiResponses(value = {
@@ -890,7 +894,7 @@ public class GatewayManagement extends BaseController {
             return error("Connection test failed: " + e.getMessage());
         }
     }
-
+    @Tag(name = "System - Datasources")
     @GetMapping("/system/datasource/driver/{dbType}")
     @Operation(summary = "Get driver info for database type", description = "Returns JDBC driver class and URL pattern for a database type")
     @ApiResponse(responseCode = "200", description = "Driver info retrieved")
@@ -904,20 +908,21 @@ public class GatewayManagement extends BaseController {
     // ========== System: Email Config ==========
 
     @Tag(name = "System - Email Config", description = "SMTP email configuration management")
+    @Tag(name = "System - Email Config")
     @GetMapping("/system/email-config")
     @Operation(summary = "Get email configuration", description = "Returns the current SMTP configuration")
     @ApiResponse(responseCode = "200", description = "Email config retrieved")
     public AjaxResult getEmailConfig() {
         return success(systemEmailConfigService.getConfig());
     }
-
+    @Tag(name = "System - Email Config")
     @PostMapping("/system/email-config")
     @Operation(summary = "Save email configuration", description = "Saves SMTP configuration")
     @ApiResponse(responseCode = "200", description = "Email config saved")
     public AjaxResult saveEmailConfig(@RequestBody Map<String, Object> config) {
         return success(systemEmailConfigService.saveConfig(config));
     }
-
+    @Tag(name = "System - Email Config")
     @PostMapping("/system/email-config/test")
     @Operation(summary = "Test email configuration", description = "Sends a test email using saved SMTP settings")
     @ApiResponse(responseCode = "200", description = "Test email sent or error message")
@@ -930,27 +935,28 @@ public class GatewayManagement extends BaseController {
     // ========== System: Cache ==========
 
     @Tag(name = "System - Cache", description = "Cache management and statistics")
+    @Tag(name = "System - Cache")
     @GetMapping("/system/cache/list")
     @Operation(summary = "List all caches", description = "Returns all cache names and their statistics")
     @ApiResponse(responseCode = "200", description = "Cache list retrieved")
     public AjaxResult listCaches() {
         return success(systemCacheService.listCaches());
     }
-
+    @Tag(name = "System - Cache")
     @PostMapping("/system/cache/clear/{cacheName}")
     @Operation(summary = "Clear specific cache", description = "Clears all entries in a named cache")
     @ApiResponse(responseCode = "200", description = "Cache cleared")
     public AjaxResult clearCache(@Parameter(description = "Cache name") @PathVariable String cacheName) {
         return success(systemCacheService.clearCache(cacheName));
     }
-
+    @Tag(name = "System - Cache")
     @PostMapping("/system/cache/clear-all")
     @Operation(summary = "Clear all caches", description = "Clears all application caches")
     @ApiResponse(responseCode = "200", description = "All caches cleared")
     public AjaxResult clearAllCaches() {
         return success(systemCacheService.clearAllCaches());
     }
-
+    @Tag(name = "System - Cache")
     @GetMapping("/system/cache/stats/{cacheName}")
     @Operation(summary = "Get cache statistics", description = "Returns statistics for a specific cache")
     @ApiResponse(responseCode = "200", description = "Cache statistics retrieved")
@@ -961,6 +967,7 @@ public class GatewayManagement extends BaseController {
     // ========== System: Chat ==========
 
     @Tag(name = "AI Chat", description = "AI-powered chat assistant with SSE streaming and tool execution")
+    @Tag(name = "AI Chat")
     @PostMapping("/chat")
     @Operation(summary = "Send chat message", description = "Sends a message to the AI assistant, optionally with tool results")
     @ApiResponse(responseCode = "200", description = "AI response returned")
@@ -970,28 +977,28 @@ public class GatewayManagement extends BaseController {
         List<Map<String, Object>> toolResults = (List<Map<String, Object>>) request.getOrDefault("toolResults", null);
         return success(systemChatService.chat(message, toolResults, getCurrentUsername()));
     }
-
+    @Tag(name = "AI Chat")
     @GetMapping("/chat/status")
     @Operation(summary = "Get chat status", description = "Returns AI service status and knowledge base statistics")
     @ApiResponse(responseCode = "200", description = "Chat status retrieved")
     public AjaxResult chatStatus() {
         return success(systemChatService.chatStatus());
     }
-
+    @Tag(name = "AI Chat")
     @PostMapping("/chat/knowledge/refresh")
     @Operation(summary = "Refresh knowledge base", description = "Reinitializes the AI knowledge base")
     @ApiResponse(responseCode = "200", description = "Knowledge base refreshed")
     public AjaxResult refreshKnowledge() {
         return success(systemChatService.refreshKnowledge());
     }
-
+    @Tag(name = "AI Chat")
     @GetMapping("/chat/knowledge/stats")
     @Operation(summary = "Get knowledge stats", description = "Returns knowledge base statistics")
     @ApiResponse(responseCode = "200", description = "Knowledge stats retrieved")
     public AjaxResult knowledgeStats() {
         return success(systemChatService.knowledgeStats());
     }
-
+    @Tag(name = "AI Chat")
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "Stream chat response", description = "Sends a message and receives streaming SSE response")
     @ApiResponse(responseCode = "200", description = "SSE stream started")
@@ -999,28 +1006,28 @@ public class GatewayManagement extends BaseController {
         String message = (String) request.get("message");
         return systemChatService.chatStream(message, getCurrentUsername());
     }
-
+    @Tag(name = "AI Chat")
     @GetMapping("/chat/history")
     @Operation(summary = "Get conversation history", description = "Returns the user's conversation history")
     @ApiResponse(responseCode = "200", description = "Conversation history retrieved")
     public AjaxResult getConversationHistory() {
         return success(systemChatService.getConversationHistory(getCurrentUsername()));
     }
-
+    @Tag(name = "AI Chat")
     @PostMapping("/chat/clear-memory")
     @Operation(summary = "Clear conversation memory", description = "Clears the user's AI conversation memory")
     @ApiResponse(responseCode = "200", description = "Memory cleared")
     public AjaxResult clearMemory() {
         return success(systemChatService.clearMemory(getCurrentUsername()));
     }
-
+    @Tag(name = "AI Chat")
     @GetMapping("/chat/conversations")
     @Operation(summary = "List conversations", description = "Returns the user's conversation list")
     @ApiResponse(responseCode = "200", description = "Conversations retrieved")
     public AjaxResult listConversations() {
         return success(systemChatService.getConversationsList(getCurrentUsername()));
     }
-
+    @Tag(name = "AI Chat")
     @GetMapping("/chat/conversations/{conversationId}")
     @Operation(summary = "Get conversation by ID", description = "Returns messages for a specific conversation")
     @ApiResponses(value = {
@@ -1030,7 +1037,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult getConversationById(@Parameter(description = "Conversation ID") @PathVariable Long conversationId) {
         return success(systemChatService.getConversationHistoryById(conversationId));
     }
-
+    @Tag(name = "AI Chat")
     @DeleteMapping("/chat/conversations/{conversationId}")
     @Operation(summary = "Delete conversation", description = "Deletes a specific conversation and its messages")
     @ApiResponses(value = {
@@ -1040,7 +1047,7 @@ public class GatewayManagement extends BaseController {
     public AjaxResult deleteConversation(@Parameter(description = "Conversation ID") @PathVariable Long conversationId) {
         return success(systemChatService.deleteConversation(conversationId, getCurrentUsername()));
     }
-
+    @Tag(name = "AI Chat")
     @DeleteMapping("/chat/conversations")
     @Operation(summary = "Delete all conversations", description = "Deletes all conversations for the current user")
     @ApiResponse(responseCode = "200", description = "All conversations deleted")
@@ -1061,13 +1068,14 @@ public class GatewayManagement extends BaseController {
     // ========== System: Report ==========
 
     @Tag(name = "System - Reports", description = "Report generation, scheduling, and templates")
+    @Tag(name = "System - Reports")
     @GetMapping("/system/report/list")
     @Operation(summary = "List all reports", description = "Returns all saved reports")
     @ApiResponse(responseCode = "200", description = "Reports retrieved")
     public AjaxResult listReports() {
         return success(systemReportEntityService.findAllReports());
     }
-
+    @Tag(name = "System - Reports")
     @GetMapping("/system/report/{reportId}")
     @Operation(summary = "Get report by ID", description = "Returns a specific report")
     public AjaxResult getReport(@Parameter(description = "Report ID") @PathVariable Long reportId) {
@@ -1075,28 +1083,28 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Report not found"));
     }
-
+    @Tag(name = "System - Reports")
     @PostMapping("/system/report")
     @Operation(summary = "Create report", description = "Creates a new report")
     @ApiResponse(responseCode = "200", description = "Report created")
     public AjaxResult addReport(@RequestBody Object report) {
         return success(systemReportEntityService.createReport(report));
     }
-
+    @Tag(name = "System - Reports")
     @PutMapping("/system/report")
     @Operation(summary = "Update report", description = "Updates an existing report")
     @ApiResponse(responseCode = "200", description = "Report updated")
     public AjaxResult updateReport(@RequestBody Object report) {
         return success(systemReportEntityService.updateReport(report));
     }
-
+    @Tag(name = "System - Reports")
     @DeleteMapping("/system/report/{reportId}")
     @Operation(summary = "Delete report", description = "Deletes a report by ID")
     @ApiResponse(responseCode = "200", description = "Report deleted")
     public AjaxResult removeReport(@Parameter(description = "Report ID") @PathVariable Long reportId) {
         return success(systemReportEntityService.deleteReport(reportId));
     }
-
+    @Tag(name = "System - Reports")
     @PostMapping("/system/report/execute/{reportId}")
     @Operation(summary = "Execute report", description = "Executes a report with optional parameters")
     @ApiResponses(value = {
@@ -1115,14 +1123,14 @@ public class GatewayManagement extends BaseController {
             return error("Failed to execute report: " + e.getMessage());
         }
     }
-
+    @Tag(name = "System - Reports")
     @GetMapping("/system/report/templates")
     @Operation(summary = "List report templates", description = "Returns all report templates")
     @ApiResponse(responseCode = "200", description = "Templates retrieved")
     public AjaxResult getReportTemplates() {
         return success(systemReportEntityService.getTemplates());
     }
-
+    @Tag(name = "System - Reports")
     @GetMapping("/system/report/template/{templateId}")
     @Operation(summary = "Get report template", description = "Returns a specific report template")
     public AjaxResult getReportTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
@@ -1130,21 +1138,21 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Template not found"));
     }
-
+    @Tag(name = "System - Reports")
     @PostMapping("/system/report/from-template")
     @Operation(summary = "Create report from template", description = "Creates a new report from an existing template")
     @ApiResponse(responseCode = "200", description = "Report created from template")
     public AjaxResult createReportFromTemplate(@RequestBody Map<String, Object> request) {
         return success(systemReportEntityService.createReportFromTemplate(request));
     }
-
+    @Tag(name = "System - Reports")
     @PostMapping("/system/report/schedule/{templateId}")
     @Operation(summary = "Schedule report", description = "Schedules a report template for recurring execution")
     @ApiResponse(responseCode = "200", description = "Report scheduled")
     public AjaxResult scheduleReport(@Parameter(description = "Template ID") @PathVariable Long templateId, @RequestBody Map<String, Object> config) {
         return success(systemReportEntityService.scheduleReport(templateId, config));
     }
-
+    @Tag(name = "System - Reports")
     @DeleteMapping("/system/report/unschedule/{reportId}")
     @Operation(summary = "Unschedule report", description = "Removes the schedule from a report")
     @ApiResponse(responseCode = "200", description = "Report unscheduled")
@@ -1155,53 +1163,56 @@ public class GatewayManagement extends BaseController {
     // ========== System: Report Designer ==========
 
     @Tag(name = "System - Report Designer", description = "Advanced report designer with template versioning")
+    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates")
     @Operation(summary = "List report designer templates", description = "Returns report designer templates")
     public AjaxResult listReportDesignerTemplates(@Parameter(description = "Include all versions") @RequestParam(required = false, defaultValue = "false") Boolean allVersions) {
         return success(new ArrayList<>());
     }
-
+    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/{templateId}")
     @Operation(summary = "Get template by ID", description = "Returns a report designer template")
     public AjaxResult getReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         return error("Template not found");
     }
-
+    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/key/{templateKey}")
     @Operation(summary = "Get template by key", description = "Returns a report designer template by key")
     public AjaxResult getReportDesignerTemplateByKey(@Parameter(description = "Template key") @PathVariable String templateKey) {
         return error("Template not found");
     }
-
+    @Tag(name = "System - Report Designer")
     @PostMapping("/system/report-designer/templates")
     @Operation(summary = "Create template", description = "Creates a new report designer template")
     public AjaxResult addReportDesignerTemplate(@RequestBody Object template) {
         return success("Template added");
     }
-
+    @Tag(name = "System - Report Designer")
     @PutMapping("/system/report-designer/templates")
     @Operation(summary = "Update template", description = "Updates a report designer template")
     public AjaxResult updateReportDesignerTemplate(@RequestBody Object template) {
         return success("Template updated");
     }
-
+    @Tag(name = "System - Report Designer")
     @DeleteMapping("/system/report-designer/templates/{templateId}")
     @Operation(summary = "Delete template", description = "Deletes a report designer template")
     public AjaxResult deleteReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         return success("Template deleted");
     }
-
+    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/{templateKey}/versions")
     @Operation(summary = "Get template versions", description = "Returns all versions of a template")
     public AjaxResult getReportDesignerTemplateVersions(@Parameter(description = "Template key") @PathVariable String templateKey) {
         return success(new ArrayList<>());
     }
-
+    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/active-versions")
     @Operation(summary = "Get active versions", description = "Returns currently active template versions")
     public AjaxResult getReportDesignerActiveVersions() {
         return success(new ArrayList<>());
     }
+
+    @Tag(name = "System - Report Designer")
 
     @GetMapping("/system/report-designer/active-templates")
     @Operation(summary = "Get active templates", description = "Returns all active templates")
@@ -1209,30 +1220,32 @@ public class GatewayManagement extends BaseController {
         return success(new ArrayList<>());
     }
 
+    @Tag(name = "System - Report Designer")
+
     @PutMapping("/system/report-designer/templates/{templateId}/archive")
     @Operation(summary = "Archive template", description = "Archives a template version")
     public AjaxResult archiveReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         return success("Template archived");
     }
-
+    @Tag(name = "System - Report Designer")
     @PutMapping("/system/report-designer/templates/{templateId}/activate")
     @Operation(summary = "Activate template", description = "Activates a template version")
     public AjaxResult activateReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
         return success("Template activated");
     }
-
+    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/datasource/{datasourceKey}/tables")
     @Operation(summary = "Get datasource tables", description = "Returns tables for a datasource")
     public AjaxResult getDatasourceTables(@Parameter(description = "Datasource key") @PathVariable String datasourceKey) {
         return success(new ArrayList<>());
     }
-
+    @Tag(name = "System - Report Designer")
     @PostMapping("/system/report-designer/execute/{templateId}")
     @Operation(summary = "Execute template", description = "Executes a report designer template")
     public AjaxResult executeReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId, @RequestBody(required = false) Map<String, Object> params) {
         return error("Failed to execute report");
     }
-
+    @Tag(name = "System - Report Designer")
     @PostMapping("/system/report-designer/preview")
     @Operation(summary = "Preview report", description = "Previews a report with given template")
     public AjaxResult previewReport(@RequestBody Object template, @RequestParam(required = false) String params) {
@@ -1249,6 +1262,8 @@ public class GatewayManagement extends BaseController {
         return success(quartzJobService.findAll());
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @GetMapping("/system/job/{jobId}")
     @Operation(summary = "Get job by ID", description = "Returns a specific scheduled job")
     public AjaxResult getJob(@Parameter(description = "Job ID") @PathVariable Long jobId) {
@@ -1256,6 +1271,8 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Job not found"));
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @PostMapping("/system/job")
     @Operation(summary = "Create job", description = "Creates a new scheduled job")
@@ -1265,6 +1282,8 @@ public class GatewayManagement extends BaseController {
         return success("Job added successfully");
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @PutMapping("/system/job")
     @Operation(summary = "Update job", description = "Updates an existing scheduled job")
     @ApiResponse(responseCode = "200", description = "Job updated")
@@ -1273,6 +1292,8 @@ public class GatewayManagement extends BaseController {
         return success("Job updated successfully");
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @DeleteMapping("/system/job/{jobId}")
     @Operation(summary = "Delete job", description = "Deletes a scheduled job")
     @ApiResponse(responseCode = "200", description = "Job deleted")
@@ -1280,6 +1301,8 @@ public class GatewayManagement extends BaseController {
         quartzJobService.deleteJob(jobId);
         return success("Job deleted successfully");
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @DeleteMapping("/system/job/batch")
     @Operation(summary = "Batch delete jobs", description = "Deletes multiple jobs by IDs")
@@ -1291,6 +1314,8 @@ public class GatewayManagement extends BaseController {
         return success("Deleted " + ids.length + " job(s)");
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @PutMapping("/system/job/changeStatus")
     @Operation(summary = "Change job status", description = "Updates a job's enabled/disabled status")
     @ApiResponse(responseCode = "200", description = "Status updated")
@@ -1298,6 +1323,8 @@ public class GatewayManagement extends BaseController {
         quartzJobService.updateJob(job);
         return success("Job status updated successfully");
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @PostMapping("/system/job/run")
     @Operation(summary = "Run job immediately", description = "Triggers immediate execution of a job")
@@ -1309,6 +1336,8 @@ public class GatewayManagement extends BaseController {
         return success();
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @PutMapping("/system/job/pause")
     @Operation(summary = "Pause job", description = "Pauses a scheduled job")
     @ApiResponse(responseCode = "200", description = "Job paused")
@@ -1317,6 +1346,8 @@ public class GatewayManagement extends BaseController {
         return success("Job paused successfully");
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @PutMapping("/system/job/resume")
     @Operation(summary = "Resume job", description = "Resumes a paused scheduled job")
     @ApiResponse(responseCode = "200", description = "Job resumed")
@@ -1324,6 +1355,8 @@ public class GatewayManagement extends BaseController {
         quartzJobService.resumeJob(job.getJobId());
         return success("Job resumed successfully");
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @PutMapping("/system/job/batch/pause")
     @Operation(summary = "Batch pause jobs", description = "Pauses multiple scheduled jobs by IDs")
@@ -1335,6 +1368,8 @@ public class GatewayManagement extends BaseController {
         return success("Paused " + ids.length + " job(s)");
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @PutMapping("/system/job/batch/resume")
     @Operation(summary = "Batch resume jobs", description = "Resumes multiple paused scheduled jobs by IDs")
     @ApiResponse(responseCode = "200", description = "Jobs resumed")
@@ -1344,6 +1379,8 @@ public class GatewayManagement extends BaseController {
         }
         return success("Resumed " + ids.length + " job(s)");
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @PostMapping("/system/job/batch/run")
     @Operation(summary = "Batch run jobs", description = "Executes multiple jobs immediately by IDs")
@@ -1358,6 +1395,8 @@ public class GatewayManagement extends BaseController {
         }
         return success("Executed " + successCount + "/" + ids.length + " job(s)");
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @GetMapping("/system/job/export")
     @Operation(summary = "Export jobs", description = "Exports selected or all jobs as JSON")
@@ -1375,6 +1414,8 @@ public class GatewayManagement extends BaseController {
         return success(jobs);
     }
 
+    @Tag(name = "Quartz - Job Management")
+
     @PostMapping("/system/job/import")
     @Operation(summary = "Import jobs", description = "Imports jobs from JSON data")
     @ApiResponse(responseCode = "200", description = "Jobs imported")
@@ -1389,6 +1430,8 @@ public class GatewayManagement extends BaseController {
         }
         return success("Imported " + successCount + "/" + jobs.size() + " job(s)");
     }
+
+    @Tag(name = "Quartz - Job Management")
 
     @GetMapping("/system/job/groups")
     @Operation(summary = "Get job groups", description = "Returns list of distinct job group names")
@@ -1422,6 +1465,8 @@ public class GatewayManagement extends BaseController {
         return success(logs);
     }
 
+    @Tag(name = "Quartz - Job Logs")
+
     @GetMapping("/system/job-log/job/{jobId}")
     @Operation(summary = "Get job logs by job ID", description = "Returns execution logs for a specific job")
     @ApiResponse(responseCode = "200", description = "Job logs retrieved")
@@ -1429,6 +1474,8 @@ public class GatewayManagement extends BaseController {
         var jobOpt = quartzJobLogService.findById(jobId);
         return jobOpt.map(j -> success(List.of(j))).orElseGet(() -> error("Job log not found"));
     }
+
+    @Tag(name = "Quartz - Job Logs")
 
     @GetMapping("/system/job-log/{logId}")
     @Operation(summary = "Get job log by ID", description = "Returns a specific execution log entry")
@@ -1438,6 +1485,8 @@ public class GatewayManagement extends BaseController {
                 .map(this::success)
                 .orElseGet(() -> error("Job log not found"));
     }
+
+    @Tag(name = "Quartz - Job Logs")
 
     @GetMapping("/system/job-log/failed/recent")
     @Operation(summary = "Get recent failed logs", description = "Returns recently failed job execution logs")
@@ -1450,6 +1499,8 @@ public class GatewayManagement extends BaseController {
         return success(logs);
     }
 
+    @Tag(name = "Quartz - Job Logs")
+
     @DeleteMapping("/system/job-log/{logId}")
     @Operation(summary = "Delete job log", description = "Deletes a specific execution log entry")
     @ApiResponse(responseCode = "200", description = "Log deleted")
@@ -1458,6 +1509,8 @@ public class GatewayManagement extends BaseController {
         return success("Job log deleted successfully");
     }
 
+    @Tag(name = "Quartz - Job Logs")
+
     @DeleteMapping("/system/job-log/batch")
     @Operation(summary = "Batch delete job logs", description = "Deletes multiple execution log entries by IDs")
     @ApiResponse(responseCode = "200", description = "Logs deleted")
@@ -1465,6 +1518,8 @@ public class GatewayManagement extends BaseController {
         quartzJobLogService.deleteByIds(ids);
         return success("Deleted " + ids.length + " job log(s)");
     }
+
+    @Tag(name = "Quartz - Job Logs")
 
     @DeleteMapping("/system/job-log/clean")
     @Operation(summary = "Clean all job logs", description = "Removes all job execution logs")
@@ -1484,6 +1539,8 @@ public class GatewayManagement extends BaseController {
         return success(quartzJobTemplateService.getTemplates());
     }
 
+    @Tag(name = "Quartz - Job Templates")
+
     @GetMapping("/system/job-template/{name}")
     @Operation(summary = "Get job template by name", description = "Returns a specific job template")
     @ApiResponse(responseCode = "200", description = "Template retrieved")
@@ -1491,6 +1548,8 @@ public class GatewayManagement extends BaseController {
         var template = quartzJobTemplateService.getTemplateByName(name);
         return template != null ? success(template) : error("Template not found");
     }
+
+    @Tag(name = "Quartz - Job Templates")
 
     @PostMapping("/system/job-template/create/{templateName}")
     @Operation(summary = "Create job from template", description = "Creates a new scheduled job from a template")
@@ -1511,12 +1570,16 @@ public class GatewayManagement extends BaseController {
         return success(quartzEmailJobTemplateService.getAllTemplates());
     }
 
+    @Tag(name = "Quartz - Email Templates")
+
     @GetMapping("/system/email-template/active")
     @Operation(summary = "Get active email templates", description = "Returns only active email templates")
     @ApiResponse(responseCode = "200", description = "Active templates retrieved")
     public AjaxResult getActiveEmailTemplates() {
         return success(quartzEmailJobTemplateService.getActiveTemplates());
     }
+
+    @Tag(name = "Quartz - Email Templates")
 
     @GetMapping("/system/email-template/{templateId}")
     @Operation(summary = "Get email template by ID", description = "Returns a specific email template")
@@ -1527,6 +1590,8 @@ public class GatewayManagement extends BaseController {
                 .orElseGet(() -> error("Template not found"));
     }
 
+    @Tag(name = "Quartz - Email Templates")
+
     @GetMapping("/system/email-template/type/{templateType}")
     @Operation(summary = "Get email template by type", description = "Returns email template by its type identifier")
     @ApiResponse(responseCode = "200", description = "Template retrieved")
@@ -1536,6 +1601,8 @@ public class GatewayManagement extends BaseController {
                 .orElseGet(() -> error("Template not found for type: " + templateType));
     }
 
+    @Tag(name = "Quartz - Email Templates")
+
     @PostMapping("/system/email-template")
     @Operation(summary = "Create email template", description = "Creates a new email notification template")
     @ApiResponse(responseCode = "200", description = "Template created")
@@ -1543,6 +1610,8 @@ public class GatewayManagement extends BaseController {
         quartzEmailJobTemplateService.saveTemplate(template);
         return success("Template created successfully");
     }
+
+    @Tag(name = "Quartz - Email Templates")
 
     @PutMapping("/system/email-template")
     @Operation(summary = "Update email template", description = "Updates an existing email template")
@@ -1552,6 +1621,8 @@ public class GatewayManagement extends BaseController {
         return success("Template updated successfully");
     }
 
+    @Tag(name = "Quartz - Email Templates")
+
     @DeleteMapping("/system/email-template/{templateId}")
     @Operation(summary = "Delete email template", description = "Deletes an email template by ID")
     @ApiResponse(responseCode = "200", description = "Template deleted")
@@ -1560,6 +1631,8 @@ public class GatewayManagement extends BaseController {
         return success("Template deleted successfully");
     }
 
+    @Tag(name = "Quartz - Email Templates")
+
     @PutMapping("/system/email-template/{templateId}/set-default")
     @Operation(summary = "Set default email template", description = "Sets an email template as default for a type")
     @ApiResponse(responseCode = "200", description = "Default template set")
@@ -1567,6 +1640,8 @@ public class GatewayManagement extends BaseController {
         quartzEmailJobTemplateService.setTemplateAsDefault(templateId, templateType);
         return success("Template set as default");
     }
+
+    @Tag(name = "Quartz - Email Templates")
 
     @PutMapping("/system/email-template/{templateId}/toggle-active")
     @Operation(summary = "Toggle email template active status", description = "Activates or deactivates an email template")
@@ -1578,6 +1653,8 @@ public class GatewayManagement extends BaseController {
         quartzEmailJobTemplateService.saveTemplate(template);
         return success("Template status updated");
     }
+
+    @Tag(name = "Quartz - Email Templates")
 
     @PostMapping("/system/email-template/preview")
     @Operation(summary = "Preview email template", description = "Renders and previews an email template with data")
@@ -1619,12 +1696,16 @@ public class GatewayManagement extends BaseController {
         return success(quartzJobGroupService.getJobGroupSummary());
     }
 
+    @Tag(name = "Quartz - Job Groups")
+
     @GetMapping("/system/job-group/{jobGroup}/jobs")
     @Operation(summary = "Get jobs in group", description = "Returns all jobs in a specific group")
     @ApiResponse(responseCode = "200", description = "Jobs retrieved")
     public AjaxResult getJobsInGroup(@Parameter(description = "Job group name") @PathVariable String jobGroup) {
         return success(quartzJobGroupService.getJobsInGroup(jobGroup));
     }
+
+    @Tag(name = "Quartz - Job Groups")
 
     @PostMapping("/system/job-group/{jobGroup}/execute")
     @Operation(summary = "Execute job group", description = "Runs all jobs in a group sequentially")
@@ -1653,12 +1734,16 @@ public class GatewayManagement extends BaseController {
         return success(quartzJobMetricsService.getDashboardMetrics());
     }
 
+    @Tag(name = "Quartz - Job Dashboard")
+
     @GetMapping("/system/job-dashboard/trend")
     @Operation(summary = "Get job execution trend", description = "Returns execution trend data for charting")
     @ApiResponse(responseCode = "200", description = "Trend data retrieved")
     public AjaxResult getJobTrend(@Parameter(description = "Number of days") @RequestParam(defaultValue = "30") int days) {
         return success(quartzJobMetricsService.getExecutionTrend(days));
     }
+
+    @Tag(name = "Quartz - Job Dashboard")
 
     @GetMapping("/system/job-dashboard/health")
     @Operation(summary = "Get job health status", description = "Returns health check status for all jobs")
@@ -1716,6 +1801,8 @@ public class GatewayManagement extends BaseController {
         }
     }
 
+    @Tag(name = "Code Generator")
+
     @GetMapping("/tool/gen/preview")
     @Operation(summary = "Preview generated code", description = "Returns preview of generated code for a table")
     @ApiResponse(responseCode = "200", description = "Code preview returned")
@@ -1726,6 +1813,8 @@ public class GatewayManagement extends BaseController {
             response.getWriter().write(code.values().iterator().next());
         }
     }
+
+    @Tag(name = "Code Generator")
 
     @PostMapping("/tool/gen/batch")
     @Operation(summary = "Batch generate code", description = "Imports tables and generates CRUD code for multiple tables")
@@ -1740,6 +1829,8 @@ public class GatewayManagement extends BaseController {
             return error("Failed to generate code: " + e.getMessage());
         }
     }
+
+    @Tag(name = "Code Generator")
 
     @GetMapping("/tool/gen/download")
     @Operation(summary = "Download generated code", description = "Downloads generated code as ZIP file")

@@ -117,3 +117,20 @@ spring.security.oauth2.client:
       client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
       scope: email,profile
       redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha
+    operations-sorter: method
+    disable-swagger-default-url: true
+  cache:
+    disabled: true
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  remove-broken-reference-definitions: true
+  paths-to-match: /api/**
+  packages-to-scan: com.pd.gateway
+  model-converters:
+    pageable-converter:
+      enabled: false
