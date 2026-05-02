@@ -1,31 +1,34 @@
 package com.pd.framework.security.oauth2;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pd.framework.security.jwt.JwtTokenUtil;
-import com.pd.framework.security.jwt.LoginResponse;
+import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.security.LoginUser;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final SysUserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public OAuth2LoginSuccessHandler(JwtTokenUtil jwtTokenUtil, SysUserRepository userRepository) {
+    public OAuth2LoginSuccessHandler(JwtTokenUtil jwtTokenUtil, SysUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -36,30 +39,30 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String name = oAuth2User.getAttribute("name");
 
         var userOpt = userRepository.findByEmail(email);
+        SysUser sysUser;
         if (userOpt.isEmpty()) {
-            response.setStatus(401);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"code\":401,\"msg\":\"User not found after OAuth2 login\"}");
-            return;
+            sysUser = new SysUser();
+            sysUser.setLoginName(email.substring(0, email.indexOf('@')));
+            sysUser.setUserName(name != null ? name : email);
+            sysUser.setEmail(email);
+            sysUser.setUserType("00");
+            sysUser.setStatus("0");
+            sysUser.setDelFlag("0");
+            sysUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            userRepository.save(sysUser);
+        } else {
+            sysUser = userOpt.get();
         }
 
-        var sysUser = userOpt.get();
-        LoginUser loginUser = new LoginUser(sysUser, new java.util.HashSet<>());
+        LoginUser loginUser = new LoginUser(sysUser, new HashSet<>());
 
         String token = jwtTokenUtil.generateToken(loginUser);
         String refreshToken = jwtTokenUtil.generateRefreshToken(loginUser);
 
-        LoginResponse loginResponse = new LoginResponse(
-                token, refreshToken, "Bearer",
-                86400000, loginUser.getUsername());
+        String redirectUrl = "/oauth2/callback#token=" + token +
+                "&refresh=" + refreshToken +
+                "&user=" + URLEncoder.encode(loginUser.getUsername(), StandardCharsets.UTF_8);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 200);
-        result.put("msg", "Login successful");
-        result.put("data", loginResponse);
-
-        response.setContentType("application/json");
-        response.setStatus(200);
-        new ObjectMapper().writeValue(response.getWriter(), result);
+        response.sendRedirect(redirectUrl);
     }
 }

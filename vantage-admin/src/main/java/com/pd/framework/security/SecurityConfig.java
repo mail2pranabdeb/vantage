@@ -93,9 +93,7 @@ public class SecurityConfig {
 						.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
 						.successHandler(oAuth2LoginSuccessHandler)
 						.failureHandler((req, res, exc) -> {
-							res.setContentType("application/json");
-							res.setStatus(401);
-							res.getWriter().write("{\"code\":401,\"msg\":\"OAuth2 login failed: " + exc.getMessage() + "\"}");
+							res.sendRedirect("/login?oauth2_error=1");
 						}))
 				.formLogin(AbstractHttpConfigurer::disable)
 				.logout(logout -> logout

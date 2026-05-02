@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import App from './App.jsx'
 import Login from './pages/Login.jsx'
+import OAuth2Callback from './pages/OAuth2Callback.jsx'
 import VantageJobList from './pages/VantageJobList.jsx'
 import MonitoringDashboard from './pages/MonitoringDashboard.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
@@ -28,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
         <Route path="/*" element={<App />} />
         <Route path="/vantage/job" element={<ProtectedRoute><VantageJobList /></ProtectedRoute>} />
         <Route path="/monitoring" element={<ProtectedRoute><MonitoringDashboard /></ProtectedRoute>} />
