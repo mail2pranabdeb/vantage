@@ -235,12 +235,59 @@ public class QuartzTaskExecutor extends AbstractQuartzJob {
             String subject = processReportTemplate(templateSubject, templateName, outputFormat, data, sysJob, duration);
             String body = processReportTemplate(templateBody, templateName, outputFormat, data, sysJob, duration);
 
-            // Render ${dataTable} from the actual report data
-            if (!data.isEmpty()) {
-                String dataTableHtml = renderDataTableHtml(data);
-                body = body.replace("${dataTable}", dataTableHtml);
+            // Render ${dataTable} from template's multi-datatable queries (same as preview)
+            // Use job's reportParams (manual or saved), fallback to emailTemplateParams, then template's runtimeParams
+            String paramsToUse = sysJob.getReportParams();
+            if (paramsToUse == null || paramsToUse.isEmpty() || paramsToUse.equals("{}")) {
+                paramsToUse = sysJob.getEmailTemplateParams();
+            }
+            if (paramsToUse == null || paramsToUse.isEmpty() || paramsToUse.equals("{}")) {
+                try {
+                    java.lang.reflect.Method getRuntimeParamsMethod = template.getClass().getMethod("getRuntimeParams");
+                    paramsToUse = (String) getRuntimeParamsMethod.invoke(template);
+                } catch (Exception e) {
+                    log.debug("Could not get runtimeParams from template: {}", e.getMessage());
+                }
+            }
+            log.info("Using params for data table queries: {}", paramsToUse);
+
+            if (dataTablesJson != null && !dataTablesJson.isEmpty()) {
+                log.info("dataTablesJson: {}", dataTablesJson);
+                try {
+                    Object tplService = applicationContext.getBean("emailTemplateService");
+                    java.lang.reflect.Method executeMultiQueryMethod = tplService.getClass().getMethod("executeMultipleQueriesAndRenderTables", String.class, String.class);
+                    String dataTableHtml = (String) executeMultiQueryMethod.invoke(tplService, dataTablesJson, paramsToUse);
+                    log.info("Rendered dataTableHtml length: {}", dataTableHtml.length());
+                    body = body.replace("${dataTable}", dataTableHtml);
+                } catch (Exception e) {
+                    log.error("Failed to execute template data table queries", e);
+                    body = body.replace("${dataTable}", "<p style='color:red;'>Error: Failed to execute data queries - " + e.getMessage() + "</p>");
+                }
             } else {
-                body = body.replace("${dataTable}", "<p style='color:#999;'>No data returned</p>");
+                // Fallback: backward compatibility with single table fields
+                java.lang.reflect.Method getDatasourceKeyMethod = template.getClass().getMethod("getDatasourceKey");
+                java.lang.reflect.Method getQuerySqlMethod = template.getClass().getMethod("getQuerySql");
+                java.lang.reflect.Method getIncludeDataTableMethod = template.getClass().getMethod("getIncludeDataTable");
+                String datasourceKey = (String) getDatasourceKeyMethod.invoke(template);
+                String querySql = (String) getQuerySqlMethod.invoke(template);
+                Boolean includeDataTable = (Boolean) getIncludeDataTableMethod.invoke(template);
+
+                if (Boolean.TRUE.equals(includeDataTable) && datasourceKey != null && !datasourceKey.isEmpty() && querySql != null && !querySql.isEmpty()) {
+                    try {
+                        Object tplService = applicationContext.getBean("emailTemplateService");
+                        java.lang.reflect.Method executeQueryMethod = tplService.getClass().getMethod("executeQueryAndRenderTable", String.class, String.class);
+                        String dataTableHtml = (String) executeQueryMethod.invoke(tplService, datasourceKey, querySql);
+                        body = body.replace("${dataTable}", dataTableHtml);
+                    } catch (Exception e) {
+                        log.error("Failed to execute template SQL query", e);
+                        body = body.replace("${dataTable}", "<p style='color:red;'>Error: Failed to execute data query - " + e.getMessage() + "</p>");
+                    }
+                } else if (!data.isEmpty()) {
+                    String dataTableHtml = renderDataTableHtml(data);
+                    body = body.replace("${dataTable}", dataTableHtml);
+                } else {
+                    body = body.replace("${dataTable}", "<p style='color:#999;'>No data returned</p>");
+                }
             }
 
             // Send email - use dynamic mail sender from database config

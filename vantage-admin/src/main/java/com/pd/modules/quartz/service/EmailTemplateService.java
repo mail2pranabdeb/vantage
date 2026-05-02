@@ -296,23 +296,32 @@ public String processTemplate(String template, SysJob job, SysJobLog jobLog) {
             java.util.List<java.util.Map<String, Object>> tables = mapper.readValue(dataTablesJson,
                 mapper.getTypeFactory().constructCollectionType(java.util.List.class, java.util.Map.class));
 
+            log.info("executeMultipleQueriesAndRenderTables: parsed {} tables from dataTablesJson", tables.size());
+
             StringBuilder allTablesHtml = new StringBuilder();
             int tableCount = 0;
 
             for (java.util.Map<String, Object> tableConfig : tables) {
                 Boolean enabled = (Boolean) tableConfig.get("enabled");
-                if (!Boolean.TRUE.equals(enabled)) continue;
-
                 String label = (String) tableConfig.getOrDefault("label", "Data Table " + (tableCount + 1));
                 String query = (String) tableConfig.get("query");
-                if (query == null || query.trim().isEmpty()) continue;
+                log.info("Processing table '{}': enabled={}, query={}", label, enabled, query);
+                if (!Boolean.TRUE.equals(enabled)) {
+                    log.info("Skipping table '{}': not enabled", label);
+                    continue;
+                }
+                if (query == null || query.trim().isEmpty()) {
+                    log.info("Skipping table '{}': empty query", label);
+                    continue;
+                }
 
                 // Execute query with params
                 List<Map<String, Object>> rows;
                 try {
                     rows = namedJdbcTemplate.queryForList(query, paramsMap);
+                    log.info("Table '{}': executed successfully, got {} rows", label, rows.size());
                 } catch (Exception e) {
-                    log.error("Failed to execute query for table '{}': {}", label, e.getMessage());
+                    log.error("Failed to execute query for table '{}': {}", label, e.getMessage(), e);
                     allTablesHtml.append("<h3 style='color:var(--danger);margin-top:20px;'>")
                         .append(escapeHtml(label)).append("</h3>");
                     allTablesHtml.append("<p style='color:red;'>Error: ").append(escapeHtml(e.getMessage())).append("</p>");
@@ -321,6 +330,7 @@ public String processTemplate(String template, SysJob job, SysJobLog jobLog) {
                 }
 
                 if (rows.isEmpty()) {
+                    log.info("Table '{}': returned no data", label);
                     allTablesHtml.append("<h3 style='margin-top:20px;'>").append(escapeHtml(label)).append("</h3>");
                     allTablesHtml.append("<p style='color:var(--text-muted);'>No data returned.</p>");
                     tableCount++;
