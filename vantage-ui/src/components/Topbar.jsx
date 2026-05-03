@@ -4,7 +4,6 @@ import NotificationCenter from './NotificationCenter';
 import { useAuth } from '../context/AuthContext';
 
 const themes = [
-    { id: 'sap', label: 'SAP GUI', dot: '#0a6ed1' },
     { id: 'light', label: 'Light', dot: '#3b82f6' },
     { id: 'dark', label: 'Dark', dot: '#334155' },
     { id: 'midnight', label: 'Midnight', dot: '#818cf8' },
@@ -15,7 +14,7 @@ const themes = [
 const Topbar = () => {
     const { logout, user } = useAuth();
     const [themeOpen, setThemeOpen] = useState(false);
-    const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('bms-theme') || 'sap');
+    const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('bms-theme') || 'light');
     const pickerRef = useRef(null);
 
     useEffect(() => {

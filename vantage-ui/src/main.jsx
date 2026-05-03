@@ -9,11 +9,9 @@ import MonitoringDashboard from './pages/MonitoringDashboard.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import { setupAuthInterceptor } from './services/api.js'
 import './index.css'
-import './themes/sap-gui.css'
-import './themes/fiori.css'
 
 // Apply saved theme BEFORE React renders to prevent flash
-const savedTheme = localStorage.getItem('bms-theme') || 'sap';
+const savedTheme = localStorage.getItem('bms-theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
 console.log('[main] URL:', window.location.href);
