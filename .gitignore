@@ -45,3 +45,5 @@ data/*.trace.db
 **/node_modules/
 .aider*
 .env
+**/application-local.yml
+**/application-local.properties
