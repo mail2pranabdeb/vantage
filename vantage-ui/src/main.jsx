@@ -10,6 +10,11 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import { setupAuthInterceptor } from './services/api.js'
 import './index.css'
 import './themes/sap-gui.css'
+import './themes/fiori.css'
+
+// Apply saved theme BEFORE React renders to prevent flash
+const savedTheme = localStorage.getItem('bms-theme') || 'sap';
+document.documentElement.setAttribute('data-theme', savedTheme);
 
 console.log('[main] URL:', window.location.href);
 console.log('[main] Search:', window.location.search);
@@ -43,7 +48,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/auth/google/callback" element={<OAuth2Callback />} />
+        <Route path="/auth/:provider/callback" element={<OAuth2Callback />} />
         <Route path="/*" element={<App />} />
         <Route path="/vantage/job" element={<ProtectedRoute><VantageJobList /></ProtectedRoute>} />
         <Route path="/monitoring" element={<ProtectedRoute><MonitoringDashboard /></ProtectedRoute>} />

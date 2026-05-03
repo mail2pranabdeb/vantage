@@ -28,6 +28,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -40,6 +43,8 @@ import java.util.*;
 @RequestMapping("/api")
 @SecurityRequirement(name = "bearerAuth")
 public class GatewayManagement extends BaseController {
+
+    private static final Logger log = LoggerFactory.getLogger(GatewayManagement.class);
 
     // System module APIs
     private final SystemAuthService systemAuthService;
@@ -153,6 +158,7 @@ public class GatewayManagement extends BaseController {
                     token, refreshToken, "Bearer",
                     86400000, loginUser.getUsername()));
         } catch (Exception e) {
+            log.error("Login failed for {}: {} - {}", request.getUsername(), e.getClass().getSimpleName(), e.getMessage());
             return AjaxResult.error(401, "Invalid credentials");
         }
     }

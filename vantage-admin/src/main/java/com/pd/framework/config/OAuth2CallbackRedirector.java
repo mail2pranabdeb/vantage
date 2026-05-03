@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import java.io.IOException;
 
 /**
@@ -17,16 +19,14 @@ public class OAuth2CallbackRedirector {
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
 
-    @GetMapping({"/oauth2/callback", "/auth/google/callback"})
-    public void redirect(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // Preserve the hash fragment from the original request if present
+    @GetMapping("/auth/{provider}/callback")
+    public void redirect(@PathVariable String provider, jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // Preserve the query string from the original request
         String queryString = request.getQueryString();
-        String url = frontendUrl + "/auth/google/callback";
+        String url = frontendUrl + "/auth/" + provider + "/callback";
         if (queryString != null && !queryString.isEmpty()) {
             url += "?" + queryString;
         }
-        // Note: hash fragments are never sent to the server, but if the browser follows
-        // a redirect with a hash, it will preserve it
         response.sendRedirect(url);
     }
 }

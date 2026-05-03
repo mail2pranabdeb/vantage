@@ -1,11 +1,11 @@
 package com.pd.framework.security;
 
-import com.pd.common.event.auth.LoginFailureEvent;
-import com.pd.common.event.auth.LoginSuccessEvent;
 import com.pd.framework.security.jwt.JwtAuthenticationFilter;
 import com.pd.framework.security.oauth2.CustomOAuth2UserService;
 import com.pd.framework.security.oauth2.FrontendAwareAuthRequestResolver;
 import com.pd.framework.security.oauth2.OAuth2LoginSuccessHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +33,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+	private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
 	private final UserDetailsService userDetailsService;
 	private final ApplicationEventPublisher eventPublisher;
@@ -97,10 +99,11 @@ public class SecurityConfig {
 				.oauth2Login(oauth2 -> oauth2
 						.authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(new FrontendAwareAuthRequestResolver(clientRegistrationRepository)))
 						.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-						.successHandler(oAuth2LoginSuccessHandler)
-						.failureHandler((req, res, exc) -> {
-							res.sendRedirect("/login?oauth2_error=1");
-						}))
+					.successHandler(oAuth2LoginSuccessHandler)
+					.failureHandler((req, res, exc) -> {
+						log.error("OAuth2 login failed: {}", exc.getMessage());
+						res.sendRedirect("http://localhost:5173/login?oauth2_error=1");
+					}))
 				.formLogin(AbstractHttpConfigurer::disable)
 				.logout(logout -> logout
 						.logoutUrl("/api/logout")

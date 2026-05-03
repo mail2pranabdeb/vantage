@@ -9,11 +9,6 @@ function extractCode() {
 const exchangeCode = extractCode();
 if (exchangeCode) {
     console.log('[OAuth2Callback] Found exchange code, fetching tokens...');
-    // Synchronous fetch won't work, so we'll handle it in useEffect
-    // But we can at least log that we found a code
-    console.log('[OAuth2Callback] Code length:', exchangeCode.length);
-} else {
-    console.log('[OAuth2Callback] No exchange code found');
 }
 
 const OAuth2Callback = () => {
@@ -24,7 +19,6 @@ const OAuth2Callback = () => {
                 .then(res => res.json())
                 .then(data => {
                     if (data.code === 200 && data.token && data.refreshToken) {
-                        console.log('[OAuth2Callback] Token exchange successful');
                         setTokens(data.token, data.refreshToken);
                         window.location.href = '/dashboard';
                     } else {

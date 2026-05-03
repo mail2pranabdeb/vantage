@@ -58,11 +58,17 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
 
+        // Extract provider from the Authentication object
+        String registrationId = "unknown";
+        if (authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken) {
+            registrationId = oauthToken.getAuthorizedClientRegistrationId();
+        }
+
         var userOpt = userRepository.findByEmail(email);
         SysUser sysUser;
         if (userOpt.isEmpty()) {
             sysUser = new SysUser();
-            sysUser.setLoginName(email.substring(0, email.indexOf('@')));
+            sysUser.setLoginName(email.contains("@") ? email.substring(0, email.indexOf('@')) : email);
             sysUser.setUserName(name != null ? name : email);
             sysUser.setEmail(email);
             sysUser.setUserType("00");
@@ -81,8 +87,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         // Store tokens in a short-lived in-memory store and pass only a code in the URL
         String code = OAuth2TokenStore.generateCode(token, refreshToken);
-        String redirectUrl = frontendUrl + "/auth/google/callback?code=" + code;
-        log.info("=== OAuth2 REDIRECT to: {} ===", redirectUrl);
+        String redirectUrl = frontendUrl + "/auth/" + registrationId + "/callback?code=" + code;
+        log.info("=== OAuth2 REDIRECT (provider={}) to: {} ===", registrationId, redirectUrl.substring(0, Math.min(150, redirectUrl.length())));
         response.sendRedirect(redirectUrl);
     }
 }
