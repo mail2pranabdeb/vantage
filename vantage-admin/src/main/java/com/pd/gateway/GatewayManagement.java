@@ -12,6 +12,8 @@ import com.pd.modules.quartz.api.dto.JobDTO;
 import com.pd.modules.quartz.api.dto.JobLogDTO;
 import com.pd.modules.system.api.*;
 import com.pd.modules.system.api.dto.*;
+import com.pd.modules.system.report.api.ReportDesignerService;
+import com.pd.modules.system.report.domain.SysReportTemplate;
 import com.pd.modules.system.security.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,6 +64,7 @@ public class GatewayManagement extends BaseController {
     private final SystemCacheService systemCacheService;
     private final SystemChatService systemChatService;
     private final SystemReportEntityService systemReportEntityService;
+    private final ReportDesignerService reportDesignerService;
 
     // Quartz module APIs
     private final QuartzJobService quartzJobService;
@@ -96,6 +99,7 @@ public class GatewayManagement extends BaseController {
             SystemCacheService systemCacheService,
             SystemChatService systemChatService,
             SystemReportEntityService systemReportEntityService,
+            ReportDesignerService reportDesignerService,
             QuartzJobService quartzJobService,
             QuartzJobLogService quartzJobLogService,
             QuartzJobTemplateService quartzJobTemplateService,
@@ -122,6 +126,7 @@ public class GatewayManagement extends BaseController {
         this.systemCacheService = systemCacheService;
         this.systemChatService = systemChatService;
         this.systemReportEntityService = systemReportEntityService;
+        this.reportDesignerService = reportDesignerService;
         this.quartzJobService = quartzJobService;
         this.quartzJobLogService = quartzJobLogService;
         this.quartzJobTemplateService = quartzJobTemplateService;
@@ -197,9 +202,10 @@ public class GatewayManagement extends BaseController {
         @ApiResponse(responseCode = "200", description = "User profile retrieved"),
         @ApiResponse(responseCode = "401", description = "Not authenticated")
     })
-    public AjaxResult me(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return error("Not authenticated");
+    public AjaxResult me() {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return AjaxResult.error(401, "Not authenticated");
         }
         return success(systemAuthService.getCurrentUser());
     }
@@ -215,10 +221,19 @@ public class GatewayManagement extends BaseController {
 
     @Tag(name = "System - User Management", description = "User CRUD operations and user-related queries")
     @GetMapping("/system/user/list")
-    @Operation(summary = "List all active users", description = "Returns a list of all active users in the system")
+    @Operation(summary = "List all active users", description = "Returns paginated list of active users with optional filters")
     @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
-    public AjaxResult listUsers() {
-        return success(systemUserService.findAllActive());
+    public AjaxResult listUsers(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "Filter by login name") @RequestParam(required = false) String loginName,
+            @Parameter(description = "Filter by status") @RequestParam(required = false) String status) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize);
+        var page = systemUserService.searchUsers(loginName, status, pageable);
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", page.getContent());
+        result.put("total", page.getTotalElements());
+        return success(result);
     }
     @Tag(name = "System - User Management")
     @GetMapping("/system/user/{userId}")
@@ -648,14 +663,21 @@ public class GatewayManagement extends BaseController {
 
     @Tag(name = "System - Operation Logs", description = "Operation audit log management")
     @GetMapping("/system/operlog/list")
-    @Operation(summary = "List operation logs", description = "Returns filtered operation logs")
+    @Operation(summary = "List operation logs", description = "Returns paginated operation logs with filters")
     @ApiResponse(responseCode = "200", description = "Operation logs retrieved")
     public AjaxResult listOperLogs(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "Module title filter") @RequestParam(required = false) String title,
             @Parameter(description = "Operator name filter") @RequestParam(required = false) String operName,
             @Parameter(description = "Business type filter") @RequestParam(required = false) Integer businessType,
             @Parameter(description = "Status filter") @RequestParam(required = false) Integer status) {
-        return success(systemOperLogService.findByCondition(title, operName, businessType, status));
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize);
+        var page = systemOperLogService.findByConditionPaginated(title, operName, businessType, status, pageable);
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", page.getContent());
+        result.put("total", page.getTotalElements());
+        return success(result);
     }
     @Tag(name = "System - Operation Logs")
     @DeleteMapping("/system/operlog")
@@ -678,13 +700,20 @@ public class GatewayManagement extends BaseController {
 
     @Tag(name = "System - Login Info", description = "Login audit information management")
     @GetMapping("/system/logininfor/list")
-    @Operation(summary = "List login information", description = "Returns filtered login records")
+    @Operation(summary = "List login information", description = "Returns paginated login records with filters")
     @ApiResponse(responseCode = "200", description = "Login records retrieved")
     public AjaxResult listLoginInfos(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "Username filter") @RequestParam(required = false) String loginName,
             @Parameter(description = "Status filter") @RequestParam(required = false) String status,
             @Parameter(description = "IP address filter") @RequestParam(required = false) String ipaddr) {
-        return success(systemLogininforService.findByCondition(loginName, status, ipaddr));
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize);
+        var page = systemLogininforService.findByConditionPaginated(loginName, status, ipaddr, pageable);
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", page.getContent());
+        result.put("total", page.getTotalElements());
+        return success(result);
     }
     @Tag(name = "System - Login Info")
     @DeleteMapping("/system/logininfor")
@@ -765,7 +794,8 @@ public class GatewayManagement extends BaseController {
     public AjaxResult listNotifications(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize) {
-        Long userId = 1L;
+        Long userId = getCurrentUserId();
+        if (userId == null) return error(401, "Not authenticated");
         var page = systemNotificationService.getNotifications(userId, pageNum, pageSize);
         Map<String, Object> result = new HashMap<>();
         result.put("rows", page.getContent());
@@ -780,7 +810,8 @@ public class GatewayManagement extends BaseController {
     public AjaxResult unreadNotifications(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize) {
-        Long userId = 1L;
+        Long userId = getCurrentUserId();
+        if (userId == null) return error(401, "Not authenticated");
         var page = systemNotificationService.getUnreadNotifications(userId, pageNum, pageSize);
         Map<String, Object> result = new HashMap<>();
         result.put("rows", page.getContent());
@@ -792,7 +823,8 @@ public class GatewayManagement extends BaseController {
     @Operation(summary = "Get unread count", description = "Returns the count of unread notifications")
     @ApiResponse(responseCode = "200", description = "Unread count retrieved")
     public AjaxResult unreadCount() {
-        Long userId = 1L;
+        Long userId = getCurrentUserId();
+        if (userId == null) return error(401, "Not authenticated");
         return success(Map.of("count", systemNotificationService.getUnreadCount(userId)));
     }
     @Tag(name = "System - Notifications")
@@ -808,7 +840,9 @@ public class GatewayManagement extends BaseController {
     @Operation(summary = "Mark all notifications as read", description = "Marks all user notifications as read")
     @ApiResponse(responseCode = "200", description = "All notifications marked as read")
     public AjaxResult markAllAsRead() {
-        systemNotificationService.markAllAsRead(1L);
+        Long userId = getCurrentUserId();
+        if (userId == null) return error(401, "Not authenticated");
+        systemNotificationService.markAllAsRead(userId);
         return success();
     }
     @Tag(name = "System - Notifications")
@@ -816,17 +850,21 @@ public class GatewayManagement extends BaseController {
     @Operation(summary = "Get notification statistics", description = "Returns notification statistics for the user")
     @ApiResponse(responseCode = "200", description = "Statistics retrieved")
     public AjaxResult notificationStatistics() {
-        return success(systemNotificationService.getStatistics(1L));
+        Long userId = getCurrentUserId();
+        if (userId == null) return error(401, "Not authenticated");
+        return success(systemNotificationService.getStatistics(userId));
     }
     @Tag(name = "System - Notifications")
     @PostMapping("/system/notifications/test")
     @Operation(summary = "Send test notification", description = "Sends a test in-app notification")
     @ApiResponse(responseCode = "200", description = "Test notification sent")
     public AjaxResult sendTestNotification(@RequestBody Map<String, String> params) {
+        Long userId = getCurrentUserId();
+        if (userId == null) return error(401, "Not authenticated");
         String title = params.get("title");
         String content = params.get("content");
         String type = params.getOrDefault("type", "INFO");
-        systemNotificationService.sendInAppNotification(1L, title, content, type);
+        systemNotificationService.sendInAppNotification(userId, title, content, type);
         return success("Notification sent");
     }
 
@@ -1071,6 +1109,16 @@ public class GatewayManagement extends BaseController {
         return "anonymous";
     }
 
+    private Long getCurrentUserId() {
+        try {
+            Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (principal instanceof com.pd.modules.system.security.LoginUser loginUser) {
+                return loginUser.getUser().getUserId();
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     // ========== System: Report ==========
 
     @Tag(name = "System - Reports", description = "Report generation, scheduling, and templates")
@@ -1173,49 +1221,65 @@ public class GatewayManagement extends BaseController {
     @GetMapping("/system/report-designer/templates")
     @Operation(summary = "List report designer templates", description = "Returns report designer templates")
     public AjaxResult listReportDesignerTemplates(@Parameter(description = "Include all versions") @RequestParam(required = false, defaultValue = "false") Boolean allVersions) {
-        return success(new ArrayList<>());
+        return success(systemReportEntityService.listReportDesignerTemplates(allVersions));
     }
     @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/{templateId}")
     @Operation(summary = "Get template by ID", description = "Returns a report designer template")
     public AjaxResult getReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
-        return error("Template not found");
+        return Optional.ofNullable(systemReportEntityService.getReportDesignerTemplate(templateId))
+                .map(this::success)
+                .orElseGet(() -> error("Template not found"));
     }
     @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/key/{templateKey}")
     @Operation(summary = "Get template by key", description = "Returns a report designer template by key")
     public AjaxResult getReportDesignerTemplateByKey(@Parameter(description = "Template key") @PathVariable String templateKey) {
-        return error("Template not found");
+        return Optional.ofNullable(systemReportEntityService.getReportDesignerTemplateByKey(templateKey))
+                .map(this::success)
+                .orElseGet(() -> error("Template not found"));
     }
     @Tag(name = "System - Report Designer")
     @PostMapping("/system/report-designer/templates")
     @Operation(summary = "Create template", description = "Creates a new report designer template")
-    public AjaxResult addReportDesignerTemplate(@RequestBody Object template) {
-        return success("Template added");
+    public AjaxResult addReportDesignerTemplate(@RequestBody Map<String, Object> template) {
+        try {
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            SysReportTemplate sysTemplate = mapper.convertValue(template, SysReportTemplate.class);
+            return success(systemReportEntityService.addReportDesignerTemplate(sysTemplate));
+        } catch (Exception e) {
+            return error("Failed to create template: " + e.getMessage());
+        }
     }
     @Tag(name = "System - Report Designer")
     @PutMapping("/system/report-designer/templates")
     @Operation(summary = "Update template", description = "Updates a report designer template")
-    public AjaxResult updateReportDesignerTemplate(@RequestBody Object template) {
-        return success("Template updated");
+    public AjaxResult updateReportDesignerTemplate(@RequestBody Map<String, Object> template) {
+        try {
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            SysReportTemplate sysTemplate = mapper.convertValue(template, SysReportTemplate.class);
+            return success(systemReportEntityService.updateReportDesignerTemplate(sysTemplate));
+        } catch (Exception e) {
+            return error("Failed to update template: " + e.getMessage());
+        }
     }
     @Tag(name = "System - Report Designer")
     @DeleteMapping("/system/report-designer/templates/{templateId}")
     @Operation(summary = "Delete template", description = "Deletes a report designer template")
     public AjaxResult deleteReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
-        return success("Template deleted");
+        return success(systemReportEntityService.deleteReportDesignerTemplate(templateId));
     }
     @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/{templateKey}/versions")
     @Operation(summary = "Get template versions", description = "Returns all versions of a template")
     public AjaxResult getReportDesignerTemplateVersions(@Parameter(description = "Template key") @PathVariable String templateKey) {
-        return success(new ArrayList<>());
+        return success(systemReportEntityService.getReportDesignerTemplateVersions(templateKey));
     }
     @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates/active-versions")
     @Operation(summary = "Get active versions", description = "Returns currently active template versions")
     public AjaxResult getReportDesignerActiveVersions() {
-        return success(new ArrayList<>());
+        return success(systemReportEntityService.getReportDesignerActiveVersions());
     }
 
     @Tag(name = "System - Report Designer")
@@ -1223,7 +1287,7 @@ public class GatewayManagement extends BaseController {
     @GetMapping("/system/report-designer/active-templates")
     @Operation(summary = "Get active templates", description = "Returns all active templates")
     public AjaxResult getReportDesignerActiveTemplates() {
-        return success(new ArrayList<>());
+        return success(systemReportEntityService.getReportDesignerActiveTemplates());
     }
 
     @Tag(name = "System - Report Designer")
@@ -1231,41 +1295,84 @@ public class GatewayManagement extends BaseController {
     @PutMapping("/system/report-designer/templates/{templateId}/archive")
     @Operation(summary = "Archive template", description = "Archives a template version")
     public AjaxResult archiveReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
-        return success("Template archived");
+        return success(systemReportEntityService.archiveReportDesignerTemplate(templateId));
     }
     @Tag(name = "System - Report Designer")
     @PutMapping("/system/report-designer/templates/{templateId}/activate")
     @Operation(summary = "Activate template", description = "Activates a template version")
     public AjaxResult activateReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId) {
-        return success("Template activated");
+        return success(systemReportEntityService.activateReportDesignerTemplate(templateId));
     }
     @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/datasource/{datasourceKey}/tables")
     @Operation(summary = "Get datasource tables", description = "Returns tables for a datasource")
     public AjaxResult getDatasourceTables(@Parameter(description = "Datasource key") @PathVariable String datasourceKey) {
-        return success(new ArrayList<>());
+        return success(systemReportEntityService.getDatasourceTables(datasourceKey));
     }
     @Tag(name = "System - Report Designer")
     @PostMapping("/system/report-designer/execute/{templateId}")
     @Operation(summary = "Execute template", description = "Executes a report designer template")
     public AjaxResult executeReportDesignerTemplate(@Parameter(description = "Template ID") @PathVariable Long templateId, @RequestBody(required = false) Map<String, Object> params) {
-        return error("Failed to execute report");
+        try {
+            return success(systemReportEntityService.executeReportDesignerTemplate(templateId, params));
+        } catch (Exception e) {
+            return error("Failed to execute report: " + e.getMessage());
+        }
     }
     @Tag(name = "System - Report Designer")
     @PostMapping("/system/report-designer/preview")
     @Operation(summary = "Preview report", description = "Previews a report with given template")
-    public AjaxResult previewReport(@RequestBody Object template, @RequestParam(required = false) String params) {
-        return error("Preview failed");
+    public AjaxResult previewReport(@RequestBody Map<String, Object> request, @RequestParam(required = false) String params) {
+        try {
+            Long templateId;
+            if (request.containsKey("templateId")) {
+                templateId = Long.valueOf(request.get("templateId").toString());
+            } else if (request.containsKey("template")) {
+                Map<String, Object> tpl = (Map<String, Object>) request.get("template");
+                templateId = Long.valueOf(tpl.get("templateId").toString());
+            } else {
+                return error("templateId is required");
+            }
+            String paramsJson = params != null ? params : "{}";
+            if (request.containsKey("params") && params == null) {
+                paramsJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(request.get("params"));
+            }
+
+            List<Map<String, Object>> results = reportDesignerService.executeTemplate(templateId, paramsJson);
+
+            String sqlContent = null;
+            if (request.containsKey("sqlContent")) {
+                sqlContent = request.get("sqlContent").toString();
+            }
+
+            Map<String, Object> previewResult = new HashMap<>();
+            previewResult.put("data", results);
+            previewResult.put("count", results.size());
+            previewResult.put("sql", sqlContent);
+            return success(previewResult);
+        } catch (Exception e) {
+            return error("Preview failed: " + e.getMessage());
+        }
     }
 
     // ========== Quartz: Job ==========
 
     @Tag(name = "Quartz - Job Management", description = "Scheduled job CRUD and execution control")
     @GetMapping("/system/job/list")
-    @Operation(summary = "List all jobs", description = "Returns all scheduled jobs")
+    @Operation(summary = "List all jobs", description = "Returns paginated list of scheduled jobs with optional filters")
     @ApiResponse(responseCode = "200", description = "Jobs retrieved")
-    public AjaxResult listJobs() {
-        return success(quartzJobService.findAll());
+    public AjaxResult listJobs(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "Filter by job name") @RequestParam(required = false) String jobName,
+            @Parameter(description = "Filter by job group") @RequestParam(required = false) String jobGroup,
+            @Parameter(description = "Filter by status") @RequestParam(required = false) String status) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize);
+        var page = quartzJobService.searchJobs(jobName, jobGroup, status, pageable);
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", page.getContent());
+        result.put("total", page.getTotalElements());
+        return success(result);
     }
 
     @Tag(name = "Quartz - Job Management")
@@ -1454,21 +1561,20 @@ public class GatewayManagement extends BaseController {
 
     @Tag(name = "Quartz - Job Logs", description = "Job execution log management")
     @GetMapping("/system/job-log/list")
-    @Operation(summary = "List job logs", description = "Returns filtered job execution logs")
+    @Operation(summary = "List job logs", description = "Returns paginated job execution logs with filters")
     @ApiResponse(responseCode = "200", description = "Job logs retrieved")
     public AjaxResult listJobLogs(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "Job name filter") @RequestParam(required = false) String jobName,
             @Parameter(description = "Job group filter") @RequestParam(required = false) String jobGroup,
             @Parameter(description = "Status filter") @RequestParam(required = false) String status) {
-        List<JobLogDTO> logs;
-        if (jobName != null) {
-            logs = quartzJobLogService.findByJobName(jobName);
-        } else if (status != null) {
-            logs = quartzJobLogService.findByStatus(status);
-        } else {
-            logs = quartzJobLogService.findAll();
-        }
-        return success(logs);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize);
+        var page = quartzJobLogService.findByConditionPaginated(jobName, jobGroup, status, null, null, pageable);
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", page.getContent());
+        result.put("total", page.getTotalElements());
+        return success(result);
     }
 
     @Tag(name = "Quartz - Job Logs")

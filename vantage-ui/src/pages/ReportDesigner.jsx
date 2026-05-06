@@ -169,7 +169,7 @@ const ReportDesigner = ({ tab }) => {
 
     const saveTemplate = () => {
         const isEdit = !!template.templateId;
-        const url = isEdit ? '/api/system/report-designer/templates' : '/api/system/report-designer/templates';
+        const url = isEdit ? `/api/system/report-designer/templates/${template.templateId}` : '/api/system/report-designer/templates';
         const method = isEdit ? 'PUT' : 'POST';
 
         fetch(url, {
@@ -181,7 +181,7 @@ const ReportDesigner = ({ tab }) => {
         .then(data => {
             if (data.code === 200) {
                 alert('Template saved successfully!');
-                if (!isEdit) setTemplate(data.data);
+                if (!isEdit && data.data) setTemplate(data.data);
             } else {
                 alert(data.msg || 'Save failed');
             }
@@ -431,13 +431,13 @@ const ReportDesigner = ({ tab }) => {
                                     <table className="ag-table" style={{ minWidth: '100%' }}>
                                         <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-tertiary)' }}>
                                             <tr>
-                                                {previewData.data.length > 0 && Object.keys(previewData.data[0]).map(key => (
+                                                {(previewData.data || []).length > 0 && Object.keys((previewData.data || [])[0]).map(key => (
                                                     <th key={key} style={{ padding: '6px 8px', textAlign: 'left', whiteSpace: 'nowrap' }}>{key}</th>
                                                 ))}
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {previewData.data.map((row, idx) => (
+                                            {(previewData.data || []).map((row, idx) => (
                                                 <tr key={idx}>
                                                     {Object.values(row).map((val, i) => (
                                                         <td key={i} style={{ padding: '4px 8px' }}>{val !== null ? val.toString() : '-'}</td>

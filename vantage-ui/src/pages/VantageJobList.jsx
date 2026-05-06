@@ -35,12 +35,11 @@ const VantageJobList = () => {
 
     const fetchJobs = () => {
         setLoading(true);
-        fetch('/vantage/job/list')
+        fetch('/api/system/job/list')
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
                     setJobs(data.rows || []);
-
                 } else {
                     addToast('error', data.msg || 'Failed to load jobs', 4000);
                 }
@@ -97,7 +96,7 @@ const VantageJobList = () => {
 
     const handleDeleteClick = (row) => {
         if (window.confirm(`Are you sure you want to delete job "${row.jobDesc}"?`)) {
-            fetch(`/vantage/job/${row.id}`, { method: 'DELETE' })
+            fetch(`/api/system/job/${row.id}`, { method: 'DELETE' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.code === 200) {
@@ -115,8 +114,7 @@ const VantageJobList = () => {
     };
 
     const handleStartStop = (row, action) => {
-        const url = action === 'start' ? '/vantage/job/start' : '/vantage/job/stop';
-        fetch(url, {
+        fetch('/api/system/job/changeStatus', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: row.id, triggerStatus: action === 'start' ? 1 : 0 })
@@ -137,8 +135,8 @@ const VantageJobList = () => {
     };
 
     const handleRun = (row) => {
-        fetch('/vantage/job/run', {
-            method: 'PUT',
+        fetch('/api/system/job/run', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: row.id })
         })
@@ -158,7 +156,7 @@ const VantageJobList = () => {
 
     const handleSubmit = () => {
         setSubmitting(true);
-        const url = modalMode === 'add' ? '/vantage/job' : '/vantage/job';
+        const url = '/api/system/job';
         const method = modalMode === 'add' ? 'POST' : 'PUT';
         const body = modalMode === 'add' 
             ? formData 

@@ -80,7 +80,7 @@ const ReportTemplateList = () => {
     };
 
     const handleSave = () => {
-        const url = '/api/system/report-designer/templates';
+        const url = modalMode === 'edit' ? `/api/system/report-designer/templates/${formData.templateId}` : '/api/system/report-designer/templates';
         const method = modalMode === 'edit' ? 'PUT' : 'POST';
         fetch(url, {
             method,
@@ -103,7 +103,8 @@ const ReportTemplateList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    alert(`Report executed successfully. ${data.data.length} rows returned.`);
+                    const rows = Array.isArray(data.data) ? data.data : (data.data?.data || []);
+                    alert(`Report executed successfully. ${rows.length} rows returned.`);
                 } else {
                     alert(data.msg || 'Execution failed');
                 }

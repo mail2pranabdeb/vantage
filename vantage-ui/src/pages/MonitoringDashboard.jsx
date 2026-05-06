@@ -33,7 +33,7 @@ const MonitoringDashboard = () => {
                 const list = data.httpExchanges || data.exchanges || data || [];
                 const filtered = Array.isArray(list) ? list.filter(ex => {
                     const uri = ex.request?.uri || ex.uri || '';
-                    return !uri.includes('/actuator');
+                    return !uri.includes('/actuator') && !uri.includes('/h2-console');
                 }) : [];
                 setExchanges(filtered);
             }
@@ -146,23 +146,29 @@ const OverviewTab = ({ health, metrics, env, exchanges, threads, getStatusColor,
     const [memoryMetrics, setMemoryMetrics] = useState(null);
     const [cpuMetrics, setCpuMetrics] = useState(null);
     const [httpMetrics, setHttpMetrics] = useState(null);
+    const [uptimeMetrics, setUptimeMetrics] = useState(null);
 
     useEffect(() => {
         const load = async () => {
-            const [mem, cpu, http] = await Promise.all([
+            const [mem, cpu, http, uptime] = await Promise.all([
                 getMetric('jvm.memory.used'),
                 getMetric('system.cpu.usage'),
                 getMetric('http.server.requests'),
+                getMetric('process.uptime')
             ]);
             setMemoryMetrics(mem);
             setCpuMetrics(cpu);
             setHttpMetrics(http);
+            setUptimeMetrics(uptime);
         };
         load();
     }, [getMetric]);
 
     const status = health?.status || 'UNKNOWN';
-    const uptime = health?.components?.diskSpace?.details?.free || 0;
+    const uptimeSeconds = uptimeMetrics?.measurements?.[0]?.value || 0;
+    const uptimeFormatted = uptimeSeconds > 0
+        ? `${Math.floor(uptimeSeconds / 86400)}d ${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m`
+        : 'N/A';
 
     return (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
@@ -178,7 +184,7 @@ const OverviewTab = ({ health, metrics, env, exchanges, threads, getStatusColor,
                     </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
-                    <Stat label="Uptime" value={health?.components?.uptime?.details?.uptime || 'N/A'} icon={Clock} />
+                    <Stat label="Uptime" value={uptimeFormatted} icon={Clock} />
                     <Stat label="DB Status" value={health?.components?.db?.status || 'N/A'} icon={Database} />
                 </div>
             </div>
