@@ -1,78 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- Spring Boot defaults -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <!-- Async Appender for non-blocking logging -->
-    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
+    <!-- ================================================= -->
+    <!-- EARLY STARTUP FALLBACK (VERY IMPORTANT) -->
+    <!-- ================================================= -->
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-    </appender>
+    </root>
 
-    <!-- Async file appender for production -->
-    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>1024</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-        <appender-ref ref="FILE"/>
-    </appender>
+    <!-- ================================================= -->
+    <!-- LOCAL / DEV PROFILE -->
+    <!-- ================================================= -->
+    <springProfile name="local,dev">
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/vantage.log</file>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/vantage.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>100MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>10GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- JSON Encoder for structured logging -->
-    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","traceId":"%X{traceId:-}","spanId":"%X{spanId:-}","thread":"%thread","logger":"%logger{36}","message":"%msg","mdc":"%mdc"}%n</pattern>
-        </encoder>
-    </appender>
-
-    <!-- Development profile - sync logging with colors -->
-    <springProfile name="default,dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
+
         <logger name="com.pd" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
+
     </springProfile>
 
-    <!-- Production profile - async logging -->
+    <!-- ================================================= -->
+    <!-- PROD PROFILE -->
+    <!-- ================================================= -->
     <springProfile name="prod">
+
+        <!-- FILE APPENDER (prod only) -->
+        <appender name="FILE"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/vantage.log</file>
+
+            <encoder>
+                <pattern>
+                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]
+                    [%X{traceId:-},%X{spanId:-}]
+                    %-5level %logger{36} - %msg%n
+                </pattern>
+            </encoder>
+
+            <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>
+                    logs/vantage.%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <maxFileSize>100MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>10GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- ASYNC APPENDERS -->
+        <appender name="ASYNC_CONSOLE"
+                  class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="CONSOLE"/>
+        </appender>
+
+        <appender name="ASYNC_FILE"
+                  class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>1024</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="FILE"/>
+        </appender>
+
         <root level="INFO">
             <appender-ref ref="ASYNC_CONSOLE"/>
             <appender-ref ref="ASYNC_FILE"/>
         </root>
+
         <logger name="com.pd" level="INFO" additivity="false">
             <appender-ref ref="ASYNC_CONSOLE"/>
             <appender-ref ref="ASYNC_FILE"/>
         </logger>
+
     </springProfile>
 
-    <!-- Performance sensitive modules -->
+    <!-- ================================================= -->
+    <!-- NOISY DEPENDENCIES -->
+    <!-- ================================================= -->
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.springframework" level="INFO"/>
     <logger name="com.zaxxer.hikari" level="INFO"/>
-    <logger name="io.micrometer" level="DEBUG"/>
-    <logger name="io.micrometer.tracing" level="DEBUG"/>
-
-    <!-- Log MDC data for tracing -->
-    <logger name="com.pd.modules.system.listener" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
 
 </configuration>
