@@ -9,7 +9,10 @@ import org.springframework.data.annotation.LastModifiedBy;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "sys_user")
+@Table(name = "sys_user", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"login_name"}),
+    @UniqueConstraint(columnNames = {"email"})
+})
 @Data
 public class SysUser {
 

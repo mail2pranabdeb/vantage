@@ -1,7 +1,5 @@
 package com.pd.framework.security.oauth2;
 
-import com.pd.modules.system.domain.SysUser;
-import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -11,9 +9,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -21,44 +17,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private static final Logger log = LoggerFactory.getLogger(CustomOAuth2UserService.class);
 
-    private final SysUserRepository userRepository;
-
-    public CustomOAuth2UserService(SysUserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Override
-    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         String email = extractEmail(oAuth2User, registrationId, userRequest);
-        String name = extractName(oAuth2User, registrationId);
 
         if (email == null) {
             throw new OAuth2AuthenticationException("Email not available from " + registrationId);
         }
 
-        SysUser user = userRepository.findByEmail(email).orElseGet(() -> {
-            SysUser newUser = new SysUser();
-            newUser.setLoginName(email.contains("@") ? email.substring(0, email.indexOf('@')) : email);
-            newUser.setUserName(name != null ? name : email);
-            newUser.setEmail(email);
-            newUser.setUserType("00");
-            newUser.setSex("0");
-            newUser.setStatus("0");
-            newUser.setDelFlag("0");
-            newUser.setPassword("");
-            newUser.setCreateBy("oauth2-" + registrationId);
-            newUser.setCreateTime(LocalDateTime.now());
-            return userRepository.save(newUser);
-        });
-
         Map<String, Object> attributes = new HashMap<>(oAuth2User.getAttributes());
         attributes.put("email", email);
-        attributes.put("userId", user.getUserId());
-        attributes.put("loginName", user.getLoginName());
 
         Set<OAuth2UserAuthority> authorities = new HashSet<>();
         authorities.add(new OAuth2UserAuthority("ROLE_USER", attributes));
@@ -137,15 +108,5 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return null;
     }
 
-    private String extractName(OAuth2User oAuth2User, String registrationId) {
-        String name = oAuth2User.getAttribute("name");
-        if (name != null) return name;
-        
-        // GitHub fallback
-        if ("github".equals(registrationId)) {
-            String login = oAuth2User.getAttribute("login");
-            if (login != null) return login;
-        }
-        return "Unknown";
-    }
+
 }

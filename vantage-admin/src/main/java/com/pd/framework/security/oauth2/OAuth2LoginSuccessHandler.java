@@ -64,12 +64,20 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             registrationId = oauthToken.getAuthorizedClientRegistrationId();
         }
 
+        String emailPrefix = email != null && email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+        String loginName = emailPrefix != null && emailPrefix.length() > 30 ? emailPrefix.substring(0, 30) : emailPrefix;
+
         var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty() && loginName != null) {
+            userOpt = userRepository.findByLoginName(loginName);
+        }
+
         SysUser sysUser;
         if (userOpt.isEmpty()) {
             sysUser = new SysUser();
-            sysUser.setLoginName(email.contains("@") ? email.substring(0, email.indexOf('@')) : email);
-            sysUser.setUserName(name != null ? name : email);
+            sysUser.setLoginName(loginName);
+            String rawName = name != null ? name : email;
+            sysUser.setUserName(rawName.length() > 30 ? rawName.substring(0, 30) : rawName);
             sysUser.setEmail(email);
             sysUser.setUserType("00");
             sysUser.setStatus("0");

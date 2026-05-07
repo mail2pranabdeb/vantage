@@ -47,3 +47,6 @@ data/*.trace.db
 .env
 **/application-local.yml
 **/application-local.properties
+
+### Static Assets (built from vantage-ui) ###
+src/main/resources/static/
