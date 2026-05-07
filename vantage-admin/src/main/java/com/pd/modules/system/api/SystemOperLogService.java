@@ -1,12 +1,12 @@
 package com.pd.modules.system.api;
 
 import com.pd.modules.system.api.dto.OperLogDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Optional;
 
-/**
- * System module public API for operation log operations.
- */
 public interface SystemOperLogService {
 
     List<OperLogDTO> findAll();
@@ -20,6 +20,8 @@ public interface SystemOperLogService {
     List<OperLogDTO> findByTitle(String title);
 
     List<OperLogDTO> findByCondition(String title, String operName, Integer businessType, Integer status);
+
+    Page<OperLogDTO> findByConditionPaginated(String title, String operName, Integer businessType, Integer status, Pageable pageable);
 
     boolean deleteByIds(Long[] operIds);
 

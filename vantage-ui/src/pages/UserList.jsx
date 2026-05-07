@@ -48,11 +48,9 @@ const UserList = () => {
             .then(data => {
                 console.log('Fetch users response data:', data);
                 if (data.code === 200) {
-                    console.log('Users data:', data.data);
-                    setUsers(data.data || []);
-                    if (data.data && data.data.length > 0) {
-
-                    }
+                    const rows = data.data?.rows || data.data || [];
+                    console.log('Users data:', rows);
+                    setUsers(rows);
                 } else {
                     addToast('error', data.msg || 'Failed to load users', 4000);
                 }

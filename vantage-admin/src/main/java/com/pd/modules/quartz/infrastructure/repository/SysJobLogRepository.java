@@ -5,6 +5,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +59,65 @@ public class SysJobLogRepository {
 
         cq.select(root).where(predicates.toArray(new Predicate[0])).orderBy(cb.desc(root.get("startTime")));
         return entityManager.createQuery(cq).getResultList();
+    }
+
+    /**
+     * Find job logs by condition with pagination
+     */
+    public Page<SysJobLog> findByConditionPaginated(String jobName, String jobGroup, String status, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        
+        // Count query
+        CriteriaQuery<Long> countCq = cb.createQuery(Long.class);
+        Root<SysJobLog> countRoot = countCq.from(SysJobLog.class);
+        List<Predicate> countPredicates = new java.util.ArrayList<>();
+        
+        if (jobName != null && !jobName.isEmpty()) {
+            countPredicates.add(cb.like(countRoot.get("jobName"), "%" + jobName + "%"));
+        }
+        if (jobGroup != null && !jobGroup.isEmpty()) {
+            countPredicates.add(cb.equal(countRoot.get("jobGroup"), jobGroup));
+        }
+        if (status != null && !status.isEmpty()) {
+            countPredicates.add(cb.equal(countRoot.get("status"), status));
+        }
+        if (startTime != null) {
+            countPredicates.add(cb.greaterThanOrEqualTo(countRoot.get("startTime"), startTime));
+        }
+        if (endTime != null) {
+            countPredicates.add(cb.lessThanOrEqualTo(countRoot.get("endTime"), endTime));
+        }
+        
+        countCq.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+        Long total = entityManager.createQuery(countCq).getSingleResult();
+        
+        // Data query
+        CriteriaQuery<SysJobLog> cq = cb.createQuery(SysJobLog.class);
+        Root<SysJobLog> root = cq.from(SysJobLog.class);
+        List<Predicate> predicates = new java.util.ArrayList<>();
+        
+        if (jobName != null && !jobName.isEmpty()) {
+            predicates.add(cb.like(root.get("jobName"), "%" + jobName + "%"));
+        }
+        if (jobGroup != null && !jobGroup.isEmpty()) {
+            predicates.add(cb.equal(root.get("jobGroup"), jobGroup));
+        }
+        if (status != null && !status.isEmpty()) {
+            predicates.add(cb.equal(root.get("status"), status));
+        }
+        if (startTime != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("startTime"), startTime));
+        }
+        if (endTime != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("endTime"), endTime));
+        }
+        
+        cq.select(root).where(predicates.toArray(new Predicate[0])).orderBy(cb.desc(root.get("startTime")));
+        TypedQuery<SysJobLog> query = entityManager.createQuery(cq);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+        
+        return new PageImpl<>(query.getResultList(), pageable, total);
     }
 
     /**

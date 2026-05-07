@@ -197,7 +197,7 @@ const OperlogList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    setList(data.data || []);
+                    setList(data.data?.rows || data.data || []);
                 }
                 setLoading(false);
             })

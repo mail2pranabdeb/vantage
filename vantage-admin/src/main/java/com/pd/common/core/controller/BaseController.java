@@ -35,4 +35,8 @@ public class BaseController {
     public AjaxResult error(String message) {
         return AjaxResult.error(message);
     }
+
+    public AjaxResult error(int code, String message) {
+        return AjaxResult.error(code, message);
+    }
 }

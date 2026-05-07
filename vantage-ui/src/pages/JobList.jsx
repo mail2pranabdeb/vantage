@@ -155,7 +155,7 @@ useEffect(() => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    const jobs = data.data || [];
+                    const jobs = data.data?.rows || data.data || [];
                     setJobs(jobs);
                     // Build a map for quick lookup
                     const map = {};

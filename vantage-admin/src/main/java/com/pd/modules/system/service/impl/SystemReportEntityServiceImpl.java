@@ -223,4 +223,117 @@ public class SystemReportEntityServiceImpl implements SystemReportEntityService 
             return "Failed to unschedule report: " + e.getMessage();
         }
     }
+
+    @Override
+    public List<?> listReportDesignerTemplates(boolean allVersions) {
+        return allVersions ? reportDesignerService.findAllVersions() : reportDesignerService.findAll();
+    }
+
+    @Override
+    public Object getReportDesignerTemplate(Long templateId) {
+        return reportDesignerService.findById(templateId).orElse(null);
+    }
+
+    @Override
+    public Object getReportDesignerTemplateByKey(String templateKey) {
+        return reportDesignerService.findByTemplateKey(templateKey).orElse(null);
+    }
+
+    @Override
+    public String addReportDesignerTemplate(SysReportTemplate sysTemplate) {
+        reportDesignerService.save(sysTemplate);
+        return "Template added successfully";
+    }
+
+    @Override
+    public String updateReportDesignerTemplate(SysReportTemplate sysTemplate) {
+        var existing = reportDesignerService.findById(sysTemplate.getTemplateId());
+        if (existing.isEmpty()) {
+            return "Template not found";
+        }
+        reportDesignerService.save(sysTemplate);
+        return "Template updated successfully";
+    }
+
+    @Override
+    public String deleteReportDesignerTemplate(Long templateId) {
+        if (reportDesignerService.deleteById(templateId)) {
+            return "Template deleted successfully";
+        }
+        return "Failed to delete template";
+    }
+
+    @Override
+    public List<?> getReportDesignerTemplateVersions(String templateKey) {
+        return reportDesignerService.findByTemplateKeyOrderByVersionDesc(templateKey);
+    }
+
+    @Override
+    public List<?> getReportDesignerActiveVersions() {
+        return reportDesignerService.findAll().stream()
+                .filter(t -> "0".equals(t.getStatus()))
+                .map(t -> {
+                    Map<String, Object> info = new java.util.HashMap<>();
+                    info.put("templateId", t.getTemplateId());
+                    info.put("templateKey", t.getTemplateKey());
+                    info.put("version", t.getVersion());
+                    info.put("status", t.getStatus());
+                    return info;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<?> getReportDesignerActiveTemplates() {
+        return reportDesignerService.findAll().stream()
+                .filter(t -> "0".equals(t.getStatus()))
+                .toList();
+    }
+
+    @Override
+    public String archiveReportDesignerTemplate(Long templateId) {
+        var templateOpt = reportDesignerService.findById(templateId);
+        if (templateOpt.isEmpty()) {
+            return "Template not found";
+        }
+        SysReportTemplate template = templateOpt.get();
+        template.setStatus("2");
+        reportDesignerService.save(template);
+        return "Template archived successfully";
+    }
+
+    @Override
+    public String activateReportDesignerTemplate(Long templateId) {
+        var templateOpt = reportDesignerService.findById(templateId);
+        if (templateOpt.isEmpty()) {
+            return "Template not found";
+        }
+        SysReportTemplate template = templateOpt.get();
+
+        var allByKey = reportDesignerService.findByTemplateKeyOrderByVersionDesc(template.getTemplateKey());
+        for (SysReportTemplate t : allByKey) {
+            t.setStatus("1");
+            reportDesignerService.save(t);
+        }
+
+        template.setStatus("0");
+        reportDesignerService.save(template);
+        return "Template activated successfully";
+    }
+
+    @Override
+    public List<Map<String, Object>> getDatasourceTables(String datasourceKey) {
+        return reportDesignerService.getDatasourceTables(datasourceKey);
+    }
+
+    @Override
+    public List<Map<String, Object>> executeReportDesignerTemplate(Long templateId, Map<String, Object> params) {
+        try {
+            String paramsJson = params != null ? new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(params) : "{}";
+            return reportDesignerService.executeTemplate(templateId, paramsJson);
+        } catch (Exception e) {
+            log.error("Failed to execute report designer template", e);
+            throw new RuntimeException("Failed to execute template: " + e.getMessage());
+        }
+    }
 }

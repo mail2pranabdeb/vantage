@@ -3,9 +3,13 @@ package com.pd.modules.quartz.service.impl;
 import com.pd.modules.quartz.api.QuartzJobLogService;
 import com.pd.modules.quartz.api.dto.JobLogDTO;
 import com.pd.modules.quartz.domain.SysJobLog;
+import com.pd.modules.quartz.infrastructure.repository.SysJobLogRepository;
 import com.pd.modules.quartz.service.ISysJobLogService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +20,11 @@ import java.util.stream.Collectors;
 public class QuartzJobLogServiceImpl implements QuartzJobLogService {
 
     private final ISysJobLogService sysJobLogService;
+    private final SysJobLogRepository sysJobLogRepository;
 
-    public QuartzJobLogServiceImpl(ISysJobLogService sysJobLogService) {
+    public QuartzJobLogServiceImpl(ISysJobLogService sysJobLogService, SysJobLogRepository sysJobLogRepository) {
         this.sysJobLogService = sysJobLogService;
+        this.sysJobLogRepository = sysJobLogRepository;
     }
 
     @Override
@@ -53,6 +59,11 @@ public class QuartzJobLogServiceImpl implements QuartzJobLogService {
         return sysJobLogService.selectJobLogList(query).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<JobLogDTO> findByConditionPaginated(String jobName, String jobGroup, String status, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
+        return sysJobLogRepository.findByConditionPaginated(jobName, jobGroup, status, startTime, endTime, pageable).map(this::toDTO);
     }
 
     @Override

@@ -9,6 +9,8 @@ import com.pd.modules.system.domain.SysUser;
 import com.pd.modules.system.infrastructure.repository.SysUserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SystemUserServiceImpl implements SystemUserService {
@@ -42,7 +45,19 @@ public class SystemUserServiceImpl implements SystemUserService {
     public List<UserDTO> findAllActive() {
         return userRepository.findAllActive().stream()
             .map(this::toDTO)
-            .collect(java.util.stream.Collectors.toList());
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserDTO> findAllActive(Pageable pageable) {
+        return userRepository.findAllActive(pageable).map(this::toDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserDTO> searchUsers(String loginName, String status, Pageable pageable) {
+        return userRepository.searchActive(loginName, status, pageable).map(this::toDTO);
     }
 
     @Override

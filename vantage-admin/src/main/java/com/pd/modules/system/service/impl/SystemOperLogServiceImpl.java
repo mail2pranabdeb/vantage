@@ -5,7 +5,9 @@ import com.pd.modules.system.api.dto.OperLogDTO;
 import com.pd.modules.system.domain.SysOperLog;
 import com.pd.modules.system.infrastructure.repository.SysOperLogRepository;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +62,11 @@ public class SystemOperLogServiceImpl implements SystemOperLogService {
         return operLogRepository.findByCondition(title, operName, businessType, status).stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<OperLogDTO> findByConditionPaginated(String title, String operName, Integer businessType, Integer status, Pageable pageable) {
+        return operLogRepository.findByConditionPaginated(title, operName, businessType, status, pageable).map(this::toDTO);
     }
 
     @Override

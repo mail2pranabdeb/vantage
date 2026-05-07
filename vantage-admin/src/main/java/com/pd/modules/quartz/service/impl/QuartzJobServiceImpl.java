@@ -3,8 +3,11 @@ package com.pd.modules.quartz.service.impl;
 import com.pd.modules.quartz.api.QuartzJobService;
 import com.pd.modules.quartz.api.dto.JobDTO;
 import com.pd.modules.quartz.domain.SysJob;
+import com.pd.modules.quartz.infrastructure.repository.SysJobRepository;
 import com.pd.modules.quartz.service.ISysJobService;
 import org.quartz.SchedulerException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +18,11 @@ import java.util.stream.Collectors;
 public class QuartzJobServiceImpl implements QuartzJobService {
 
     private final ISysJobService sysJobService;
+    private final SysJobRepository jobRepository;
 
-    public QuartzJobServiceImpl(ISysJobService sysJobService) {
+    public QuartzJobServiceImpl(ISysJobService sysJobService, SysJobRepository jobRepository) {
         this.sysJobService = sysJobService;
+        this.jobRepository = jobRepository;
     }
 
     @Override
@@ -25,6 +30,11 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         return sysJobService.selectJobList(new SysJob()).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<JobDTO> searchJobs(String jobName, String jobGroup, String status, Pageable pageable) {
+        return jobRepository.searchJobs(jobName, jobGroup, status, pageable).map(this::toDTO);
     }
 
     @Override

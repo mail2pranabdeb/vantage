@@ -16,7 +16,7 @@ const LogininforList = () => {
                 console.log('[LogininforList] API Response:', data);
                 setLoading(false);
                 if (data.code === 200) {
-                    const dataList = data.data || [];
+                    const dataList = data.data?.rows || data.data || [];
                     setList(dataList);
                     if (dataList.length === 0) {
                         console.log('[Toast] Showing info toast: No records');
@@ -122,7 +122,7 @@ const LogininforList = () => {
                     .then(res => res.json())
                     .then(data => {
                         if (data.code === 200) {
-                            setList(data.data || []);
+                            setList(data.data?.rows || data.data || []);
                             addToast('success', 'Refreshed successfully', 2000);
                         }
                         setLoading(false);

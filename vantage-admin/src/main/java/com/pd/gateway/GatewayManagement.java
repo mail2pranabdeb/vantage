@@ -1433,7 +1433,15 @@ public class GatewayManagement extends BaseController {
     @Operation(summary = "Change job status", description = "Updates a job's enabled/disabled status")
     @ApiResponse(responseCode = "200", description = "Status updated")
     public AjaxResult changeJobStatus(@RequestBody JobDTO job) {
-        quartzJobService.updateJob(job);
+        Long jobId = job.getJobId();
+        String status = job.getStatus();
+        if ("1".equals(status)) {
+            quartzJobService.pauseJob(jobId);
+        } else if ("0".equals(status)) {
+            quartzJobService.resumeJob(jobId);
+        } else {
+            return error("Invalid status value");
+        }
         return success("Job status updated successfully");
     }
 

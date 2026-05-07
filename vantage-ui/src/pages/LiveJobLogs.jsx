@@ -72,7 +72,7 @@ const LiveJobLogs = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    const formattedLogs = (data.data || []).map(log => ({
+                    const formattedLogs = (data.data?.rows || data.data || []).map(log => ({
                         id: String(log.jobLogId),
                         timestamp: log.startTime,
                         jobId: log.jobId,

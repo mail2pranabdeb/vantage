@@ -21,7 +21,7 @@ const JobLogList = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.code === 200) {
-                    setLogs(data.data || []);
+                    setLogs(data.data?.rows || data.data || []);
                 }
                 setLoading(false);
             })

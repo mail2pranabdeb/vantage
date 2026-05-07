@@ -5,7 +5,9 @@ import com.pd.modules.system.api.dto.LogininforDTO;
 import com.pd.modules.system.domain.SysLogininfor;
 import com.pd.modules.system.infrastructure.repository.SysLogininforRepository;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,11 @@ public class SystemLogininforServiceImpl implements SystemLogininforService {
         return logininforRepository.findByCondition(loginName, status, ipaddr).stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<LogininforDTO> findByConditionPaginated(String loginName, String status, String ipaddr, Pageable pageable) {
+        return logininforRepository.findByConditionPaginated(loginName, status, ipaddr, pageable).map(this::toDTO);
     }
 
     @Override
