@@ -6,6 +6,9 @@ import com.pd.framework.security.jwt.JwtTokenUtil;
 import com.pd.framework.security.jwt.LoginRequest;
 import com.pd.framework.security.jwt.LoginResponse;
 import com.pd.modules.generator.api.GeneratorService;
+import com.pd.modules.generator.api.dto.CloneTableRequest;
+import com.pd.modules.generator.api.dto.CreateTableRequest;
+import com.pd.modules.generator.service.GenService;
 import com.pd.modules.quartz.api.*;
 import com.pd.modules.quartz.api.dto.EmailTemplateDTO;
 import com.pd.modules.quartz.api.dto.JobDTO;
@@ -78,6 +81,7 @@ public class GatewayManagement extends BaseController {
 
     // Generator module API
     private final GeneratorService generatorService;
+    private final GenService genService;
 
     // Authentication
     private final AuthenticationManager authenticationManager;
@@ -109,6 +113,7 @@ public class GatewayManagement extends BaseController {
             QuartzScriptJobService quartzScriptJobService,
             QuartzJobWebhookService quartzJobWebhookService,
             GeneratorService generatorService,
+            GenService genService,
             AuthenticationManager authenticationManager,
             JwtTokenUtil jwtTokenUtil) {
         this.systemAuthService = systemAuthService;
@@ -136,6 +141,7 @@ public class GatewayManagement extends BaseController {
         this.quartzScriptJobService = quartzScriptJobService;
         this.quartzJobWebhookService = quartzJobWebhookService;
         this.generatorService = generatorService;
+        this.genService = genService;
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
     }
@@ -1913,11 +1919,56 @@ public class GatewayManagement extends BaseController {
     @GetMapping("/tool/gen/db/tables")
     @Operation(summary = "List database tables", description = "Returns all database tables available for code generation")
     @ApiResponse(responseCode = "200", description = "Tables retrieved")
-    public AjaxResult listTables() {
+    public AjaxResult listTables(@RequestParam(required = false, defaultValue = "master") String datasourceKey) {
         try {
-            return success(generatorService.findAllTables());
+            return success(genService.getDatabaseTables(datasourceKey));
         } catch (Exception e) {
             return error("Failed to load tables: " + e.getMessage());
+        }
+    }
+
+    @Tag(name = "Code Generator")
+    @PostMapping("/tool/gen/db/create-table")
+    @Operation(summary = "Create a database table", description = "Creates a new table in the specified datasource from the UI definition")
+    @ApiResponse(responseCode = "200", description = "Table created")
+    public AjaxResult createTable(@RequestBody CreateTableRequest request) {
+        try {
+            genService.createTable(request);
+            return success("Table '" + request.getTableName() + "' created successfully");
+        } catch (Exception e) {
+            return error("Failed to create table: " + e.getMessage());
+        }
+    }
+
+    @Tag(name = "Code Generator")
+    @GetMapping("/tool/gen/preview-code")
+    @Operation(summary = "Preview generated code", description = "Returns generated code as text for a table")
+    @ApiResponse(responseCode = "200", description = "Code preview")
+    public AjaxResult previewCode(
+            @RequestParam String tableName,
+            @RequestParam(required = false) String tableComment,
+            @RequestParam(required = false, defaultValue = "master") String datasourceKey,
+            @RequestParam(required = false, defaultValue = "system") String moduleName,
+            @RequestParam(required = false, defaultValue = "com.pd.modules") String packageName,
+            @RequestParam(required = false, defaultValue = "admin") String author) {
+        try {
+            Map<String, String> files = genService.previewModule(tableName, tableComment, datasourceKey, moduleName, packageName, author);
+            return success(files);
+        } catch (Exception e) {
+            return error("Preview failed: " + e.getMessage());
+        }
+    }
+
+    @Tag(name = "Code Generator")
+    @PostMapping("/tool/gen/db/clone-table")
+    @Operation(summary = "Clone a database table", description = "Clones table schema (columns, types, comments) to a new table")
+    @ApiResponse(responseCode = "200", description = "Table cloned")
+    public AjaxResult cloneTable(@RequestBody CloneTableRequest request) {
+        try {
+            genService.cloneTable(request.getSourceTableName(), request.getNewTableName(), request.getNewTableComment(), request.getDatasourceKey());
+            return success("Table '" + request.getNewTableName() + "' cloned from '" + request.getSourceTableName() + "' successfully");
+        } catch (Exception e) {
+            return error("Failed to clone table: " + e.getMessage());
         }
     }
 
@@ -1953,14 +2004,18 @@ public class GatewayManagement extends BaseController {
     @Tag(name = "Code Generator")
 
     @GetMapping("/tool/gen/download")
-    @Operation(summary = "Download generated code", description = "Downloads generated code as ZIP file")
+    @Operation(summary = "Download generated module", description = "Downloads generated module ZIP with entity, repository, service, controller, and menu SQL")
     @ApiResponse(responseCode = "200", description = "ZIP file downloaded")
-    public void download(@Parameter(description = "Table ID") @RequestParam Long tableId, HttpServletResponse response) throws IOException {
+    public void downloadModule(
+            @RequestParam String tableName,
+            @RequestParam(required = false) String tableComment,
+            @RequestParam(required = false, defaultValue = "master") String datasourceKey,
+            @RequestParam(required = false, defaultValue = "system") String moduleName,
+            @RequestParam(required = false, defaultValue = "com.pd.modules") String packageName,
+            @RequestParam(required = false, defaultValue = "admin") String author,
+            HttpServletResponse response) throws IOException {
         try {
-            byte[] zipBytes = generatorService.downloadCode(tableId);
-            response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "attachment; filename=code.zip");
-            response.getOutputStream().write(zipBytes);
+            genService.downloadModule(tableName, tableComment, datasourceKey, moduleName, packageName, author, response);
         } catch (Exception e) {
             response.setContentType("text/plain;charset=UTF-8");
             response.getWriter().write("Error: " + e.getMessage());
