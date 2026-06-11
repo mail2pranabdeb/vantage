@@ -18,3 +18,11 @@ Thumbs.db
 *.md
 !.gitignore
 !.dockerignore
+vantage-ui/node_modules
+vantage-ui/dist
+vantage-admin/target
+vantage-admin/logs
+docker-compose*.yml
+.github
+.gitattributes
+.gitignore

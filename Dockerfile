@@ -1,43 +1,27 @@
-# Build stage
-FROM eclipse-temurin:17-jdk AS build
-
+# Stage 1: Build React frontend
+FROM node:20-alpine AS frontend
 WORKDIR /app
+COPY vantage-ui/package*.json vantage-ui/
+RUN cd vantage-ui && npm ci
+COPY vantage-ui/ vantage-ui/
+RUN cd vantage-ui && npm run build
 
-# Copy Maven wrapper and project files
+# Stage 2: Build Spring Boot backend
+FROM eclipse-temurin:17-jdk AS backend
+WORKDIR /app
 COPY mvnw mvnw.cmd pom.xml ./
 COPY .mvn .mvn
+COPY vantage-admin/ vantage-admin/
+COPY --from=frontend /app/vantage-ui/dist/ vantage-admin/src/main/resources/static/
+RUN chmod +x mvnw && ./mvnw clean package -DskipTests -q
 
-# Copy module projects
-COPY vantage-common vantage-common
-COPY vantage-framework vantage-framework
-COPY vantage-modules vantage-modules
-COPY vantage-admin vantage-admin
-
-# Build the application
-RUN ./mvnw clean package -DskipTests -q
-
-# Runtime stage
+# Stage 3: Runtime
 FROM eclipse-temurin:17-jre
-
 WORKDIR /app
-
-# Create non-root user for security
 RUN groupadd -r vantage && useradd -r -g vantage vantage
-
-# Copy the built artifact
-COPY --from=build /app/vantage-admin/target/*.jar app.jar
-
-# Create data directory
+COPY --from=backend /app/vantage-admin/target/*.jar app.jar
 RUN mkdir -p /app/data && chown -R vantage:vantage /app
-
-# Switch to non-root user
 USER vantage
-
-# Expose port
-EXPOSE 8081
-
-# Volume for H2 database persistence
+EXPOSE 8080
 VOLUME ["/app/data"]
-
-# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
