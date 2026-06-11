@@ -1,5 +1,6 @@
 package com.pd.modules.system.domain;
 
+import com.pd.common.annotation.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Audited
 @Table(name = "sys_menu")
 @Data
 public class SysMenu {

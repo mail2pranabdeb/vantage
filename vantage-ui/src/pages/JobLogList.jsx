@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Trash2, RefreshCw, CheckCircle, XCircle, Clock, X } from 'lucide-react';
+import { FileText, Trash2, RefreshCw, CheckCircle, XCircle, Clock, X, Download } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
@@ -143,7 +143,33 @@ const JobLogList = () => {
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
     ];
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'jobLogId', label: 'ID' },
+            { key: 'jobName', label: 'Job Name' },
+            { key: 'jobGroup', label: 'Job Group' },
+            { key: 'status', label: 'Status' },
+            { key: 'startTime', label: 'Time' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=joblogs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: logs })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'joblogs.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
+        { label: 'Export PDF', icon: Download, onClick: () => handleExport('PDF') },
+        { label: 'Export CSV', icon: Download, onClick: () => handleExport('CSV') },
         { label: 'Clean All', icon: Trash2, onClick: handleCleanLogs },
         { label: 'Refresh', icon: RefreshCw, onClick: fetchLogs }
     ];

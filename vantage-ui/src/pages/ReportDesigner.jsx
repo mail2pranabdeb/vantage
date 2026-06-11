@@ -247,6 +247,9 @@ const ReportDesigner = ({ tab }) => {
                             <button className="btn btn-secondary" onClick={() => exportReport('CSV')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <Download size={16} /> CSV
                             </button>
+                            <button className="btn btn-secondary" onClick={() => exportReport('PDF')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Download size={16} /> PDF
+                            </button>
                         </>
                     )}
                 </div>

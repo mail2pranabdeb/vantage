@@ -3,6 +3,7 @@ package com.pd.common.aspect;
 import com.pd.common.annotation.Log;
 import com.pd.common.event.operation.OperationLogEvent;
 import com.pd.common.util.EntityDiffUtil;
+import com.pd.framework.config.AuditContextHolder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -24,26 +25,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Aspect for automatic operation logging.
- * Captures controller method executions annotated with @Log and publishes OperationLogEvent.
- * 
- * Features:
- * - Only logs methods with @Log annotation (opt-in)
- * - Skips GET requests automatically
- * - Extracts title from @Log annotation
- * - Extracts current user from SecurityContext
- * - Generates trace IDs for log correlation
- * - Async event publishing for better performance
- */
 @Aspect
 @Component
 public class OperationLogAspect {
 
     private static final Logger log = LoggerFactory.getLogger(OperationLogAspect.class);
     private static final ObjectMapper objectMapper;
-    
+
     static {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -60,144 +50,136 @@ public class OperationLogAspect {
         this.eventPublisher = eventPublisher;
     }
 
-    /**
-     * Pointcut for methods annotated with @Log
-     */
     @Before("@annotation(logAnnotation)")
     public void before(JoinPoint joinPoint, Log logAnnotation) {
-        // Skip GET requests - only log write operations
-        if (isGetRequest()) {
-            log.debug("=== Skipping operation log for GET request: {} ===",
-                joinPoint.getSignature().toShortString());
-            return;
-        }
+        if (isGetRequest()) return;
         startTimeHolder.set(System.currentTimeMillis());
-        
-        // Capture entity state BEFORE modification for UPDATE/DELETE operations
         if (shouldCaptureBeforeState(logAnnotation)) {
             Object beforeEntity = extractEntityFromArgs(joinPoint);
-            if (beforeEntity != null) {
-                beforeEntityHolder.set(beforeEntity);
-                log.debug("=== Captured before-state entity for: {} ===", joinPoint.getSignature().toShortString());
-            }
+            if (beforeEntity != null) beforeEntityHolder.set(beforeEntity);
         }
-        
-        log.info("=== AOP BEFORE: {} ===", joinPoint.getSignature().toShortString());
     }
 
-    /**
-     * Handle successful method execution
-     */
     @AfterReturning(pointcut = "@annotation(logAnnotation)", returning = "result")
     public void afterReturning(JoinPoint joinPoint, Log logAnnotation, Object result) {
-        if (!isGetRequest()) {
-            log.info("=== @AfterReturning TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
-            
-            // Capture entity state AFTER modification for INSERT/UPDATE operations
-            Object afterEntity = null;
-            if (shouldCaptureAfterState(logAnnotation)) {
-                afterEntity = extractEntityFromResult(result);
-                if (afterEntity != null) {
-                    afterEntityHolder.set(afterEntity);
-                    log.debug("=== Captured after-state entity for: {} ===", joinPoint.getSignature().toShortString());
-                }
-            }
-            
-            publishOperationLog(joinPoint, logAnnotation, result, null, 0);
-            
-            // Clean up ThreadLocals
-            beforeEntityHolder.remove();
-            afterEntityHolder.remove();
+        if (isGetRequest()) return;
+        if (shouldCaptureAfterState(logAnnotation)) {
+            Object afterEntity = extractEntityFromResult(result);
+            if (afterEntity != null) afterEntityHolder.set(afterEntity);
         }
+        publishOperationLog(joinPoint, logAnnotation, result, null, 0);
+        beforeEntityHolder.remove();
+        afterEntityHolder.remove();
     }
 
-    /**
-     * Handle method execution with exception
-     */
     @AfterThrowing(pointcut = "@annotation(logAnnotation)", throwing = "e")
     public void afterThrowing(JoinPoint joinPoint, Log logAnnotation, Exception e) {
-        if (!isGetRequest() && logAnnotation.isLogError()) {
-            log.info("=== @AfterThrowing TRIGGERED for: {} ===", joinPoint.getSignature().toShortString());
-            publishOperationLog(joinPoint, logAnnotation, null, e, 1);
-            
-            // Clean up ThreadLocals
-            beforeEntityHolder.remove();
-            afterEntityHolder.remove();
-        }
+        if (isGetRequest()) return;
+        publishOperationLog(joinPoint, logAnnotation, null, e, 1);
+        beforeEntityHolder.remove();
+        afterEntityHolder.remove();
     }
 
-    /**
-     * Check if current request is GET
-     */
+    @Before("execution(* com.pd.gateway.GatewayManagement.*(..)) && !@annotation(com.pd.common.annotation.Log)")
+    public void beforeDefault(JoinPoint joinPoint) {
+        if (isGetRequest()) return;
+        startTimeHolder.set(System.currentTimeMillis());
+        Object beforeEntity = extractEntityFromArgs(joinPoint);
+        if (beforeEntity != null) beforeEntityHolder.set(beforeEntity);
+    }
+
+    @AfterReturning(pointcut = "execution(* com.pd.gateway.GatewayManagement.*(..)) && !@annotation(com.pd.common.annotation.Log)", returning = "result")
+    public void afterReturningDefault(JoinPoint joinPoint, Object result) {
+        if (isGetRequest()) return;
+        Object afterEntity = extractEntityFromResult(result);
+        if (afterEntity != null) afterEntityHolder.set(afterEntity);
+        publishOperationLog(joinPoint, null, result, null, 0);
+        beforeEntityHolder.remove();
+        afterEntityHolder.remove();
+    }
+
+    @AfterThrowing(pointcut = "execution(* com.pd.gateway.GatewayManagement.*(..)) && !@annotation(com.pd.common.annotation.Log)", throwing = "e")
+    public void afterThrowingDefault(JoinPoint joinPoint, Exception e) {
+        if (isGetRequest()) return;
+        publishOperationLog(joinPoint, null, null, e, 1);
+        beforeEntityHolder.remove();
+        afterEntityHolder.remove();
+    }
+
     private boolean isGetRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
-            String method = attributes.getRequest().getMethod();
-            return "GET".equalsIgnoreCase(method);
+            return "GET".equalsIgnoreCase(attributes.getRequest().getMethod());
         }
         return false;
     }
 
-    /**
-     * Publish operation log event
-     */
     private void publishOperationLog(JoinPoint joinPoint, Log logAnnotation, Object result, Exception e, int status) {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes == null) {
-                log.warn("=== No request attributes, skipping operation log ===");
-                return;
-            }
+            if (attributes == null) return;
 
             HttpServletRequest request = attributes.getRequest();
-            long costTime = System.currentTimeMillis() - startTimeHolder.get();
+            Long startTime = startTimeHolder.get();
             startTimeHolder.remove();
+            long costTime = startTime != null ? System.currentTimeMillis() - startTime : 0;
 
-            // Extract method info
             String className = joinPoint.getTarget().getClass().getName();
             String methodName = joinPoint.getSignature().getName();
             String method = className + "." + methodName + "()";
 
-            log.info("=== Building OperationLogEvent: title={}, method={}, url={} ===",
-                extractTitle(joinPoint, logAnnotation), method, request.getRequestURI());
-
-            // Compute before/after values for audit trail
             String oldValues = null;
             String newValues = null;
             String changedFields = null;
 
-            // First, try to get from service-layer context (preferred)
-            Object beforeEntity = null;
-            Object afterEntity = null;
-            
-            try {
-                Class<?> contextHolderClass = Class.forName("com.pd.modules.system.context.UserAuditContextHolder");
-                beforeEntity = contextHolderClass.getMethod("getBeforeEntity").invoke(null);
-                afterEntity = contextHolderClass.getMethod("getAfterEntity").invoke(null);
-            } catch (ClassNotFoundException ex) {
-                // UserAuditContextHolder not found, fall back to AOP-captured state
-                beforeEntity = beforeEntityHolder.get();
-                afterEntity = afterEntityHolder.get();
-            } catch (Exception ex) {
-                log.debug("=== Failed to read from UserAuditContextHolder, falling back ===", ex);
-                beforeEntity = beforeEntityHolder.get();
-                afterEntity = afterEntityHolder.get();
-            }
-            
-            // Serialize if we have data
-            if (beforeEntity != null || afterEntity != null) {
-                oldValues = EntityDiffUtil.serializeEntity(beforeEntity);
-                newValues = EntityDiffUtil.serializeEntity(afterEntity);
-                changedFields = EntityDiffUtil.computeChangedFields(beforeEntity, afterEntity);
-                log.debug("=== Computed audit trail: oldValues={}, newValues={}, changedFields={} ===",
-                    oldValues != null ? oldValues.length() : 0,
-                    newValues != null ? newValues.length() : 0,
-                    changedFields);
+            Map<String, Object> auditBeforeMap = AuditContextHolder.getBeforeState();
+            if (auditBeforeMap != null) {
+                oldValues = AuditContextHolder.getBeforeStateJson();
+                Object afterEntity = afterEntityHolder.get();
+                if (afterEntity != null) {
+                    newValues = EntityDiffUtil.serializeEntity(afterEntity);
+                    changedFields = EntityDiffUtil.computeChangedFieldsFromMap(auditBeforeMap, afterEntity);
+                } else {
+                    Object resultEntity = extractEntityFromResult(result);
+                    if (resultEntity != null) {
+                        newValues = EntityDiffUtil.serializeEntity(resultEntity);
+                        changedFields = EntityDiffUtil.computeChangedFieldsFromMap(auditBeforeMap, resultEntity);
+                    }
+                }
             }
 
-            // Build operation log event
+            if (oldValues == null) {
+                try {
+                    Class<?> ctxClass = Class.forName("com.pd.modules.system.context.UserAuditContextHolder");
+                    Object be = ctxClass.getMethod("getBeforeEntity").invoke(null);
+                    Object ae = ctxClass.getMethod("getAfterEntity").invoke(null);
+                    if (be != null || ae != null) {
+                        oldValues = EntityDiffUtil.serializeEntity(be);
+                        newValues = EntityDiffUtil.serializeEntity(ae);
+                        changedFields = EntityDiffUtil.computeChangedFields(be, ae);
+                    }
+                } catch (ClassNotFoundException ignored) {
+                    Object be = beforeEntityHolder.get();
+                    Object ae = afterEntityHolder.get();
+                    if (be != null || ae != null) {
+                        oldValues = EntityDiffUtil.serializeEntity(be);
+                        newValues = EntityDiffUtil.serializeEntity(ae);
+                        changedFields = EntityDiffUtil.computeChangedFields(be, ae);
+                    }
+                } catch (Exception ex) {
+                    Object be = beforeEntityHolder.get();
+                    Object ae = afterEntityHolder.get();
+                    if (be != null || ae != null) {
+                        oldValues = EntityDiffUtil.serializeEntity(be);
+                        newValues = EntityDiffUtil.serializeEntity(ae);
+                        changedFields = EntityDiffUtil.computeChangedFields(be, ae);
+                    }
+                }
+            }
+
             String jsonResult = "";
-            if (logAnnotation.isSaveResponseData() && result != null) {
+            boolean saveResponse = logAnnotation == null || logAnnotation.isSaveResponseData();
+            if (saveResponse && result != null) {
                 try {
                     jsonResult = objectMapper.writeValueAsString(result);
                 } catch (Exception ex) {
@@ -206,67 +188,65 @@ public class OperationLogAspect {
             }
 
             OperationLogEvent event = new OperationLogEvent(
-                extractTitle(joinPoint, logAnnotation),           // title
-                logAnnotation.businessType().value(),             // businessType
-                method,                                           // method
-                request.getMethod(),                              // requestMethod
-                logAnnotation.operatorType().value(),             // operatorType
-                getCurrentUser(),                                 // operName
-                "",                                               // deptName
-                request.getRequestURI(),                          // operUrl
-                getClientIp(request),                             // operIp
-                "",                                               // operLocation
-                logAnnotation.isSaveRequestData() ? paramsToString(joinPoint.getArgs()) : "", // operParam
-                jsonResult,                                       // jsonResult
-                status,                                           // status
-                e != null ? e.getMessage() : "",                  // errorMsg
-                costTime,                                         // costTime
-                oldValues,                                        // oldValues
-                newValues,                                        // newValues
-                changedFields                                     // changedFields
+                extractTitle(joinPoint, logAnnotation),
+                logAnnotation != null ? logAnnotation.businessType().value() : guessBusinessType(request),
+                method,
+                request.getMethod(),
+                logAnnotation != null ? logAnnotation.operatorType().value() : 1,
+                getCurrentUser(),
+                "",
+                request.getRequestURI(),
+                getClientIp(request),
+                "",
+                logAnnotation != null && logAnnotation.isSaveRequestData() ? paramsToString(joinPoint.getArgs()) : "",
+                jsonResult,
+                status,
+                e != null ? e.getMessage() : "",
+                costTime,
+                oldValues,
+                newValues,
+                changedFields
             );
 
-            log.info("=== Publishing OperationLogEvent ===");
+            log.info("=== Publishing OperationLogEvent: title={}, url={}, status={} ===",
+                event.getTitle(), event.getOperUrl(), event.getStatus());
             eventPublisher.publishEvent(event);
-            log.info("=== OperationLogEvent published successfully ===");
 
-            // Clean up service-layer context holders
+            AuditContextHolder.clear();
             try {
-                Class<?> contextHolderClass = Class.forName("com.pd.modules.system.context.UserAuditContextHolder");
-                contextHolderClass.getMethod("clear").invoke(null);
-            } catch (Exception ex) {
-                // Ignore - context holder may not exist
-            }
+                Class<?> ctxClass = Class.forName("com.pd.modules.system.context.UserAuditContextHolder");
+                ctxClass.getMethod("clear").invoke(null);
+            } catch (Exception ignored) {}
 
         } catch (Exception ex) {
             log.error("=== Failed to publish operation log event ===", ex);
         }
     }
 
-    /**
-     * Extract title from @Log annotation
-     */
+    private int guessBusinessType(HttpServletRequest request) {
+        return switch (request.getMethod().toUpperCase()) {
+            case "POST" -> Log.BusinessType.INSERT.value();
+            case "PUT" -> Log.BusinessType.UPDATE.value();
+            case "DELETE" -> Log.BusinessType.DELETE.value();
+            default -> Log.BusinessType.OTHER.value();
+        };
+    }
+
     private String extractTitle(JoinPoint joinPoint, Log logAnnotation) {
-        // Use title from @Log annotation if present
         if (logAnnotation != null && !logAnnotation.title().isEmpty()) {
             return logAnnotation.title();
         }
-        // Fallback to class.method name
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
         return className + "." + methodName;
     }
 
-    /**
-     * Get current logged in user from SecurityContext
-     */
     private String getCurrentUser() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated()
                     && !(auth.getPrincipal() instanceof String)
                     && !"anonymousUser".equals(auth.getPrincipal())) {
-                
                 Object principal = auth.getPrincipal();
                 return (principal instanceof UserDetails ud) ? ud.getUsername() : principal.toString();
             }
@@ -276,9 +256,6 @@ public class OperationLogAspect {
         return "anonymous";
     }
 
-    /**
-     * Get client IP address
-     */
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
@@ -290,13 +267,8 @@ public class OperationLogAspect {
         return ip;
     }
 
-    /**
-     * Convert parameters to JSON string
-     */
     private String paramsToString(Object[] args) {
-        if (args == null || args.length == 0) {
-            return "";
-        }
+        if (args == null || args.length == 0) return "";
         try {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
@@ -309,7 +281,6 @@ public class OperationLogAspect {
             }
             return sb.length() > 4000 ? sb.substring(0, 4000) + "..." : sb.toString();
         } catch (Exception ex) {
-            // Fallback to toString() if JSON serialization fails
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
                 if (i > 0) sb.append(", ");
@@ -319,83 +290,45 @@ public class OperationLogAspect {
         }
     }
 
-    /**
-     * Determine if we should capture entity state BEFORE modification.
-     * Returns true for UPDATE and DELETE operations.
-     */
     private boolean shouldCaptureBeforeState(Log logAnnotation) {
         int businessType = logAnnotation.businessType().value();
-        return businessType == Log.BusinessType.UPDATE.value() 
+        return businessType == Log.BusinessType.UPDATE.value()
             || businessType == Log.BusinessType.DELETE.value();
     }
 
-    /**
-     * Determine if we should capture entity state AFTER modification.
-     * Returns true for INSERT and UPDATE operations.
-     */
     private boolean shouldCaptureAfterState(Log logAnnotation) {
         int businessType = logAnnotation.businessType().value();
-        return businessType == Log.BusinessType.INSERT.value() 
+        return businessType == Log.BusinessType.INSERT.value()
             || businessType == Log.BusinessType.UPDATE.value();
     }
 
-    /**
-     * Extract entity from method arguments.
-     * Looks for the first non-primitive, non-exception argument that is not a standard web type.
-     */
     private Object extractEntityFromArgs(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
-        if (args == null || args.length == 0) {
-            return null;
-        }
+        if (args == null || args.length == 0) return null;
         for (Object arg : args) {
-            if (arg != null && isEntityCandidate(arg)) {
-                return arg;
-            }
+            if (arg != null && isEntityCandidate(arg)) return arg;
         }
         return null;
     }
 
-    /**
-     * Extract entity from method result.
-     * For operations that return AjaxResult, tries to extract the data field.
-     * Otherwise returns the result itself if it's an entity candidate.
-     */
     private Object extractEntityFromResult(Object result) {
-        if (result == null) {
-            return null;
-        }
-        // Try to extract entity from common response wrappers
+        if (result == null) return null;
         try {
-            // If result is AjaxResult (extends HashMap), try to get data field
             if (result instanceof HashMap<?, ?> map) {
                 Object data = map.get("data");
-                if (data != null && isEntityCandidate(data)) {
-                    return data;
-                }
+                if (data != null && isEntityCandidate(data)) return data;
             }
         } catch (Exception e) {
             log.debug("=== Could not extract entity from result wrapper ===");
         }
-
-        // If result itself is an entity candidate, return it
-        if (isEntityCandidate(result)) {
-            return result;
-        }
+        if (isEntityCandidate(result)) return result;
         return null;
     }
 
-    /**
-     * Check if an object is a candidate for entity logging.
-     * Excludes primitive types, strings, exceptions, and common web types.
-     */
     private boolean isEntityCandidate(Object obj) {
-        if (obj == null) {
-            return false;
-        }
+        if (obj == null) return false;
         String className = obj.getClass().getName();
-        // Exclude common non-entity types
-        return !className.startsWith("java.lang.") 
+        return !className.startsWith("java.lang.")
             && !className.startsWith("jakarta.")
             && !className.startsWith("javax.")
             && !className.startsWith("org.springframework.")

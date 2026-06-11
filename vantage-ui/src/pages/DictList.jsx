@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Database, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
+import { Database, Plus, Edit, Trash2, Eye, RefreshCw, Download } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
@@ -315,7 +315,42 @@ const DictList = () => {
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
     ];
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'dictId', label: 'ID' },
+            { key: 'dictName', label: 'Dict Name' },
+            { key: 'dictType', label: 'Dict Type' },
+            { key: 'status', label: 'Status' },
+            { key: 'remark', label: 'Remark' },
+            { key: 'createTime', label: 'Created' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=dicts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: dicts })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'dicts.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
+        {
+            label: 'Export PDF',
+            icon: Download,
+            onClick: () => handleExport('PDF')
+        },
+        {
+            label: 'Export CSV',
+            icon: Download,
+            onClick: () => handleExport('CSV')
+        },
         {
             label: 'Refresh',
             icon: RefreshCw,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Database, Plus, Edit, Trash2, RefreshCw, Play, Check, X } from 'lucide-react';
+import { Database, Plus, Edit, Trash2, RefreshCw, Play, Check, X, Download } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
@@ -198,6 +198,36 @@ const DatasourceList = () => {
         });
     };
 
+    const handleExport = (format) => {
+        const exportColumns = [
+            { key: 'datasourceId', label: 'ID' },
+            { key: 'datasourceName', label: 'Name' },
+            { key: 'datasourceKey', label: 'Key' },
+            { key: 'dbType', label: 'DB Type' },
+            { key: 'url', label: 'URL' },
+            { key: 'status', label: 'Status' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=datasources', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns: exportColumns, rows: datasources })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'datasources.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
+    const toolbarActions = [
+        { icon: Download, label: 'Export PDF', onClick: () => handleExport('PDF') },
+        { icon: Download, label: 'Export CSV', onClick: () => handleExport('CSV') },
+    ];
+
     const columns = [
         { key: 'datasourceName', header: 'Name', sortable: true },
         { key: 'datasourceKey', header: 'Key', sortable: true },
@@ -284,14 +314,28 @@ const DatasourceList = () => {
                         </p>
                     </div>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={handleAddClick}
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                    <Plus size={16} />
-                    Add Datasource
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {toolbarActions.map((action, idx) => (
+                        <button
+                            key={idx}
+                            className="btn btn-secondary"
+                            onClick={action.onClick}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                            title={action.label}
+                        >
+                            <action.icon size={16} />
+                            {action.label}
+                        </button>
+                    ))}
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleAddClick}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                        <Plus size={16} />
+                        Add Datasource
+                    </button>
+                </div>
             </div>
 
             {/* Datasources Grid */}

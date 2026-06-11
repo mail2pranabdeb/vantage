@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Settings, Plus, Edit, Trash2, Eye, RefreshCw, Mail, Send } from 'lucide-react';
+import { Settings, Plus, Edit, Trash2, Eye, RefreshCw, Mail, Send, Download, Upload } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
 import { useToast } from '../components/Toast';
+import ImportModal from '../components/ImportModal';
 
 const ConfigList = () => {
     const { addToast } = useToast();
@@ -22,6 +23,7 @@ const ConfigList = () => {
         remark: ''
     });
     const [submitting, setSubmitting] = useState(false);
+    const [importModalOpen, setImportModalOpen] = useState(false);
 
     // SMTP config keys that should show the email test button
     const smtpKeys = ['mail.smtp.host', 'mail.smtp.port', 'mail.smtp.username', 'mail.smtp.password'];
@@ -259,7 +261,38 @@ const ConfigList = () => {
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDeleteClick }
     ];
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'configId', label: 'ID' },
+            { key: 'configName', label: 'Configuration Title' },
+            { key: 'configKey', label: 'Config Key' },
+            { key: 'configValue', label: 'Value' },
+            { key: 'configType', label: 'Built-in' },
+            { key: 'remark', label: 'Description' },
+            { key: 'createTime', label: 'Created' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=configs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: configs })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'configs.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
+        {
+            label: 'Import',
+            icon: Upload,
+            onClick: () => setImportModalOpen(true)
+        },
         {
             label: 'Refresh',
             icon: RefreshCw,
@@ -270,6 +303,16 @@ const ConfigList = () => {
             icon: Send,
             onClick: handleTestEmail,
             disabled: !hasSmtpConfig
+        },
+        {
+            label: 'PDF',
+            icon: Download,
+            onClick: () => handleExport('PDF')
+        },
+        {
+            label: 'CSV',
+            icon: Download,
+            onClick: () => handleExport('CSV')
         }
     ];
 
@@ -459,6 +502,13 @@ const ConfigList = () => {
                     </div>
                 </div>
             </Modal>
+
+            {/* Import Modal */}
+            <ImportModal
+                isOpen={importModalOpen}
+                onClose={() => setImportModalOpen(false)}
+                onImportComplete={fetchConfigs}
+            />
         </div>
     );
 };

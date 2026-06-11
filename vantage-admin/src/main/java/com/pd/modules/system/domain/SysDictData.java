@@ -1,11 +1,13 @@
 package com.pd.modules.system.domain;
 
+import com.pd.common.annotation.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
+@Audited
 @Table(name = "sys_dict_data")
 @Data
 public class SysDictData implements Serializable {

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { LogOut as LogOutIcon, Palette as PaletteIcon, Check } from 'lucide-react';
+import { LogOut as LogOutIcon, Palette as PaletteIcon, Check, Search as SearchIcon } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '../context/AuthContext';
 
@@ -47,6 +47,9 @@ const Topbar = () => {
             </h3>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button onClick={() => window.dispatchEvent(new CustomEvent('opencode:toggle-search'))} style={iconBtn} title="Search (Ctrl+K)">
+                    <SearchIcon size={14} />
+                </button>
                 <div className="theme-picker" ref={pickerRef}>
                     <button onClick={() => setThemeOpen(!themeOpen)} style={iconBtn} title="Change theme">
                         <PaletteIcon size={14} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldAlert, Trash2, RefreshCw, CheckCircle, XCircle, MapPin, Monitor } from 'lucide-react';
+import { ShieldAlert, Trash2, RefreshCw, CheckCircle, XCircle, MapPin, Monitor, Download } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import { useToast } from '../components/Toast';
 
@@ -98,18 +98,80 @@ const LogininforList = () => {
             icon: Trash2,
             danger: true,
             onClick: (row) => {
-                addToast('warning', `Delete record for ${row.loginName}?`, 3000);
+                if (confirm(`Delete login record for ${row.loginName}?`)) {
+                    fetch('/api/system/logininfor', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify([row.infoId])
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.code === 200) {
+                            addToast('success', 'Record deleted', 3000);
+                            setList(prev => prev.filter(r => r.infoId !== row.infoId));
+                        } else {
+                            addToast('error', data.msg || 'Delete failed', 5000);
+                        }
+                    })
+                    .catch(() => addToast('error', 'Delete failed', 5000));
+                }
             }
         }
     ];
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'infoId', label: 'ID' },
+            { key: 'loginName', label: 'Login Name' },
+            { key: 'ipaddr', label: 'IP Address' },
+            { key: 'status', label: 'Status' },
+            { key: 'loginLocation', label: 'Location' },
+            { key: 'browser', label: 'Browser' },
+            { key: 'loginTime', label: 'Time' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=logininfors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: list })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'logininfors.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
+        {
+            label: 'PDF',
+            icon: Download,
+            onClick: () => handleExport('PDF')
+        },
+        {
+            label: 'CSV',
+            icon: Download,
+            onClick: () => handleExport('CSV')
+        },
         {
             label: 'Clean',
             icon: Trash2,
             onClick: () => {
                 if(confirm('Clear all login logs?')) {
-                    addToast('info', 'Clean feature coming soon...', 3000);
+                    fetch('/api/system/logininfor/clean', { method: 'DELETE' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.code === 200) {
+                                setList([]);
+                                addToast('success', 'All login records cleared', 3000);
+                            } else {
+                                addToast('error', data.msg || 'Clean failed', 5000);
+                            }
+                        })
+                        .catch(() => addToast('error', 'Clean failed', 5000));
                 }
             }
         },

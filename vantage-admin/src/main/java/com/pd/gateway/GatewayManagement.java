@@ -1,5 +1,13 @@
 package com.pd.gateway;
 
+import com.pd.common.annotation.RateLimit;
+import com.pd.common.event.auth.LoginSuccessEvent;
+import com.pd.common.event.auth.LoginFailureEvent;
+import com.pd.framework.config.GlobalSearchService;
+import com.pd.framework.config.ExportService;
+import com.pd.framework.config.ExportRequest;
+import com.pd.framework.config.ImportService;
+import com.pd.framework.config.ImportService.ImportPreview;
 import com.pd.common.core.controller.BaseController;
 import com.pd.common.core.domain.AjaxResult;
 import com.pd.framework.security.jwt.JwtTokenUtil;
@@ -24,8 +32,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -86,6 +97,14 @@ public class GatewayManagement extends BaseController {
     // Authentication
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
+    private final ApplicationEventPublisher eventPublisher;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.pd.framework.config.RateLimitService rateLimitService;
+
+    private final GlobalSearchService globalSearchService;
+    private final ExportService exportService;
+    private final ImportService importService;
 
     public GatewayManagement(
             SystemAuthService systemAuthService,
@@ -115,7 +134,11 @@ public class GatewayManagement extends BaseController {
             GeneratorService generatorService,
             GenService genService,
             AuthenticationManager authenticationManager,
-            JwtTokenUtil jwtTokenUtil) {
+            JwtTokenUtil jwtTokenUtil,
+            ApplicationEventPublisher eventPublisher,
+            GlobalSearchService globalSearchService,
+            ExportService exportService,
+            ImportService importService) {
         this.systemAuthService = systemAuthService;
         this.systemUserService = systemUserService;
         this.systemRoleService = systemRoleService;
@@ -144,19 +167,27 @@ public class GatewayManagement extends BaseController {
         this.genService = genService;
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.eventPublisher = eventPublisher;
+        this.globalSearchService = globalSearchService;
+        this.exportService = exportService;
+        this.importService = importService;
     }
 
     // ========== Auth ==========
 
     @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
-    @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
+    @RateLimit(capacity = 5, duration = 60, perUser = false)
     @PostMapping("/login")
     @Operation(summary = "Login with credentials", description = "Authenticates user and returns JWT access + refresh tokens")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Login successful, tokens returned"),
         @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    public AjaxResult login(@RequestBody LoginRequest request) {
+    public AjaxResult login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        String ip = getClientIp(httpRequest);
+        String ua = httpRequest.getHeader("User-Agent");
+        String browser = parseBrowser(ua);
+        String os = parseOs(ua);
         try {
             var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -165,17 +196,21 @@ public class GatewayManagement extends BaseController {
             String token = jwtTokenUtil.generateToken(loginUser);
             String refreshToken = jwtTokenUtil.generateRefreshToken(loginUser);
 
+            eventPublisher.publishEvent(new LoginSuccessEvent(
+                    loginUser.getUsername(), ip, "", browser, os));
+
             return success(new LoginResponse(
                     token, refreshToken, "Bearer",
                     86400000, loginUser.getUsername()));
         } catch (Exception e) {
             log.error("Login failed for {}: {} - {}", request.getUsername(), e.getClass().getSimpleName(), e.getMessage());
+            eventPublisher.publishEvent(new LoginFailureEvent(
+                    request.getUsername(), ip, "", browser, os, e.getMessage()));
             return AjaxResult.error(401, "Invalid credentials");
         }
     }
 
     @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
-    @Tag(name = "Authentication")
     @PostMapping("/login/refresh")
     @Operation(summary = "Refresh JWT token", description = "Issues a new access token using a valid refresh token")
     @ApiResponses(value = {
@@ -201,7 +236,6 @@ public class GatewayManagement extends BaseController {
     }
 
     @Tag(name = "Authentication", description = "User authentication with JWT tokens and OAuth2")
-    @Tag(name = "Authentication")
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Returns the currently authenticated user's profile")
     @ApiResponses(value = {
@@ -958,7 +992,6 @@ public class GatewayManagement extends BaseController {
     // ========== System: Email Config ==========
 
     @Tag(name = "System - Email Config", description = "SMTP email configuration management")
-    @Tag(name = "System - Email Config")
     @GetMapping("/system/email-config")
     @Operation(summary = "Get email configuration", description = "Returns the current SMTP configuration")
     @ApiResponse(responseCode = "200", description = "Email config retrieved")
@@ -985,7 +1018,6 @@ public class GatewayManagement extends BaseController {
     // ========== System: Cache ==========
 
     @Tag(name = "System - Cache", description = "Cache management and statistics")
-    @Tag(name = "System - Cache")
     @GetMapping("/system/cache/list")
     @Operation(summary = "List all caches", description = "Returns all cache names and their statistics")
     @ApiResponse(responseCode = "200", description = "Cache list retrieved")
@@ -1007,6 +1039,29 @@ public class GatewayManagement extends BaseController {
         return success(systemCacheService.clearAllCaches());
     }
     @Tag(name = "System - Cache")
+    @GetMapping("/system/rate-limit/stats")
+    @Operation(summary = "Get rate limit statistics", description = "Returns rate limiting metrics")
+    public AjaxResult getRateLimitStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalRequests", rateLimitService.getTotalRequests());
+        stats.put("blockedRequests", rateLimitService.getBlockedRequests());
+        stats.put("activeKeys", rateLimitService.getActiveKeys());
+        stats.put("blockRate", rateLimitService.getTotalRequests() > 0
+            ? String.format("%.2f%%", (double) rateLimitService.getBlockedRequests() / rateLimitService.getTotalRequests() * 100)
+            : "0%");
+        return success(stats);
+    }
+
+    @Tag(name = "System - Search")
+    @GetMapping("/system/search")
+    @Operation(summary = "Global search across all entities", description = "Unified search across users, roles, menus, configs, notices, and jobs")
+    public AjaxResult globalSearch(
+            @Parameter(description = "Search query") @RequestParam String q,
+            @Parameter(description = "Max results per type") @RequestParam(defaultValue = "5") int maxPerType) {
+        return success(globalSearchService.search(q, maxPerType));
+    }
+
+    @Tag(name = "System - Cache")
     @GetMapping("/system/cache/stats/{cacheName}")
     @Operation(summary = "Get cache statistics", description = "Returns statistics for a specific cache")
     @ApiResponse(responseCode = "200", description = "Cache statistics retrieved")
@@ -1017,7 +1072,6 @@ public class GatewayManagement extends BaseController {
     // ========== System: Chat ==========
 
     @Tag(name = "AI Chat", description = "AI-powered chat assistant with SSE streaming and tool execution")
-    @Tag(name = "AI Chat")
     @PostMapping("/chat")
     @Operation(summary = "Send chat message", description = "Sends a message to the AI assistant, optionally with tool results")
     @ApiResponse(responseCode = "200", description = "AI response returned")
@@ -1128,7 +1182,6 @@ public class GatewayManagement extends BaseController {
     // ========== System: Report ==========
 
     @Tag(name = "System - Reports", description = "Report generation, scheduling, and templates")
-    @Tag(name = "System - Reports")
     @GetMapping("/system/report/list")
     @Operation(summary = "List all reports", description = "Returns all saved reports")
     @ApiResponse(responseCode = "200", description = "Reports retrieved")
@@ -1165,6 +1218,7 @@ public class GatewayManagement extends BaseController {
         return success(systemReportEntityService.deleteReport(reportId));
     }
     @Tag(name = "System - Reports")
+    @RateLimit(capacity = 5, duration = 60)
     @PostMapping("/system/report/execute/{reportId}")
     @Operation(summary = "Execute report", description = "Executes a report with optional parameters")
     @ApiResponses(value = {
@@ -1223,7 +1277,6 @@ public class GatewayManagement extends BaseController {
     // ========== System: Report Designer ==========
 
     @Tag(name = "System - Report Designer", description = "Advanced report designer with template versioning")
-    @Tag(name = "System - Report Designer")
     @GetMapping("/system/report-designer/templates")
     @Operation(summary = "List report designer templates", description = "Returns report designer templates")
     public AjaxResult listReportDesignerTemplates(@Parameter(description = "Include all versions") @RequestParam(required = false, defaultValue = "false") Boolean allVersions) {
@@ -1359,6 +1412,125 @@ public class GatewayManagement extends BaseController {
         } catch (Exception e) {
             return error("Preview failed: " + e.getMessage());
         }
+    }
+
+    @Tag(name = "System - Report Designer")
+    @GetMapping("/system/report-designer/export/{templateId}")
+    @Operation(summary = "Export report", description = "Exports a report designer template in the specified format")
+    public void exportReportDesignerTemplate(
+            @Parameter(description = "Template ID") @PathVariable Long templateId,
+            @Parameter(description = "Export format: PDF, CSV, EXCEL") @RequestParam(defaultValue = "PDF") String format,
+            @Parameter(description = "Params JSON") @RequestParam(required = false, defaultValue = "{}") String params,
+            HttpServletResponse response) throws Exception {
+        List<Map<String, Object>> data = (List<Map<String, Object>>)(List<?>) reportDesignerService.executeTemplate(templateId, params);
+        List<ExportService.Column> columns = data.isEmpty() ? List.of() :
+            data.get(0).keySet().stream().map(k -> new ExportService.Column(k, k)).collect(java.util.stream.Collectors.toList());
+        exportService.export("report-" + templateId, columns, data, format, response);
+    }
+
+    @Tag(name = "System - Export")
+    @PostMapping("/system/export")
+    @Operation(summary = "Generic export", description = "Exports data in PDF, CSV, or EXCEL format")
+    public void exportData(
+            @Parameter(description = "Export format: PDF, CSV, EXCEL") @RequestParam(defaultValue = "PDF") String format,
+            @Parameter(description = "Filename (without extension)") @RequestParam(defaultValue = "export") String filename,
+            @RequestBody ExportRequest request,
+            HttpServletResponse httpResponse) throws Exception {
+        exportService.export(filename, request.columns(), request.rows(), format, httpResponse);
+    }
+
+    @Tag(name = "System - Import")
+    @PostMapping("/system/import/preview")
+    @Operation(summary = "Preview import file", description = "Upload CSV/Excel and get preview of headers and sample rows")
+    public AjaxResult importPreview(@Parameter(description = "File to import") @RequestParam("file") MultipartFile file) {
+        try {
+            ImportPreview preview = importService.preview(file);
+            return success(preview);
+        } catch (Exception e) {
+            return error("Preview failed: " + e.getMessage());
+        }
+    }
+
+    @Tag(name = "System - Import")
+    @PostMapping("/system/import/execute")
+    @Operation(summary = "Execute import", description = "Import data rows for a given entity type")
+    public AjaxResult importExecute(@RequestBody Map<String, Object> request) {
+        try {
+            String entityType = (String) request.get("entityType");
+            @SuppressWarnings("unchecked")
+            List<String> headers = (List<String>) request.get("headers");
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> rows = (List<Map<String, String>>) request.get("rows");
+
+            int success = 0, error = 0;
+            List<String> errors = new ArrayList<>();
+
+            for (int i = 0; i < rows.size(); i++) {
+                try {
+                    Map<String, String> row = rows.get(i);
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    for (String h : headers) payload.put(h, row.getOrDefault(h, ""));
+
+                    switch (entityType.toLowerCase()) {
+                        case "user" -> {
+                            UserDTO dto = new UserDTO();
+                            dto.setLoginName(getStr(payload, "loginName", "loginname", "username", "name"));
+                            dto.setUserName(getStr(payload, "userName", "username", "name", "loginname"));
+                            dto.setPassword(getStr(payload, "password"));
+                            dto.setEmail(getStr(payload, "email"));
+                            dto.setPhonenumber(getStr(payload, "phonenumber", "phone"));
+                            dto.setSex(getStr(payload, "sex"));
+                            dto.setStatus(getStr(payload, "status"));
+                            dto.setRemark(getStr(payload, "remark"));
+                            systemUserService.createUser(dto);
+                        }
+                        case "config" -> {
+                            ConfigDTO dto = new ConfigDTO();
+                            dto.setConfigName(getStr(payload, "configName", "configname", "name"));
+                            dto.setConfigKey(getStr(payload, "configKey", "configkey", "key"));
+                            dto.setConfigValue(getStr(payload, "configValue", "configvalue", "value"));
+                            dto.setConfigType(getStr(payload, "configType", "configtype", "type"));
+                            dto.setRemark(getStr(payload, "remark"));
+                            systemConfigService.createConfig(dto);
+                        }
+                        case "role" -> {
+                            RoleDTO dto = new RoleDTO();
+                            dto.setRoleName(getStr(payload, "roleName", "rolename", "name"));
+                            dto.setRoleKey(getStr(payload, "roleKey", "rolekey", "key"));
+                            dto.setRoleSort(parseInt(getStr(payload, "roleSort", "rolesort", "sort"), 1));
+                            dto.setStatus(getStr(payload, "status"));
+                            dto.setRemark(getStr(payload, "remark"));
+                            systemRoleService.createRole(dto);
+                        }
+                        default -> throw new IllegalArgumentException("Unsupported entity: " + entityType);
+                    }
+                    success++;
+                } catch (Exception e) {
+                    error++;
+                    errors.add("Row " + (i + 2) + ": " + e.getMessage());
+                }
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("successCount", success);
+            result.put("errorCount", error);
+            result.put("errors", errors);
+            return success(result);
+        } catch (Exception e) {
+            return error("Import failed: " + e.getMessage());
+        }
+    }
+
+    private String getStr(Map<String, Object> map, String... keys) {
+        for (String k : keys) {
+            Object v = map.get(k);
+            if (v != null && !v.toString().isBlank()) return v.toString();
+        }
+        return "";
+    }
+
+    private int parseInt(String val, int defaultVal) {
+        try { return Integer.parseInt(val); } catch (Exception e) { return defaultVal; }
     }
 
     // ========== Quartz: Job ==========
@@ -2025,4 +2197,35 @@ public class GatewayManagement extends BaseController {
     // ========== SPA Forwarding ==========
 
     // Note: SPA forwarding is handled by a separate internal controller
+
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
+            ip = request.getHeader("X-Real-IP");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
+            ip = request.getRemoteAddr();
+        if (ip == null) return "";
+        if ("0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip)) return "127.0.0.1";
+        if (ip.contains(",")) ip = ip.split(",")[0].trim();
+        return ip;
+    }
+
+    private String parseBrowser(String ua) {
+        if (ua == null) return "";
+        if (ua.contains("Edg")) return "Edge";
+        if (ua.contains("Chrome")) return "Chrome";
+        if (ua.contains("Firefox")) return "Firefox";
+        if (ua.contains("Safari")) return "Safari";
+        return "Unknown";
+    }
+
+    private String parseOs(String ua) {
+        if (ua == null) return "";
+        if (ua.contains("Windows")) return "Windows";
+        if (ua.contains("Mac")) return "macOS";
+        if (ua.contains("Linux")) return "Linux";
+        if (ua.contains("Android")) return "Android";
+        if (ua.contains("iOS")) return "iOS";
+        return "Unknown";
+    }
 }

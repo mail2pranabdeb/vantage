@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
     Menu, Plus, Edit, Trash2, RefreshCw, ChevronRight, 
-    ChevronDown, Folder, FolderOpen, File, X
+    ChevronDown, Folder, FolderOpen, File, X, Download
 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import Modal from '../components/Modal';
@@ -393,6 +393,31 @@ const MenuList = () => {
         });
     };
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'menuId', label: 'ID' },
+            { key: 'menuName', label: 'Menu Name' },
+            { key: 'url', label: 'URL' },
+            { key: 'perms', label: 'Permissions' },
+            { key: 'menuType', label: 'Type' },
+            { key: 'status', label: 'Status' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=menus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: menus })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'menus.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
         {
             label: 'Refresh',
@@ -403,6 +428,16 @@ const MenuList = () => {
             label: 'Add Root Menu',
             icon: Plus,
             onClick: () => handleAddClick(null)
+        },
+        {
+            label: 'Export PDF',
+            icon: Download,
+            onClick: () => handleExport('PDF')
+        },
+        {
+            label: 'Export CSV',
+            icon: Download,
+            onClick: () => handleExport('CSV')
         }
     ];
 

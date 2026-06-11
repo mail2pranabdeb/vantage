@@ -1,5 +1,6 @@
 package com.pd.modules.quartz.domain;
 
+import com.pd.common.annotation.Audited;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import lombok.Data;
  * Scheduled job entity - sys_job
  */
 @Entity
+@Audited
 @Table(name = "sys_job")
 @Data
 public class SysJob implements Serializable {

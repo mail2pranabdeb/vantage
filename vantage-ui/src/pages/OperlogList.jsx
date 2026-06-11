@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Trash2, RefreshCw, CheckCircle, XCircle, Activity, X, AlertCircle, Clock, User, Globe, MapPin } from 'lucide-react';
+import { FileText, Trash2, RefreshCw, CheckCircle, XCircle, Activity, X, AlertCircle, Clock, User, Globe, MapPin, Download } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 
 const OperlogDetailModal = ({ log, onClose }) => {
@@ -328,7 +328,35 @@ const OperlogList = () => {
         { label: 'Delete', icon: Trash2, danger: true, onClick: handleDelete }
     ];
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'operId', label: 'ID' },
+            { key: 'title', label: 'Title' },
+            { key: 'method', label: 'Method' },
+            { key: 'operName', label: 'Operator' },
+            { key: 'operIp', label: 'IP' },
+            { key: 'status', label: 'Status' },
+            { key: 'operTime', label: 'Time' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=operlogs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: list })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'operlogs.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
+        { label: 'PDF', icon: Download, onClick: () => handleExport('PDF') },
+        { label: 'CSV', icon: Download, onClick: () => handleExport('CSV') },
         { label: 'Clean', icon: Trash2, onClick: handleClean },
         { label: 'Refresh', icon: RefreshCw, onClick: handleRefresh }
     ];

@@ -1,10 +1,12 @@
 package com.pd.modules.system.domain;
 
+import com.pd.common.annotation.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
+@Audited
 @Table(name = "sys_role")
 @Data
 public class SysRole {

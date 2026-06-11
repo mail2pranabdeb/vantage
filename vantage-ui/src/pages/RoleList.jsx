@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Edit, Trash2, RefreshCw, Check, X, ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
+import { Shield, Plus, Edit, Trash2, RefreshCw, Check, X, ChevronRight, ChevronDown, Folder, File, Download } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
@@ -361,6 +361,32 @@ const RoleList = () => {
         });
     };
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'roleId', label: 'ID' },
+            { key: 'roleName', label: 'Role Name' },
+            { key: 'roleKey', label: 'Role Key' },
+            { key: 'roleSort', label: 'Sort Order' },
+            { key: 'dataScope', label: 'Data Scope' },
+            { key: 'status', label: 'Status' },
+            { key: 'createTime', label: 'Created' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=roles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: roles })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'roles.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
         {
             label: 'Refresh',
@@ -371,7 +397,9 @@ const RoleList = () => {
             label: 'Add Role',
             icon: Plus,
             onClick: handleAddClick
-        }
+        },
+        { label: 'PDF', icon: Download, onClick: () => handleExport('PDF') },
+        { label: 'CSV', icon: Download, onClick: () => handleExport('CSV') },
     ];
 
     return (
@@ -392,6 +420,22 @@ const RoleList = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => handleExport('PDF')}
+                        style={{ padding: '8px 14px', borderRadius: '10px' }}
+                    >
+                        <Download size={16} />
+                        PDF
+                    </button>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => handleExport('CSV')}
+                        style={{ padding: '8px 14px', borderRadius: '10px' }}
+                    >
+                        <Download size={16} />
+                        CSV
+                    </button>
                     <button
                         className="btn btn-secondary"
                         onClick={fetchRoles}

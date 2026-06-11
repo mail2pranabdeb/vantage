@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, ShieldCheck, Clock, Plus, Edit, Trash2, Eye, RefreshCw, X } from 'lucide-react';
+import { User, Mail, Phone, ShieldCheck, Clock, Plus, Edit, Trash2, Eye, RefreshCw, X, Download, Upload } from 'lucide-react';
 import DataGrid from '../components/DataGrid';
 import Modal from '../components/Modal';
 import FormInput from '../components/FormInput';
 import { useToast } from '../components/Toast';
+import ImportModal from '../components/ImportModal';
 
 const formatDate = (dateValue) => {
     if (!dateValue) return 'N/A';
@@ -32,6 +33,7 @@ const UserList = () => {
         remark: ''
     });
     const [submitting, setSubmitting] = useState(false);
+    const [importModalOpen, setImportModalOpen] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -267,11 +269,52 @@ const UserList = () => {
         }
     ];
 
+    const handleExport = (format) => {
+        const columns = [
+            { key: 'userId', label: 'ID' },
+            { key: 'loginName', label: 'Login Name' },
+            { key: 'userName', label: 'Name' },
+            { key: 'email', label: 'Email' },
+            { key: 'phonenumber', label: 'Phone' },
+            { key: 'status', label: 'Status' },
+            { key: 'createTime', label: 'Created' },
+        ];
+        const ext = format.toLowerCase();
+        fetch('/api/system/export?format=' + format + '&filename=users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ columns, rows: users })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'users.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Export failed:', err));
+    };
+
     const toolbarActions = [
         {
             label: 'Refresh',
             icon: RefreshCw,
             onClick: fetchUsers
+        },
+        {
+            label: 'Import',
+            icon: Upload,
+            onClick: () => setImportModalOpen(true)
+        },
+        {
+            label: 'PDF',
+            icon: Download,
+            onClick: () => handleExport('PDF')
+        },
+        {
+            label: 'CSV',
+            icon: Download,
+            onClick: () => handleExport('CSV')
         }
     ];
 
@@ -520,6 +563,12 @@ const UserList = () => {
                     )}
                 </div>
             </Modal>
+
+            <ImportModal
+                isOpen={importModalOpen}
+                onClose={() => setImportModalOpen(false)}
+                onImportComplete={fetchUsers}
+            />
         </div>
     );
 };
