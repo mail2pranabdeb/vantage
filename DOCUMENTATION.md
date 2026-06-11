@@ -17,7 +17,7 @@
 
 ## Overview
 
-**Vantage Admin** is a comprehensive enterprise administration platform built with **Spring Boot 4.0.5**, **Spring Modulith 2.0.5**, and **React 19**. It provides user/role/menu management, Quartz job scheduling, report generation, code generation, and an AI-powered chat assistant.
+**Vantage Admin** is a comprehensive enterprise administration platform built with **Spring Boot 4.0.5**, **Spring Modulith 2.0.5**, and **React 19**. It provides user/role/menu management, Quartz job scheduling, report generation, code generation, AI-powered chat assistant, audit trail with diff history, API rate limiting, global search, PDF export, and data import.
 
 ### Architecture Evolution (v2.0)
 
@@ -32,8 +32,12 @@ Vantage has been refactored from a multi-module Maven project into a **single JA
 - **Backend:** Spring Boot 4.0.5, Spring Modulith 2.0.5, Spring Data JPA, Quartz Scheduler
 - **Frontend:** React 19, Vite 5, Glassmorphism UI, Lucide Icons (separate project)
 - **Database:** H2 (file-based), supports PostgreSQL/MySQL/Oracle
-- **Security:** Spring Security with session-based authentication (BCrypt)
+- **Security:** Spring Security with session-based authentication (BCrypt), rate limiting (Caffeine token-bucket)
 - **AI:** LangChain4j 0.35.0 with Ollama (Qwen2.5-Coder 0.5b)
+- **Audit:** Hibernate event listeners (PreUpdate/PreDelete) with zero extra DB queries
+- **Export:** PDF (OpenPDF), CSV, Excel
+- **Import:** CSV (Commons CSV), Excel (Apache POI)
+- **Container:** Docker multi-stage build, Docker Compose, GitHub Actions CI/CD
 - **Monitoring:** Spring Boot Actuator + Micrometer (Prometheus)
 
 ### Key Features
@@ -44,10 +48,16 @@ Vantage has been refactored from a multi-module Maven project into a **single JA
 - Code Generation from database tables
 - Email Templates with dynamic data tables
 - AI Chat Assistant with RAG knowledge base
+- **Audit Trail** — `@Audited` annotation, Hibernate event listeners, side-by-side diff history
+- **Rate Limiting** — `@RateLimit` annotation, Caffeine token-bucket, per-endpoint quota
+- **Global Search / Command Palette** — Unified search across 6 entity types + nav commands
+- **Export Engine** — PDF (OpenPDF), CSV, Excel downloads on all list pages
+- **Data Import Wizard** — 3-step CSV/Excel upload → preview → execute
 - Operation & Login Audit Logging
 - Dictionary & Config Management
 - Real-time Monitoring Dashboard (actuator-backed)
 - Script Job Execution (SQL, JavaScript, Groovy, Python)
+- **Docker** — Multi-stage build, Docker Compose (PostgreSQL), GitHub Actions CI/CD
 
 ---
 
@@ -57,6 +67,7 @@ Vantage has been refactored from a multi-module Maven project into a **single JA
 - **Java 17** (required — JDK 17 compatible, no Java 21+ features used)
 - **Node.js 20.11+** (for Vite)
 - **Maven 3.8+**
+- **Docker Desktop** (optional — for containerized deployment)
 
 ### Build & Run
 
@@ -77,6 +88,20 @@ npm run dev
 - **Backend URL:** [http://localhost:8080](http://localhost:8080)
 - **UI Dev URL:** [http://localhost:5173](http://localhost:5173) (proxies `/api`, `/ws`, `/actuator` to backend)
 - **H2 Console:** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+
+#### Docker (Docker Desktop)
+```bash
+# Start app with PostgreSQL
+docker compose up -d
+
+# View logs
+docker compose logs -f vantage
+
+# Stop
+docker compose down
+```
+
+The Docker image is self-contained — the React frontend is built and embedded in the Spring Boot JAR as static resources during the multi-stage build.
 
 ### Default Credentials
 ```
@@ -261,6 +286,60 @@ init-on-fresh-db: true   # Load initial data on startup (set false after first r
 - SQL results displayed with row count
 - Script output captured and returned
 
+### 11. Audit Trail
+**Annotations:** `@Audited` (field-level), Hibernate `PreUpdateEventListener` / `PreDeleteEventListener`
+
+- Capture entity changes without AOP overhead
+- **Zero extra DB queries** — before-state captured from Hibernate's internal `getOldState()` in `PreUpdateEventListener`
+- Fallback hierarchy: Hibernate event → `UserAuditContextHolder` (ThreadLocal) → AOP method arguments
+- Side-by-side diff: `EntityDiffUtil` computes `changedFields`, `oldValues`, `newValues`
+- 8 annotated entities: `SysUser`, `SysRole`, `SysMenu`, `SysConfig`, `SysDictType`, `SysDictData`, `SysNotice`, `SysJob`
+- Auto-logged for all `GatewayManagement` write methods — no `@Log` annotation required
+- Existing `OperlogDetailModal` renders diff in the UI
+
+### 12. Rate Limiting
+**Annotation:** `@RateLimit`
+
+- Token-bucket algorithm via Caffeine cache (no Redis needed)
+- Configurable per-user or global rate limit
+- Stats endpoint: `GET /api/system/rate-limit/stats`
+- Rate-limited endpoints:
+  - `/api/login` — 5 requests / 60 seconds
+  - `/api/chat/stream` — 5 requests / 60 seconds
+  - `/api/system/report/execute/{reportId}` — 5 requests / 60 seconds
+- Response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+- HTTP 429 with `Retry-After` header when limit exceeded
+
+### 13. Global Search / Command Palette
+**Endpoint:** `GET /api/system/search?q={query}` (Ctrl+K or `⌘K`)
+
+- Searches across 6 entity types: Users, Roles, Menus, Configs, Notices, Jobs
+- Merges with static navigation commands (e.g., "Go to Users", "Create User")
+- Debounced API calls (300ms) from the Command Palette component
+- Keyboard shortcut: `Ctrl+K` / `⌘K` to open
+- Filtered by user permissions — only shows menus the user can access
+
+### 14. Export Engine (PDF / CSV / Excel)
+**Endpoint:** `POST /api/system/export`
+
+- Generic export service supporting PDF, CSV, and Excel formats
+- PDF generation via OpenPDF (`com.github.librepdf:openpdf:2.0.3`)
+- Export buttons on all major list pages:
+  - UserList, RoleList, MenuList, DictList, ConfigList, NoticeList
+  - OperlogList, LogininforList, DatasourceList, JobLogList
+  - ReportDesigner (PDF only)
+- Hardcoded `filename.ext` on frontend — avoids Content-Disposition parsing issues
+- UTF-8 encoded CSV with BOM for Excel compatibility
+
+### 15. Data Import Wizard
+**Endpoints:** `POST /api/system/import/preview` | `POST /api/system/import/execute`
+
+- 3-step UI: Upload → Preview → Results
+- Supports CSV (Commons CSV 1.13.0) and Excel (Apache POI 5.4.0)
+- Backend returns **all rows** — preview display capped client-side
+- Import buttons on: UserList, ConfigList, NoticeList
+- Row-by-row import with success/failure reporting
+
 ---
 
 ## API Reference
@@ -341,6 +420,16 @@ POST /api/logout
 | | PUT | `/api/system/datasource` |
 | | DELETE | `/api/system/datasource/{datasourceId}` |
 | | POST | `/api/system/datasource/test` |
+| **Audit** | — | *auto-logged via `@Audited` + `GatewayManagement` pointcuts* |
+| | GET | `/api/system/operlog/list` |
+| | GET | `/api/system/operlog/{operId}` |
+| | DELETE | `/api/system/operlog` |
+| | DELETE | `/api/system/operlog/clean` |
+| **Rate Limit** | GET | `/api/system/rate-limit/stats` |
+| **Search** | GET | `/api/system/search?q=xxx` |
+| **Export** | POST | `/api/system/export` |
+| **Import** | POST | `/api/system/import/preview` |
+| | POST | `/api/system/import/execute` |
 | **Cache** | GET | `/api/system/cache/list` |
 | | POST | `/api/system/cache/clear/{cacheName}` |
 | | POST | `/api/system/cache/clear-all` |
@@ -580,7 +669,7 @@ HTTP Request → GatewayManagement → API Interface → Service Impl → Reposi
 
 ### GatewayManagement Structure
 
-The `GatewayManagement` controller (~900 lines) is organized by module:
+The `GatewayManagement` controller (~1100 lines) is organized by module:
 
 1. **Auth** (`/api/me`, `/api/logout`)
 2. **System: User** (`/api/system/user/*`)
@@ -597,15 +686,77 @@ The `GatewayManagement` controller (~900 lines) is organized by module:
 13. **System: Cache** (`/api/system/cache/*`)
 14. **System: Chat** (`/api/chat/*`)
 15. **System: Report** (`/api/system/report/*`)
-16. **Quartz: Job** (`/api/system/job/*`)
-17. **Quartz: Job Log** (`/api/system/job-log/*`)
-18. **Quartz: Job Template** (`/api/system/job-template/*`)
-19. **Quartz: Email Template** (`/api/system/email-template/*`)
-20. **Quartz: Job Group** (`/api/system/job-group/*`)
-21. **Quartz: Job Dashboard** (`/api/system/job-dashboard/*`)
-22. **Quartz: Script Job** (`/api/system/scriptJob/*`)
-23. **Quartz: Job Webhook** (`/api/public/job/webhook/*`)
-24. **Generator** (`/api/tool/gen/*`)
+16. **System: Search** (`/api/system/search`)
+17. **System: Export** (`/api/system/export`)
+18. **System: Import** (`/api/system/import/*`)
+19. **System: Rate Limit** (`/api/system/rate-limit/*`)
+20. **Quartz: Job** (`/api/system/job/*`)
+21. **Quartz: Job Log** (`/api/system/job-log/*`)
+22. **Quartz: Job Template** (`/api/system/job-template/*`)
+23. **Quartz: Email Template** (`/api/system/email-template/*`)
+24. **Quartz: Job Group** (`/api/system/job-group/*`)
+25. **Quartz: Job Dashboard** (`/api/system/job-dashboard/*`)
+26. **Quartz: Script Job** (`/api/system/scriptJob/*`)
+27. **Quartz: Job Webhook** (`/api/public/job/webhook/*`)
+28. **Generator** (`/api/tool/gen/*`)
+
+---
+
+## Docker & CI/CD
+
+### Docker Multi-Stage Build
+
+The `Dockerfile` produces a self-contained image with the React frontend embedded in the Spring Boot JAR:
+
+| Stage | Base Image | Purpose |
+|-------|-----------|---------|
+| **frontend** | `node:20-alpine` | `npm ci` + `npm run build` → `dist/` |
+| **backend** | `eclipse-temurin:17-jdk` | Copies `dist/` into `static/`, `mvnw package` |
+| **runtime** | `eclipse-temurin:17-jre` | Runs JAR as non-root user on port 8080 |
+
+```bash
+# Build manually
+docker build -t vantage:latest .
+
+# Or use Docker Compose (includes PostgreSQL)
+docker compose up -d
+```
+
+### Docker Compose (Local Dev)
+
+The `docker-compose.yml` runs the app with PostgreSQL 16:
+
+| Service | Image | Port |
+|---------|-------|------|
+| `vantage` | local build | `8080:8080` |
+| `postgres` | `postgres:16-alpine` | `5432:5432` |
+
+Environment variables configure the datasource — no profile files needed.
+
+### GitHub Actions CI/CD
+
+The `.github/workflows/ci.yml` pipeline runs on every push/PR to `master`/`develop`:
+
+| Job | Trigger | Actions |
+|-----|---------|--------|
+| `build-backend` | All pushes & PRs | `mvnw compile test package` (JDK 17, Maven cache) |
+| `build-frontend` | All pushes & PRs | `npm ci && npm run build` (Node 20, npm cache) |
+| `docker` | `master` push or `v*` tag | Buildx → push to `docker.io/<user>/vantage` |
+| `deploy` | `master` push | SSH deploy via `appleboy/ssh-action` |
+
+**Docker image tags:**
+- `latest` — on `master` push
+- `x.y.z` — on semver tag push
+- `branch-sha-abcdef` — every push with SHA
+
+**Required GitHub secrets:**
+| Secret | Purpose |
+|--------|---------|
+| `DOCKER_USERNAME` | Docker Hub username |
+| `DOCKER_PASSWORD` | Docker Hub password / access token |
+| `DEPLOY_HOST` | Production VPS IP (optional) |
+| `DEPLOY_USER` | SSH username (optional) |
+| `DEPLOY_KEY` | SSH private key (optional) |
 
 ---
 
@@ -691,6 +842,17 @@ SELECT * FROM sys_user WHERE login_name='admin';
 - Check table exists in PUBLIC schema
 - Test: `GET /api/tool/gen/db/tables`
 
+### Docker Container Won't Start
+**Check logs:**
+```bash
+docker compose logs vantage
+docker compose logs postgres
+```
+**Port conflict:** Ensure port 8080 or 5432 isn't already in use.
+
+### Docker Hub Push Fails
+Ensure GitHub secrets `DOCKER_USERNAME` and `DOCKER_PASSWORD` are configured in the repository settings.
+
 ### AI Chat Not Responding
 - Verify Ollama is running: `http://localhost:11434`
 - Check `ai.enabled: true` in application.yml
@@ -725,6 +887,18 @@ ai:
   chat-model: qwen2.5-coder:0.5b
   rag-enabled: true
   timeout: 60
+
+# Rate limiting (defaults)
+rate-limit:
+  login:
+    capacity: 5
+    refill-interval: 60s
+  chat-stream:
+    capacity: 5
+    refill-interval: 60s
+  report-execute:
+    capacity: 5
+    refill-interval: 60s
 ```
 
 ### Switching Databases
@@ -751,7 +925,8 @@ spring:
 
 ---
 
-**Version:** 2.0.0  
-**Last Updated:** 2026-05-01  
+**Version:** 2.1.0  
+**Last Updated:** 2026-06-11  
 **Build:** Spring Boot 4.0.5 + Spring Modulith 2.0.5 + React 19  
-**Architecture:** Single JAR Modulith with Gateway-Only Routing
+**Architecture:** Single JAR Modulith with Gateway-Only Routing  
+**Container:** Docker multi-stage build + GitHub Actions CI/CD

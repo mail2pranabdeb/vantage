@@ -1,10 +1,13 @@
 # Vantage Admin Platform
 
+[![CI/CD](https://github.com/mail2pranabdeb/vantage/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mail2pranabdeb/vantage/actions/workflows/ci.yml)
 [![Architecture](https://img.shields.io/badge/Architecture-Spring%20Modulith-blue.svg)](https://spring.io/projects/spring-modulith)
 [![UI](https://img.shields.io/badge/UI-React%2019%20%2B%20Vite-61dafb.svg)](https://react.dev/)
 [![Database](https://img.shields.io/badge/Database-Database%20Agnostic-green.svg)](https://www.h2database.com/)
+[![Docker](https://img.shields.io/badge/Docker-Multi--stage-2496ED.svg)](https://docker.com)
+[![Version](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/mail2pranabdeb/vantage/releases/tag/v1.0.0)
 
-A premium, enterprise-grade business management system built with **Spring Boot 4.0.5** and **React 19**. Featuring a state-of-the-art **Glassmorphism UI**, real-time monitoring dashboard, and AI-powered chat assistant. Built as a **Spring Modulith 2.0.5** modular monolith with **gateway-only external routing** — all module communication flows through published API interfaces.
+A premium, enterprise-grade business management system built with **Spring Boot 4.0.5** and **React 19**. Featuring a state-of-the-art **Glassmorphism UI**, real-time monitoring dashboard, AI-powered chat assistant, audit trail with diff history, API rate limiting, global search, PDF export, and data import. Built as a **Spring Modulith 2.0.5** modular monolith with **gateway-only external routing** — all module communication flows through published API interfaces.
 
 ---
 
@@ -14,24 +17,19 @@ A premium, enterprise-grade business management system built with **Spring Boot 
 - **Java 17** (Required)
 - **Node.js 20.11+** (Required for Vite)
 - **Maven 3.8+**
+- **Docker Desktop** (optional — for containerized deployment)
 
-### 1. Build
+### Option A: Local Dev (separate backend + frontend)
+
 ```bash
-# Windows
+# 1. Build backend
 mvnw.cmd clean package -DskipTests
 
-# Linux/macOS
-./mvnw clean package -DskipTests
-```
-
-### 2. Run Backend
-```bash
+# 2. Run backend
 cd vantage-admin
 mvnw.cmd spring-boot:run
-```
 
-### 3. Run UI (Separate Project)
-```bash
+# 3. Run frontend (separate terminal)
 cd vantage-ui
 npm install
 npm run dev
@@ -41,6 +39,18 @@ npm run dev
 - **Backend URL**: [http://localhost:8080](http://localhost:8080)
 - **H2 Console**: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 - **Default Credentials**: `admin` / `123456`
+
+### Option B: Docker (self-contained)
+
+```bash
+# Start app + PostgreSQL
+docker compose up -d
+
+# App at http://localhost:8080
+# All features work immediately
+```
+
+The Docker image embeds the React frontend directly in the Spring Boot JAR. No separate frontend server needed.
 
 ### First Run — Load Initial Data
 Set in `vantage-admin/src/main/resources/application.yml`:
@@ -157,7 +167,11 @@ HTTP Request → GatewayManagement → Module API Interface → Service Impl →
 - **Dictionary Management**: Centralized constants and lookup data
 - **System Config**: Runtime-updatable key-value store (SMTP, notifications)
 - **Multi-Datasource**: Manage and test external database connections
-- **Operation & Login Audit**: Full audit trails with domain events
+- **Operation & Login Audit**: Full audit trails with `@Audited` annotation, Hibernate event listeners, side-by-side diff history
+- **API Rate Limiting**: `@RateLimit` annotation, token-bucket via Caffeine, per-endpoint quotas
+- **Global Search / Command Palette**: Ctrl+K or `⌘K` — searches Users, Roles, Menus, Configs, Notices, Jobs
+- **Export Engine**: PDF (OpenPDF), CSV, Excel exports on all list pages
+- **Data Import Wizard**: 3-step CSV/Excel upload → preview → execute
 
 ### ⏱ Advanced Job Scheduling (Quartz)
 - **Execution Controls**: Configurable retries, timeouts, and job dependencies
@@ -222,7 +236,7 @@ HTTP Request → GatewayManagement → Module API Interface → Service Impl →
 
 ### Development Notes
 - **JDK 17 Required** — no Java 21+ features used
-- **UI is a separate project** — backend serves no static assets
+- **UI is separate in dev, embedded in Docker** — Vite dev server proxies to backend; Docker image bundles frontend in JAR static resources
 - **Gateway pattern** — `GatewayManagement` is the only `@RestController`
 - **API-first** — modules expose only `api/` interfaces externally
 
@@ -269,9 +283,17 @@ HTTP Request → GatewayManagement → Module API Interface → Service Impl →
 | POST | `/api/system/datasource/test` | Test datasource connection |
 | GET | `/api/system/notifications/list` | User notifications |
 | PUT | `/api/system/notifications/read-all` | Mark all as read |
-| GET | `/api/system/operlog/list` | Operation audit logs |
+| GET | `/api/system/operlog/list` | Operation audit logs (with diff details) |
+| GET | `/api/system/operlog/{operId}` | Operation log detail (old/new values) |
+| DELETE | `/api/system/operlog` | Delete operation logs |
+| DELETE | `/api/system/operlog/clean` | Clean all operation logs |
 | GET | `/api/system/logininfor/list` | Login history |
 | GET | `/api/system/notice/list` | System notices |
+| GET | `/api/system/search?q=xxx` | Global search (Ctrl+K) |
+| POST | `/api/system/export` | Export data (PDF/CSV/Excel) |
+| POST | `/api/system/import/preview` | Preview import file |
+| POST | `/api/system/import/execute` | Execute import |
+| GET | `/api/system/rate-limit/stats` | Rate limiting statistics |
 | GET | `/api/system/email-config` | Email configuration |
 | POST | `/api/system/email-config` | Save email config |
 | POST | `/api/system/email-config/test` | Send test email |
@@ -513,6 +535,20 @@ SELECT * FROM sys_user WHERE login_name='admin';
 - Verify job status = '0' (active)
 - Verify cron expression is valid
 
+### Docker Container Won't Start
+**Check logs:**
+```bash
+docker compose logs vantage
+docker compose logs postgres
+```
+**Port conflict:** Ensure port 8080 or 5432 isn't already in use:
+```bash
+netstat -ano | findstr :8080
+```
+
+### Docker Hub Push Fails
+Ensure GitHub secrets `DOCKER_USERNAME` and `DOCKER_PASSWORD` are configured in the repository settings under `Settings → Secrets and variables → Actions`.
+
 ### AI Chat Not Responding
 - Verify Ollama is running: `http://localhost:11434`
 - Check `ai.enabled: true` in application.yml
@@ -520,36 +556,40 @@ SELECT * FROM sys_user WHERE login_name='admin';
 
 ---
 
-## ✨ Features (2026-05)
+## ✨ Features (2026-06)
 
-### Gateway-Only Architecture
-- Single `GatewayManagement` controller handles all 80+ endpoints
-- Module controllers removed — all routing through API interfaces
-- Full Spring Modulith compliance with enforced boundaries
+### Audit Trail (v1.0.0)
+- `@Audited` annotation for opt-in entity tracking
+- Hibernate `PreUpdateEventListener` / `PreDeleteEventListener` — zero extra DB queries
+- Maps old/new values with `EntityDiffUtil` for side-by-side UI rendering
+- 3-tier fallback: Hibernate state → `UserAuditContextHolder` → AOP arguments
+- 8 annotated entities, auto-logged for all GatewayManagement write methods
 
-### Job Health Monitoring
-- Stuck job detection (>1 hour running)
-- Frequent failure alerts (3+ failures/week)
-- Dashboard widget showing job health status
+### Rate Limiting (v1.0.0)
+- `@RateLimit` annotation with configurable capacity / refill rate
+- Token-bucket via Caffeine (no Redis dependency)
+- Stats endpoint with per-bucket metrics
+- `X-RateLimit-*` response headers; HTTP 429 with `Retry-After`
 
-### Report Parameters
-- Parameter input dialog for parameterized reports
-- Dynamic system variables: `${SYSDATE}`, `${YEAR}`, `${PREV_DAY}`, etc.
+### Global Search / Command Palette (v1.0.0)
+- Ctrl+K / `⌘K` keyboard shortcut
+- Unified search across 6 entity types + static nav commands
+- Debounced API calls (300ms), permission-filtered results
 
-### Email Templates with Data Tables
-- Dynamic SQL queries embedded in emails
-- `${dataTable}` placeholder for rendered results
+### Export Engine (v1.0.0)
+- PDF (OpenPDF), CSV, Excel via generic `ExportService`
+- Export buttons on all 10 list pages + Report Designer
+- Hardcoded filenames on frontend (no Content-Disposition parsing)
 
-### Dynamic SMTP Configuration
-- SMTP settings stored in database
-- Runtime reload without restart
+### Data Import Wizard (v1.0.0)
+- 3-step: Upload → Preview → Results
+- CSV (Commons CSV) and Excel (Apache POI) support
+- All rows returned from backend; preview capped client-side
 
-### External Job Trigger
-- Secure webhook API with per-job tokens
-
-### Job Dependencies
-- Chain jobs with `dependent_job_ids` field
-- Auto-trigger dependent jobs on success
+### Docker & CI/CD (v1.0.0)
+- Multi-stage Dockerfile (Node 20 → JDK 17 → JRE 17)
+- Docker Compose with PostgreSQL for Desktop local dev
+- GitHub Actions: build, test, push to Docker Hub, SSH deploy
 
 ---
 
@@ -557,14 +597,17 @@ SELECT * FROM sys_user WHERE login_name='admin';
 
 - [ ] **Tool Execution**: Implement LangChain4j `@Tool` for actual AI-driven system operations
 - [ ] **Conversation Persistence**: Store chat history in database
-- [ ] **PDF Report Export**: Integrated browser-based PDF generation
+- [x] **PDF Report Export**: Integrated PDF generation with OpenPDF
+- [x] **CSV/Excel Data Import**: 3-step import wizard with preview
+- [x] **Docker & CI/CD**: Multi-stage build, GitHub Actions, Docker Hub push
 - [ ] **Metric Charting**: Historical traffic/health trends with Recharts
 - [ ] **Gantt Timeline**: Visualizer for job dependency chains
 - [ ] **Module Extraction**: Optional separate JARs for system/quartz/generator
 
 ---
 
-**Version:** 2.0.0  
-**Last Updated:** 2026-05-01  
+**Version:** 2.1.0  
+**Last Updated:** 2026-06-11  
 **Build:** Spring Boot 4.0.5 + Spring Modulith 2.0.5 + React 19  
-**Architecture:** Single JAR Modulith with Gateway-Only Routing
+**Architecture:** Single JAR Modulith with Gateway-Only Routing  
+**Container:** Docker multi-stage build + PostgreSQL + GitHub Actions CI/CD
